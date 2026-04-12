@@ -1,3 +1,26 @@
+<script type="module">
+import { requireAuth, signOutUser, getUserProfile, db,
+         doc, getDoc, onAuthStateChanged, auth } from './firebase-config.js';
+
+/* ── Guard: redirect if not candidate ── */
+requireAuth('candidate').then(({ user, profile }) => {
+  // Update greeting with real name
+  const nameEl = document.getElementById('dash-greeting-name');
+  if (nameEl) nameEl.textContent = profile.name?.split(' ')[0] || 'there';
+  // Update avatar initials
+  const avEl = document.querySelector('.avatar');
+  if (avEl && profile.name) avEl.textContent = profile.name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+}).catch(() => {
+  window.location.href = 'candidate-login.html';
+});
+
+/* ── Real sign out ── */
+window.signOut = async function() {
+  showToast('Signing out...', '');
+  setTimeout(() => signOutUser(), 600);
+};
+</script>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -415,7 +438,7 @@ body{font-family:'Poppins',sans-serif;background:var(--g1);color:var(--black);mi
   ══════════════════════════ -->
   <div class="page show" id="page-dashboard">
     <div class="dash-greeting">
-      <h1>Good morning, Byron 👋</h1>
+      <h1>Good morning, <span id="dash-greeting-name">Byron</span> 👋</h1>
       <p>Here's what's happening with your Nearwork profile.</p>
     </div>
 
@@ -725,7 +748,7 @@ body{font-family:'Poppins',sans-serif;background:var(--g1);color:var(--black);mi
         <div class="profile-photo-card">
           <div class="profile-avatar">BG</div>
           <div class="profile-name">Byron Giraldo</div>
-          <div class="profile-email">byron@email.com</div>
+          <div class="profile-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="214358534e4f61444c40484d0f424e4c">[email&#160;protected]</a></div>
           <button class="btn btn-ghost btn-sm" style="width:100%;">Change photo</button>
           <div class="profile-complete" style="margin-top:16px;">
             <div class="profile-prog-bar"><div class="profile-prog-fill" style="width:65%;"></div></div>
@@ -928,7 +951,7 @@ body{font-family:'Poppins',sans-serif;background:var(--g1);color:var(--black);mi
       <div class="settings-section">
         <div class="settings-title">Connected accounts</div>
         <div class="toggle-row">
-          <div><div class="toggle-label">Google</div><div class="toggle-sub">Connected as byron@gmail.com</div></div>
+          <div><div class="toggle-label">Google</div><div class="toggle-sub">Connected as <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="d3b1aaa1bcbd93b4beb2babffdb0bcbe">[email&#160;protected]</a></div></div>
           <span class="badge badge-green">Connected</span>
         </div>
         <div class="toggle-row">
@@ -1010,7 +1033,7 @@ body{font-family:'Poppins',sans-serif;background:var(--g1);color:var(--black);mi
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 /* ══ NAVIGATION ══ */
 const PAGES = ['dashboard','jobs','applications','assessment','referrals','profile','settings'];
 
@@ -1171,17 +1194,4 @@ function copyRefLink(){
 }
 
 /* ══ SIGN OUT ══ */
-function signOut(){
-  toast('Signing out...','');
-  setTimeout(()=>window.location.href='candidate-login.html',800);
-}
-
-/* ══ TOAST ══ */
-function toast(msg,t){
-  const el = document.getElementById('toast');
-  el.textContent=msg; el.className='toast show '+(t||'');
-  setTimeout(()=>el.classList.remove('show'),3200);
-}
-</script>
-</body>
-</html>
+function s

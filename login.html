@@ -150,5 +150,16 @@ body{background:var(--black);display:flex;flex-direction:column;}
   </div>
 
 </div>
+<script type="module">
+import { auth, onAuthStateChanged, getUserProfile, redirectByRole } from './firebase-config.js';
+
+/* ── If already logged in, go to their dashboard ── */
+onAuthStateChanged(auth, async user => {
+  if (user) {
+    const profile = await getUserProfile(user.uid);
+    if (profile?.role) redirectByRole(profile.role);
+  }
+});
+</script>
 </body>
 </html>

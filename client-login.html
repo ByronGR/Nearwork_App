@@ -167,7 +167,7 @@ body{background:var(--g1);display:flex;}
     <div class="s-title">Sign in to your account.</div>
     <p class="s-sub">Access your pipeline, candidates, and team dashboard.</p>
 
-    <button class="btn-google" onclick="bypass(event)">
+    <button class="btn-google" onclick="handleClientGoogle()">
       <svg viewBox="0 0 24 24" width="17" height="17"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
       Continue with Google
     </button>
@@ -179,7 +179,7 @@ body{background:var(--g1);display:flex;}
       <div class="ferr" id="pw-err">Incorrect email or password.</div>
     </div>
     <div class="forgot-link"><a onclick="go('s-forgot')">Forgot password?</a></div>
-    <button class="btn-p" id="login-btn" onclick="doLogin()">Sign in →</button>
+    <button class="btn-p" id="login-btn" onclick="doClientLogin()">Sign in →</button>
     <div class="global-err" id="no-acc-err">No account found. <a onclick="go('s-no-acc')" style="color:var(--red);font-weight:700;cursor:pointer;">Learn more →</a></div>
     <div class="bottom-note">Not a client yet? <a href="https://nearwork.co/book">Schedule a free call with Nearwork →</a></div>
   </div>
@@ -190,7 +190,7 @@ body{background:var(--g1);display:flex;}
     <div class="s-title">Forgot your password?</div>
     <p class="s-sub" style="margin-bottom:18px;">Enter your work email and we'll send you a reset link within a few minutes.</p>
     <div class="f"><label>Work email</label><input type="email" id="forgot-email" placeholder="you@company.com" onkeydown="if(event.key==='Enter')resetSend()"></div>
-    <button class="btn-p" id="reset-btn" onclick="resetSend()">Send reset link →</button>
+    <button class="btn-p" id="reset-btn" onclick="clResetSend()">Send reset link →</button>
     <button class="btn-sec" onclick="go('s-signin')">Back to sign in</button>
   </div>
 
@@ -219,48 +219,72 @@ body{background:var(--g1);display:flex;}
 
 <div class="toast" id="toast"></div>
 
-<script>
-function go(id){
-  document.querySelectorAll('.step').forEach(s=>s.classList.remove('show'));
-  document.getElementById(id).classList.add('show');
-}
+<script type="module">
+import {
+  auth, db, signInWithGoogle, signInWithEmailAndPassword,
+  sendPasswordResetEmail, onAuthStateChanged,
+  getUserProfile, saveUserProfile, redirectByRole
+} from './firebase-config.js';
 
-function doLogin(){
-  const email=document.getElementById('cl-email').value.trim();
-  const pw=document.getElementById('cl-pw').value;
-  document.getElementById('pw-err').classList.remove('show');
-  document.getElementById('no-acc-err').classList.remove('show');
-  if(!email||!email.includes('@')){ toast('Please enter your email.','bad'); return; }
-  if(!pw){ toast('Please enter your password.','bad'); return; }
-  // BYPASSED — go straight to client dashboard
-  bypass(null);
-}
+/* ── Auto-redirect if already logged in ── */
+onAuthStateChanged(auth, async user => {
+  if (user) {
+    const profile = await getUserProfile(user.uid);
+    if (profile?.role) redirectByRole(profile.role);
+  }
+});
 
-function resetSend(){
-  const email=document.getElementById('forgot-email').value.trim();
-  if(!email){ toast('Please enter your email.','bad'); return; }
-  document.getElementById('reset-email-show').textContent=email;
-  toast('Reset link sent!','ok');
-  go('s-reset-sent');
-}
+/* ── Google sign in (clients only) ── */
+window.handleClientGoogle = async function() {
+  try {
+    const user = await signInWithGoogle();
+    const profile = await getUserProfile(user.uid);
+    if (!profile) { clShow('cl-no-acc'); return; }
+    if (profile.role === 'client' || profile.role === 'admin') {
+      redirectByRole(profile.role);
+    } else {
+      clShow('cl-no-acc');
+    }
+  } catch(e) {
+    showToast('Google sign-in failed.', 'bad');
+  }
+};
 
-function tpw(id,btn){
-  const i=document.getElementById(id);
-  i.type=i.type==='password'?'text':'password';
-  btn.textContent=i.type==='password'?'👁':'🙈';
-}
+/* ── Email sign in ── */
+window.doClientLogin = async function() {
+  const email = document.getElementById('cl-email').value.trim();
+  const pw    = document.getElementById('cl-pw').value;
+  if (!email || !pw) { showToast('Please enter your email and password.', 'bad'); return; }
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin dk"></span>Signing in...';
+  try {
+    const cred = await signInWithEmailAndPassword(auth, email, pw);
+    const profile = await getUserProfile(cred.user.uid);
+    if (!profile || !['client','admin'].includes(profile.role)) {
+      await auth.signOut();
+      clShow('cl-no-acc');
+      btn.disabled = false; btn.innerHTML = 'Sign in →';
+      return;
+    }
+    redirectByRole(profile.role);
+  } catch(e) {
+    document.getElementById('pw-err').classList.add('show');
+    document.getElementById('cl-pw').classList.add('err');
+    btn.disabled = false; btn.innerHTML = 'Sign in →';
+  }
+};
 
-function bypass(e){
-  if(e&&e.stopPropagation) e.stopPropagation();
-  toast('Signing you in...','');
-  setTimeout(()=>window.location.href='client-dashboard.html',700);
-}
-
-function toast(msg,t){
-  const el=document.getElementById('toast');
-  el.textContent=msg; el.className='toast show '+(t||'');
-  setTimeout(()=>el.classList.remove('show'),3000);
-}
+/* ── Forgot password ── */
+window.clResetSend = async function() {
+  const email = document.getElementById('cl-forgot-email').value.trim();
+  if (!email) { showToast('Please enter your email.', 'bad'); return; }
+  try {
+    await sendPasswordResetEmail(auth, email);
+    document.getElementById('cl-reset-email').textContent = email;
+    clShow('cl-reset-sent');
+  } catch(e) {
+    showToast('Could not send reset email.', 'bad');
+  }
+};
 </script>
-</body>
-</html>

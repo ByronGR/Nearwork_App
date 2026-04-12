@@ -1,3 +1,25 @@
+<script type="module">
+import { requireAuth, signOutUser, getUserProfile } from './firebase-config.js';
+
+/* ── Guard: redirect if not client ── */
+requireAuth('client').then(({ user, profile }) => {
+  // Update name in avatar menu
+  const nameEl = document.querySelector('.av-name');
+  if (nameEl && profile.name) nameEl.textContent = profile.name;
+  // Update avatar initials
+  const avEl = document.querySelector('.av');
+  if (avEl && profile.name) avEl.textContent = profile.name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+}).catch(() => {
+  window.location.href = 'client-login.html';
+});
+
+/* ── Real sign out ── */
+window.signOut = async function() {
+  showToast('Signing out...', '');
+  setTimeout(() => signOutUser(), 600);
+};
+</script>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
