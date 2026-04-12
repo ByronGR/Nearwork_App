@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Dashboard | Nearwork</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --purple:#6C3CE1;--pd:#4F28B8;--pl:#8B5CF6;--pp:#F0EBFF;
+  --black:#0D0D0D;--white:#fff;
+  --g1:#F9FAFB;--g2:#F3F4F6;--g3:#D1D5DB;--g4:#9CA3AF;--g5:#6B7280;--g6:#374151;
+  --green:#10B981;--gl:#6EE7B7;--red:#EF4444;--amber:#F59E0B;
+  --nav-h:60px;
+}
+html{scroll-behavior:smooth;}
+body{font-family:'Poppins',sans-serif;background:var(--g1);color:var(--black);min-height:100vh;}
+
+/* ══ NAV ══ */
+.nav{position:sticky;top:0;z-index:200;height:var(--nav-h);background:#fff;border-bottom:1px solid var(--g3);display:flex;align-items:center;padding:0 28px;gap:0;}
+.nav-logo{font-size:18px;font-weight:900;color:var(--black);letter-spacing:-1px;cursor:pointer;text-decoration:none;flex-shrink:0;margin-right:32px;}
+.nav-logo span{color:var(--purple);}
+.nav-tabs{display:flex;align-items:center;gap:2px;flex:1;}
+.nav-tab{padding:7px 14px;font-size:13px;font-weight:500;color:var(--g5);border-radius:8px;cursor:pointer;transition:color .15s,background .15s;border:none;background:none;font-family:'Poppins',sans-serif;white-space:nowrap;}
+.nav-tab:hover{color:var(--black);background:var(--g1);}
+.nav-tab.active{color:var(--purple);background:var(--pp);font-weight:600;}
+.nav-right{display:flex;align-items:center;gap:12px;margin-left:auto;}
+
+/* Bell */
+.bell-wrap{position:relative;cursor:pointer;}
+.bell-btn{width:36px;height:36px;border-radius:50%;background:var(--g1);border:1px solid var(--g3);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s;}
+.bell-btn:hover{background:var(--g2);}
+.bell-btn svg{width:16px;height:16px;stroke:var(--g5);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.bell-badge{position:absolute;top:-2px;right:-2px;width:16px;height:16px;border-radius:50%;background:var(--red);color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid #fff;}
+
+/* Notification dropdown */
+.notif-drop{position:absolute;top:calc(100% + 10px);right:0;width:320px;background:#fff;border:1px solid var(--g3);border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,0.1);opacity:0;pointer-events:none;transform:translateY(-6px);transition:opacity .2s,transform .2s;z-index:300;}
+.notif-drop.show{opacity:1;pointer-events:all;transform:translateY(0);}
+.notif-hdr{padding:14px 16px;border-bottom:1px solid var(--g2);display:flex;justify-content:space-between;align-items:center;}
+.notif-hdr-title{font-size:13px;font-weight:700;color:var(--black);}
+.notif-hdr-mark{font-size:11px;color:var(--purple);cursor:pointer;font-weight:500;}
+.notif-list{max-height:320px;overflow-y:auto;}
+.notif-item{padding:12px 16px;border-bottom:1px solid var(--g2);cursor:pointer;transition:background .15s;display:flex;gap:10px;align-items:flex-start;}
+.notif-item:last-child{border-bottom:none;}
+.notif-item:hover{background:var(--g1);}
+.notif-item.unread{background:#FAFBFF;}
+.notif-dot{width:7px;height:7px;border-radius:50%;background:var(--purple);flex-shrink:0;margin-top:5px;}
+.notif-dot.read{background:var(--g3);}
+.notif-text{font-size:12px;color:var(--g6);line-height:1.5;}
+.notif-time{font-size:10px;color:var(--g4);margin-top:2px;}
+
+/* Avatar menu */
+.avatar-wrap{position:relative;}
+.avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--pl));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;cursor:pointer;flex-shrink:0;border:2px solid var(--pp);}
+.avatar-menu{position:absolute;top:calc(100% + 10px);right:0;width:200px;background:#fff;border:1px solid var(--g3);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.1);padding:6px;opacity:0;pointer-events:none;transform:translateY(-6px);transition:opacity .2s,transform .2s;z-index:300;}
+.avatar-menu.show{opacity:1;pointer-events:all;transform:translateY(0);}
+.avatar-menu-item{padding:9px 12px;font-size:13px;color:var(--g6);border-radius:8px;cursor:pointer;font-weight:500;transition:background .15s;}
+.avatar-menu-item:hover{background:var(--g1);color:var(--black);}
+.avatar-menu-item.danger{color:var(--red);}
+.avatar-menu-item.danger:hover{background:#FEF2F2;}
+.avatar-menu-divider{height:1px;background:var(--g2);margin:4px 0;}
+
+/* ══ MAIN LAYOUT ══ */
+.main{max-width:1100px;margin:0 auto;padding:32px 24px;}
+
+/* ══ PAGES ══ */
+.page{display:none;}
+.page.show{display:block;animation:fadeIn .25s ease both;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+/* ══ SHARED COMPONENTS ══ */
+.page-title{font-size:22px;font-weight:800;color:var(--black);letter-spacing:-1px;margin-bottom:4px;}
+.page-sub{font-size:13px;color:var(--g5);margin-bottom:28px;}
+.card{background:#fff;border-radius:14px;border:1px solid var(--g3);padding:24px;}
+.card-sm{background:#fff;border-radius:12px;border:1px solid var(--g3);padding:18px;}
+.section-label{font-size:10px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.12em;margin-bottom:12px;margin-top:24px;}
+.section-label:first-child{margin-top:0;}
+.badge{display:inline-flex;align-items:center;font-size:10px;font-weight:700;padding:3px 9px;border-radius:99px;}
+.badge-purple{background:var(--pp);color:var(--purple);}
+.badge-green{background:rgba(16,185,129,0.1);color:var(--green);}
+.badge-amber{background:rgba(245,158,11,0.1);color:var(--amber);}
+.badge-red{background:rgba(239,68,68,0.08);color:var(--red);}
+.badge-gray{background:var(--g2);color:var(--g5);}
+
+/* Buttons */
+.btn{padding:9px 20px;border-radius:8px;font-size:13px;font-weight:600;font-family:'Poppins',sans-serif;border:none;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px;text-decoration:none;}
+.btn-primary{background:var(--purple);color:#fff;}
+.btn-primary:hover{background:var(--pd);transform:translateY(-1px);}
+.btn-green{background:var(--green);color:#fff;}
+.btn-green:hover{background:#059669;transform:translateY(-1px);}
+.btn-ghost{background:var(--g1);color:var(--g6);border:1px solid var(--g3);}
+.btn-ghost:hover{border-color:var(--purple);color:var(--purple);}
+.btn-sm{padding:6px 14px;font-size:12px;}
+.btn-danger{background:rgba(239,68,68,0.08);color:var(--red);border:1px solid rgba(239,68,68,0.2);}
+.btn-danger:hover{background:rgba(239,68,68,0.15);}
+
+/* Fields */
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:11px;font-weight:700;color:var(--black);margin-bottom:5px;letter-spacing:.03em;}
+.field input,.field select,.field textarea{width:100%;padding:10px 13px;border:1.5px solid var(--g3);border-radius:9px;font-size:13px;font-family:'Poppins',sans-serif;color:var(--black);background:#fff;outline:none;transition:border-color .2s,box-shadow .2s;}
+.field input:focus,.field select,.field textarea:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(108,60,225,0.08);}
+.field select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236B7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;}
+.field textarea{min-height:72px;resize:vertical;line-height:1.5;}
+.field-hint{font-size:10px;color:var(--g4);margin-top:4px;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.field-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+
+/* ══ DASHBOARD PAGE ══ */
+.dash-greeting{margin-bottom:28px;}
+.dash-greeting h1{font-size:24px;font-weight:800;color:var(--black);letter-spacing:-1px;margin-bottom:3px;}
+.dash-greeting p{font-size:13px;color:var(--g5);}
+
+/* Profile incomplete banner */
+.incomplete-banner{background:linear-gradient(135deg,#1a0a3e,#2d1b69);border-radius:14px;padding:22px 24px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;}
+.ib-left{}
+.ib-icon{font-size:11px;font-weight:700;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;}
+.ib-title{font-size:16px;font-weight:800;color:#fff;letter-spacing:-.5px;margin-bottom:4px;}
+.ib-sub{font-size:12px;color:rgba(255,255,255,0.5);line-height:1.5;}
+.ib-progress{margin-top:12px;}
+.prog-bar{height:5px;background:rgba(255,255,255,0.1);border-radius:99px;overflow:hidden;width:240px;}
+.prog-fill{height:5px;border-radius:99px;background:linear-gradient(90deg,var(--green),var(--gl));transition:width .6s ease;}
+.prog-label{font-size:10px;color:rgba(255,255,255,0.4);margin-top:4px;}
+
+/* Stats grid */
+.dash-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+.dstat{background:#fff;border-radius:12px;border:1px solid var(--g3);padding:18px;transition:border-color .2s,transform .2s;cursor:pointer;}
+.dstat:hover{border-color:var(--purple);transform:translateY(-2px);}
+.dstat-icon{font-size:20px;margin-bottom:10px;display:block;}
+.dstat-num{font-size:24px;font-weight:900;color:var(--black);letter-spacing:-1.5px;line-height:1;margin-bottom:3px;}
+.dstat-label{font-size:11px;color:var(--g5);font-weight:500;}
+.dstat-action{font-size:10px;color:var(--purple);font-weight:600;margin-top:6px;}
+
+/* Featured jobs */
+.featured-jobs{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px;}
+.job-card{background:#fff;border-radius:12px;border:1px solid var(--g3);padding:18px;cursor:pointer;transition:border-color .2s,transform .2s,box-shadow .2s;}
+.job-card:hover{border-color:var(--purple);transform:translateY(-3px);box-shadow:0 8px 24px rgba(108,60,225,0.1);}
+.job-card-role{font-size:14px;font-weight:700;color:var(--black);margin-bottom:4px;letter-spacing:-.3px;}
+.job-card-company{font-size:11px;color:var(--g5);margin-bottom:10px;}
+.job-card-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px;}
+.jtag{font-size:9px;font-weight:600;color:var(--g5);background:var(--g2);padding:2px 7px;border-radius:99px;}
+.jtag.hot{color:var(--green);background:rgba(16,185,129,0.08);}
+.job-card-salary{font-size:12px;font-weight:700;color:var(--purple);}
+.job-card-saved{float:right;font-size:16px;cursor:pointer;line-height:1;}
+
+/* Latest notification on dashboard */
+.dash-notif{background:var(--pp);border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:12px;margin-bottom:24px;cursor:pointer;}
+.dash-notif-dot{width:8px;height:8px;border-radius:50%;background:var(--purple);flex-shrink:0;}
+.dash-notif-text{font-size:13px;color:var(--purple);font-weight:500;flex:1;}
+.dash-notif-time{font-size:11px;color:var(--g4);}
+
+/* ══ JOBS PAGE ══ */
+.jobs-toolbar{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center;}
+.search-wrap{flex:1;min-width:200px;position:relative;}
+.search-wrap input{width:100%;padding:10px 13px 10px 38px;border:1.5px solid var(--g3);border-radius:9px;font-size:13px;font-family:'Poppins',sans-serif;outline:none;transition:border-color .2s;}
+.search-wrap input:focus{border-color:var(--purple);}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--g4);font-size:14px;}
+.filter-select{padding:10px 32px 10px 12px;border:1.5px solid var(--g3);border-radius:9px;font-size:12px;font-family:'Poppins',sans-serif;color:var(--g6);background:#fff;outline:none;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236B7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;}
+.filter-select:focus{border-color:var(--purple);}
+.jobs-count{font-size:12px;color:var(--g5);margin-bottom:14px;}
+.jobs-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.job-full-card{background:#fff;border-radius:14px;border:1.5px solid var(--g3);padding:22px;cursor:pointer;transition:border-color .2s,transform .2s,box-shadow .2s;position:relative;}
+.job-full-card:hover{border-color:var(--purple);transform:translateY(-3px);box-shadow:0 8px 28px rgba(108,60,225,0.1);}
+.job-full-card.saved{border-color:rgba(108,60,225,0.3);}
+.jfc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+.jfc-role{font-size:15px;font-weight:700;color:var(--black);letter-spacing:-.3px;}
+.jfc-save{background:none;border:none;font-size:18px;cursor:pointer;line-height:1;padding:0;}
+.jfc-meta{font-size:11px;color:var(--g5);margin-bottom:10px;display:flex;gap:12px;}
+.jfc-meta span{display:flex;align-items:center;gap:3px;}
+.jfc-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px;}
+.jfc-desc{font-size:12px;color:var(--g5);line-height:1.6;margin-bottom:14px;}
+.jfc-bottom{display:flex;align-items:center;justify-content:space-between;}
+.jfc-salary{font-size:13px;font-weight:700;color:var(--purple);}
+.jfc-posted{font-size:10px;color:var(--g4);}
+
+/* Job detail modal */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:400;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .25s;backdrop-filter:blur(4px);}
+.modal-bg.show{opacity:1;pointer-events:all;}
+.modal{background:#fff;border-radius:18px;width:100%;max-width:680px;max-height:90vh;overflow-y:auto;transform:scale(.95);transition:transform .25s;}
+.modal-bg.show .modal{transform:scale(1);}
+.modal-header{padding:24px 24px 0;display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;}
+.modal-close{background:var(--g2);border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.modal-body{padding:0 24px 24px;}
+.modal-role{font-size:22px;font-weight:800;color:var(--black);letter-spacing:-1px;margin-bottom:6px;}
+.modal-meta{display:flex;gap:14px;font-size:12px;color:var(--g5);margin-bottom:16px;flex-wrap:wrap;}
+.modal-section-title{font-size:12px;font-weight:700;color:var(--black);margin-bottom:8px;margin-top:18px;}
+.modal-desc{font-size:13px;color:var(--g6);line-height:1.75;}
+.modal-req{display:flex;flex-direction:column;gap:6px;}
+.modal-req-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--g6);}
+.modal-req-dot{width:5px;height:5px;border-radius:50%;background:var(--purple);flex-shrink:0;}
+.modal-footer{padding:18px 24px;border-top:1px solid var(--g2);display:flex;gap:10px;justify-content:flex-end;background:#fff;border-radius:0 0 18px 18px;position:sticky;bottom:0;}
+
+/* ══ APPLICATIONS PAGE ══ */
+.apps-list{display:flex;flex-direction:column;gap:12px;}
+.app-card{background:#fff;border-radius:14px;border:1.5px solid var(--g3);padding:20px;transition:border-color .2s;}
+.app-card:hover{border-color:var(--g4);}
+.app-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;}
+.app-role{font-size:15px;font-weight:700;color:var(--black);letter-spacing:-.3px;}
+.app-date{font-size:11px;color:var(--g4);}
+.app-stages{display:flex;gap:0;margin-bottom:14px;overflow-x:auto;}
+.app-stage{flex:1;min-width:80px;text-align:center;position:relative;}
+.app-stage::after{content:'';position:absolute;top:10px;left:50%;width:100%;height:2px;background:var(--g3);z-index:0;}
+.app-stage:last-child::after{display:none;}
+.app-stage-dot{width:20px;height:20px;border-radius:50%;background:var(--g3);border:2px solid var(--g3);display:flex;align-items:center;justify-content:center;margin:0 auto 5px;position:relative;z-index:1;font-size:9px;color:#fff;font-weight:700;transition:all .3s;}
+.app-stage.done .app-stage-dot{background:var(--green);border-color:var(--green);}
+.app-stage.current .app-stage-dot{background:var(--purple);border-color:var(--purple);box-shadow:0 0 0 4px rgba(108,60,225,0.15);}
+.app-stage.done::after{background:var(--green);}
+.app-stage-label{font-size:9px;color:var(--g4);font-weight:500;line-height:1.3;}
+.app-stage.done .app-stage-label{color:var(--green);}
+.app-stage.current .app-stage-label{color:var(--purple);font-weight:700;}
+.app-bottom{display:flex;justify-content:space-between;align-items:center;}
+.app-status-text{font-size:12px;color:var(--g5);}
+.app-withdrawn{opacity:.55;}
+.app-withdrawn .app-role{text-decoration:line-through;color:var(--g5);}
+
+/* ══ ASSESSMENT PAGE ══ */
+.assess-empty{text-align:center;padding:64px 24px;}
+.assess-empty-icon{font-size:56px;margin-bottom:16px;display:block;}
+.assess-empty-title{font-size:18px;font-weight:700;color:var(--black);margin-bottom:6px;}
+.assess-empty-sub{font-size:13px;color:var(--g5);line-height:1.65;}
+.assess-ready{background:linear-gradient(135deg,var(--purple),var(--pl));border-radius:16px;padding:32px;text-align:center;color:#fff;margin-bottom:20px;}
+.assess-ready-title{font-size:20px;font-weight:800;letter-spacing:-.5px;margin-bottom:8px;}
+.assess-ready-sub{font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:20px;line-height:1.6;}
+.assess-rules{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;text-align:left;}
+.assess-rule{background:rgba(255,255,255,0.1);border-radius:10px;padding:12px 14px;display:flex;align-items:flex-start;gap:10px;}
+.assess-rule-icon{font-size:16px;flex-shrink:0;}
+.assess-rule-text{font-size:11px;color:rgba(255,255,255,0.8);line-height:1.4;}
+.assess-result{background:#fff;border-radius:14px;border:1px solid var(--g3);padding:28px;}
+.assess-score{font-size:64px;font-weight:900;color:var(--purple);letter-spacing:-4px;line-height:1;margin-bottom:4px;text-align:center;}
+.assess-score-label{font-size:13px;color:var(--g5);text-align:center;margin-bottom:20px;}
+.assess-breakdown{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.abreak{background:var(--g1);border-radius:10px;padding:14px;text-align:center;}
+.abreak-n{font-size:20px;font-weight:800;color:var(--black);margin-bottom:3px;}
+.abreak-l{font-size:10px;color:var(--g5);}
+
+/* ══ REFERRALS PAGE ══ */
+.ref-hero{background:linear-gradient(135deg,#0D0D0D,#1a0a3e);border-radius:16px;padding:28px 32px;display:flex;gap:32px;align-items:center;margin-bottom:24px;flex-wrap:wrap;}
+.ref-hero-left{flex:1;}
+.ref-hero-title{font-size:20px;font-weight:800;color:#fff;letter-spacing:-.5px;margin-bottom:6px;}
+.ref-hero-sub{font-size:13px;color:rgba(255,255,255,0.5);line-height:1.65;margin-bottom:16px;}
+.ref-link-wrap{display:flex;gap:8px;align-items:center;}
+.ref-link-input{flex:1;padding:10px 13px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:8px;font-size:12px;color:#fff;font-family:'Poppins',sans-serif;outline:none;}
+.btn-copy{padding:10px 16px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;white-space:nowrap;transition:background .2s;}
+.btn-copy:hover{background:#059669;}
+.btn-copy.copied{background:var(--g5);}
+.ref-hero-right{display:flex;gap:16px;}
+.ref-stat{text-align:center;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:18px 24px;}
+.ref-stat-n{font-size:28px;font-weight:900;color:#fff;letter-spacing:-1.5px;line-height:1;margin-bottom:3px;}
+.ref-stat-n em{color:var(--gl);font-style:normal;}
+.ref-stat-l{font-size:10px;color:rgba(255,255,255,0.35);}
+.how-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px;}
+.how-step{background:#fff;border-radius:12px;border:1px solid var(--g3);padding:18px;text-align:center;}
+.how-step-num{width:32px;height:32px;border-radius:50%;background:var(--pp);color:var(--purple);font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;}
+.how-step-title{font-size:13px;font-weight:700;color:var(--black);margin-bottom:4px;}
+.how-step-desc{font-size:11px;color:var(--g5);line-height:1.5;}
+.ref-table{background:#fff;border-radius:14px;border:1px solid var(--g3);overflow:hidden;}
+.ref-table-hdr{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;padding:12px 18px;background:var(--g1);border-bottom:1px solid var(--g3);font-size:10px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.08em;}
+.ref-table-row{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;padding:14px 18px;border-bottom:1px solid var(--g2);font-size:12px;color:var(--g6);align-items:center;}
+.ref-table-row:last-child{border-bottom:none;}
+.ref-empty{padding:40px;text-align:center;font-size:13px;color:var(--g4);}
+
+/* ══ PROFILE PAGE ══ */
+.profile-layout{display:grid;grid-template-columns:280px 1fr;gap:20px;align-items:start;}
+.profile-sidebar{display:flex;flex-direction:column;gap:14px;}
+.profile-photo-card{background:#fff;border-radius:14px;border:1px solid var(--g3);padding:24px;text-align:center;}
+.profile-avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--pl));display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:#fff;margin:0 auto 12px;cursor:pointer;position:relative;overflow:hidden;}
+.profile-avatar:hover::after{content:'📷';position:absolute;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;font-size:22px;}
+.profile-name{font-size:16px;font-weight:700;color:var(--black);margin-bottom:2px;}
+.profile-email{font-size:12px;color:var(--g5);margin-bottom:12px;}
+.profile-complete{margin-top:8px;}
+.profile-prog-bar{height:6px;background:var(--g2);border-radius:99px;overflow:hidden;margin-bottom:5px;}
+.profile-prog-fill{height:6px;border-radius:99px;background:linear-gradient(90deg,var(--purple),var(--pl));}
+.profile-prog-label{font-size:11px;color:var(--g5);display:flex;justify-content:space-between;}
+.profile-visibility{margin-top:14px;padding:12px;background:var(--g1);border-radius:8px;font-size:11px;color:var(--g5);line-height:1.5;text-align:left;}
+.profile-visibility.hidden{background:rgba(239,68,68,0.05);color:var(--red);}
+.profile-visibility strong{display:block;margin-bottom:2px;}
+.profile-checklist{display:flex;flex-direction:column;gap:5px;margin-top:10px;text-align:left;}
+.pcheck{display:flex;align-items:center;gap:7px;font-size:11px;}
+.pcheck.done{color:var(--green);}
+.pcheck.todo{color:var(--g4);}
+.pcheck-icon{font-size:11px;flex-shrink:0;}
+
+/* profile main */
+.profile-main{display:flex;flex-direction:column;gap:16px;}
+.profile-section{background:#fff;border-radius:14px;border:1px solid var(--g3);padding:22px;}
+.profile-section-title{font-size:14px;font-weight:700;color:var(--black);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;}
+.warm-message{background:var(--pp);border-radius:10px;padding:14px 16px;margin-bottom:18px;font-size:12px;color:var(--g6);line-height:1.65;border-left:3px solid var(--purple);}
+.warm-message strong{color:var(--purple);display:block;margin-bottom:3px;}
+
+/* work experience blocks */
+.exp-block{background:var(--g1);border-radius:10px;padding:16px;margin-bottom:10px;border:1px solid var(--g3);}
+.exp-block-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;}
+.exp-block-title{font-size:13px;font-weight:700;color:var(--black);}
+.exp-block-sub{font-size:11px;color:var(--g5);margin-top:1px;}
+.btn-remove{background:none;border:none;font-size:12px;color:var(--g4);cursor:pointer;padding:2px 6px;border-radius:5px;}
+.btn-remove:hover{color:var(--red);background:rgba(239,68,68,0.08);}
+.add-exp-btn{width:100%;padding:11px;border:1.5px dashed var(--g3);border-radius:10px;background:none;font-size:13px;font-weight:500;color:var(--g5);cursor:pointer;font-family:'Poppins',sans-serif;transition:border-color .2s,color .2s;}
+.add-exp-btn:hover{border-color:var(--purple);color:var(--purple);}
+
+/* skills tags */
+.skills-wrap{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+.skill-tag{display:flex;align-items:center;gap:5px;background:var(--pp);color:var(--purple);font-size:11px;font-weight:600;padding:4px 10px;border-radius:99px;}
+.skill-tag-remove{background:none;border:none;cursor:pointer;color:var(--pl);font-size:12px;padding:0;line-height:1;}
+.skill-input-row{display:flex;gap:8px;}
+.skill-input{flex:1;padding:9px 12px;border:1.5px solid var(--g3);border-radius:8px;font-size:12px;font-family:'Poppins',sans-serif;outline:none;}
+.skill-input:focus{border-color:var(--purple);}
+
+/* language rows */
+.lang-row{display:flex;gap:10px;align-items:center;margin-bottom:8px;}
+.lang-row .field{flex:1;margin-bottom:0;}
+.lang-remove{background:none;border:none;font-size:14px;color:var(--g4);cursor:pointer;padding:4px;}
+.lang-remove:hover{color:var(--red);}
+
+/* CV upload */
+.cv-upload{border:2px dashed var(--g3);border-radius:10px;padding:24px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;}
+.cv-upload:hover{border-color:var(--purple);background:var(--pp);}
+.cv-upload-icon{font-size:32px;margin-bottom:8px;display:block;}
+.cv-upload-title{font-size:13px;font-weight:600;color:var(--black);margin-bottom:3px;}
+.cv-upload-sub{font-size:11px;color:var(--g5);}
+.cv-uploaded{background:rgba(16,185,129,0.05);border:1.5px solid rgba(16,185,129,0.2);border-radius:10px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.cv-file-info{display:flex;align-items:center;gap:10px;}
+.cv-file-icon{font-size:24px;}
+.cv-file-name{font-size:13px;font-weight:600;color:var(--black);}
+.cv-file-size{font-size:11px;color:var(--g5);margin-top:1px;}
+
+/* ══ SETTINGS PAGE ══ */
+.settings-list{display:flex;flex-direction:column;gap:14px;}
+.settings-section{background:#fff;border-radius:14px;border:1px solid var(--g3);padding:22px;}
+.settings-title{font-size:14px;font-weight:700;color:var(--black);margin-bottom:16px;}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--g2);}
+.toggle-row:last-child{border-bottom:none;}
+.toggle-label{font-size:13px;font-weight:500;color:var(--black);}
+.toggle-sub{font-size:11px;color:var(--g5);margin-top:1px;}
+.toggle{width:40px;height:22px;border-radius:99px;background:var(--g3);border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;}
+.toggle.on{background:var(--purple);}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,0.2);}
+.toggle.on::after{transform:translateX(18px);}
+
+/* ══ WITHDRAW MODAL ══ */
+.withdraw-modal{max-width:420px;}
+.withdraw-icon{font-size:40px;text-align:center;display:block;margin-bottom:12px;}
+.withdraw-title{font-size:18px;font-weight:800;color:var(--black);letter-spacing:-1px;margin-bottom:6px;text-align:center;}
+.withdraw-sub{font-size:13px;color:var(--g5);line-height:1.65;text-align:center;margin-bottom:18px;}
+
+/* toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--black);color:#fff;font-size:12px;font-weight:500;padding:11px 20px;border-radius:9px;box-shadow:0 8px 32px rgba(0,0,0,0.2);transition:transform .35s cubic-bezier(.4,0,.2,1);z-index:999;white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.toast.ok{background:var(--green);}
+.toast.bad{background:var(--red);}
+
+/* mobile */
+@media(max-width:768px){
+  .dash-stats{grid-template-columns:1fr 1fr;}
+  .featured-jobs{grid-template-columns:1fr;}
+  .jobs-grid{grid-template-columns:1fr;}
+  .profile-layout{grid-template-columns:1fr;}
+  .assess-rules{grid-template-columns:1fr;}
+  .assess-breakdown{grid-template-columns:1fr 1fr;}
+  .how-steps{grid-template-columns:1fr;}
+  .ref-hero{flex-direction:column;}
+  .ref-table-hdr,.ref-table-row{grid-template-columns:1fr 1fr 1fr;}
+  .ref-table-hdr>*:last-child,.ref-table-row>*:last-child{display:none;}
+  .field-row,.field-row-3{grid-template-columns:1fr;}
+  .nav-tabs .nav-tab:nth-child(n+3){display:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ NAV ══ -->
+<nav class="nav">
+  <a class="nav-logo" onclick="showPage('dashboard')">Near<span>work</span></a>
+  <div class="nav-tabs">
+    <button class="nav-tab active" id="tab-dashboard" onclick="showPage('dashboard')">Dashboard</button>
+    <button class="nav-tab" id="tab-jobs" onclick="showPage('jobs')">Jobs</button>
+    <button class="nav-tab" id="tab-applications" onclick="showPage('applications')">My Applications</button>
+    <button class="nav-tab" id="tab-assessment" onclick="showPage('assessment')">Assessment</button>
+    <button class="nav-tab" id="tab-referrals" onclick="showPage('referrals')">Referrals</button>
+  </div>
+  <div class="nav-right">
+    <!-- Bell -->
+    <div class="bell-wrap" id="bell-wrap">
+      <div class="bell-btn" onclick="toggleNotifs()">
+        <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </div>
+      <div class="bell-badge" id="bell-badge">3</div>
+      <div class="notif-drop" id="notif-drop">
+        <div class="notif-hdr"><div class="notif-hdr-title">Notifications</div><div class="notif-hdr-mark" onclick="markAllRead()">Mark all read</div></div>
+        <div class="notif-list">
+          <div class="notif-item unread" onclick="showPage('applications')"><div class="notif-dot"></div><div><div class="notif-text">Your application for <strong>Customer Success Manager</strong> has been received.</div><div class="notif-time">2 hours ago</div></div></div>
+          <div class="notif-item unread" onclick="showPage('profile')"><div class="notif-dot"></div><div><div class="notif-text">Your profile is <strong>65% complete</strong>. Complete it to appear in our talent pool.</div><div class="notif-time">1 day ago</div></div></div>
+          <div class="notif-item unread" onclick="showPage('assessment')"><div class="notif-dot"></div><div><div class="notif-text">Your <strong>technical assessment</strong> is ready. You have 30 minutes once you start.</div><div class="notif-time">2 days ago</div></div></div>
+          <div class="notif-item" onclick="showPage('applications')"><div class="notif-dot read"></div><div><div class="notif-text">Application for <strong>SDR Role</strong> saved successfully.</div><div class="notif-time">3 days ago</div></div></div>
+        </div>
+      </div>
+    </div>
+    <!-- Avatar -->
+    <div class="avatar-wrap" id="avatar-wrap">
+      <div class="avatar" onclick="toggleAvatarMenu()">BG</div>
+      <div class="avatar-menu" id="avatar-menu">
+        <div class="avatar-menu-item" onclick="showPage('profile')">👤 My Profile</div>
+        <div class="avatar-menu-item" onclick="showPage('settings')">⚙️ Settings</div>
+        <div class="avatar-menu-divider"></div>
+        <div class="avatar-menu-item danger" onclick="signOut()">Sign out</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ══ MAIN ══ -->
+<div class="main">
+
+  <!-- ══════════════════════════
+       DASHBOARD PAGE
+  ══════════════════════════ -->
+  <div class="page show" id="page-dashboard">
+    <div class="dash-greeting">
+      <h1>Good morning, Byron 👋</h1>
+      <p>Here's what's happening with your Nearwork profile.</p>
+    </div>
+
+    <!-- incomplete banner -->
+    <div class="incomplete-banner">
+      <div class="ib-left">
+        <div class="ib-icon">🔒 Profile not visible yet</div>
+        <div class="ib-title">Complete your profile to appear in our talent pool.</div>
+        <div class="ib-sub">Once your profile is 100% complete, our recruiting team will be able to find and review you.</div>
+        <div class="ib-progress">
+          <div class="prog-bar"><div class="prog-fill" style="width:65%"></div></div>
+          <div class="prog-label">65% complete — CV and work experience missing</div>
+        </div>
+      </div>
+      <button class="btn btn-green" onclick="showPage('profile')">Complete profile →</button>
+    </div>
+
+    <!-- latest notification -->
+    <div class="dash-notif" onclick="showPage('applications')">
+      <div class="dash-notif-dot"></div>
+      <div class="dash-notif-text">Your application for <strong>Customer Success Manager</strong> was received and is under review.</div>
+      <div class="dash-notif-time">2h ago</div>
+    </div>
+
+    <!-- stats -->
+    <div class="dash-stats">
+      <div class="dstat" onclick="showPage('jobs')">
+        <span class="dstat-icon">💼</span>
+        <div class="dstat-num">12</div>
+        <div class="dstat-label">Open roles</div>
+        <div class="dstat-action">Browse jobs →</div>
+      </div>
+      <div class="dstat" onclick="showPage('applications')">
+        <span class="dstat-icon">📋</span>
+        <div class="dstat-num">2</div>
+        <div class="dstat-label">Active applications</div>
+        <div class="dstat-action">View all →</div>
+      </div>
+      <div class="dstat" onclick="showPage('assessment')">
+        <span class="dstat-icon">📝</span>
+        <div class="dstat-num" style="font-size:14px;letter-spacing:0;">Ready</div>
+        <div class="dstat-label">Assessment</div>
+        <div class="dstat-action" style="color:var(--amber);">Start now →</div>
+      </div>
+      <div class="dstat" onclick="showPage('referrals')">
+        <span class="dstat-icon">🤝</span>
+        <div class="dstat-num">$0</div>
+        <div class="dstat-label">Referral earnings</div>
+        <div class="dstat-action">Refer a friend →</div>
+      </div>
+    </div>
+
+    <!-- featured jobs -->
+    <div class="section-label">Featured open roles</div>
+    <div class="featured-jobs">
+      <div class="job-card" onclick="openJobModal('csm')">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+          <div class="job-card-role">Customer Success Manager</div>
+          <div class="job-card-saved" onclick="toggleSave(event,'csm-f')">🤍</div>
+        </div>
+        <div class="job-card-company">US SaaS Company · Remote</div>
+        <div class="job-card-tags"><div class="jtag hot">Most hired</div><div class="jtag">C1 English</div><div class="jtag">3+ yrs</div></div>
+        <div class="job-card-salary">$2,000 – $2,800 / mo</div>
+      </div>
+      <div class="job-card" onclick="openJobModal('sdr')">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+          <div class="job-card-role">SDR / Sales Development Rep</div>
+          <div class="job-card-saved" onclick="toggleSave(event,'sdr-f')">🤍</div>
+        </div>
+        <div class="job-card-company">US SaaS Company · Remote</div>
+        <div class="job-card-tags"><div class="jtag hot">High demand</div><div class="jtag">C1 English</div><div class="jtag">1+ yr</div></div>
+        <div class="job-card-salary">$1,700 – $2,200 / mo</div>
+      </div>
+      <div class="job-card" onclick="openJobModal('support')">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+          <div class="job-card-role">Technical Support Specialist</div>
+          <div class="job-card-saved" onclick="toggleSave(event,'sup-f')">🤍</div>
+        </div>
+        <div class="job-card-company">US SaaS Company · Remote</div>
+        <div class="job-card-tags"><div class="jtag hot">Growing fast</div><div class="jtag">C1 English</div><div class="jtag">2+ yrs</div></div>
+        <div class="job-card-salary">$1,400 – $1,800 / mo</div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:16px;"><button class="btn btn-ghost" onclick="showPage('jobs')">Browse all open roles →</button></div>
+  </div>
+
+  <!-- ══════════════════════════
+       JOBS PAGE
+  ══════════════════════════ -->
+  <div class="page" id="page-jobs">
+    <div class="page-title">Open roles</div>
+    <div class="page-sub">All active positions we're currently placing. Apply to as many as you qualify for.</div>
+
+    <div class="jobs-toolbar">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" placeholder="Search roles, skills..." oninput="filterJobs(this.value)">
+      </div>
+      <select class="filter-select" onchange="filterJobs()">
+        <option value="">All roles</option>
+        <option>Customer Success</option>
+        <option>SDR / Sales</option>
+        <option>Technical Support</option>
+        <option>Marketing Ops</option>
+        <option>Developer</option>
+        <option>Operations</option>
+      </select>
+      <select class="filter-select" onchange="filterJobs()">
+        <option value="">Experience level</option>
+        <option>Junior (0-2 yrs)</option>
+        <option>Mid (2-5 yrs)</option>
+        <option>Senior (5+ yrs)</option>
+      </select>
+      <select class="filter-select" onchange="filterJobs()">
+        <option value="">Salary range</option>
+        <option>$1,000 – $1,500</option>
+        <option>$1,500 – $2,000</option>
+        <option>$2,000 – $2,500</option>
+        <option>$2,500+</option>
+      </select>
+    </div>
+    <div class="jobs-count" id="jobs-count">Showing 6 open roles</div>
+    <div class="jobs-grid" id="jobs-grid">
+      <div class="job-full-card" id="job-csm" onclick="openJobModal('csm')">
+        <div class="jfc-top"><div class="jfc-role">Customer Success Manager</div><button class="jfc-save" onclick="toggleSave(event,'csm')">🤍</button></div>
+        <div class="jfc-meta"><span>🌍 Remote · Colombia</span><span>⏱ Full time</span><span>📅 Posted 2 days ago</span></div>
+        <div class="jfc-tags"><div class="jtag hot">Most hired</div><div class="jtag">C1 English required</div><div class="jtag">3+ years exp</div><div class="jtag">SaaS background</div></div>
+        <div class="jfc-desc">Own the post-sale relationship with US SaaS clients. Drive adoption, reduce churn, and expand accounts. You'll be the primary point of contact for a portfolio of 20-40 customers.</div>
+        <div class="jfc-bottom"><div class="jfc-salary">$2,000 – $2,800 / mo USD</div><div class="jfc-posted">2 days ago</div></div>
+      </div>
+      <div class="job-full-card" id="job-sdr" onclick="openJobModal('sdr')">
+        <div class="jfc-top"><div class="jfc-role">SDR / Sales Development Rep</div><button class="jfc-save" onclick="toggleSave(event,'sdr')">🤍</button></div>
+        <div class="jfc-meta"><span>🌍 Remote · Colombia</span><span>⏱ Full time</span><span>📅 Posted 3 days ago</span></div>
+        <div class="jfc-tags"><div class="jtag hot">High demand</div><div class="jtag">C1 English required</div><div class="jtag">1+ year exp</div></div>
+        <div class="jfc-desc">Prospect and qualify outbound leads for a US SaaS sales team. Book demos, maintain CRM hygiene, and hit weekly activity targets. Fast-paced, high-growth environment.</div>
+        <div class="jfc-bottom"><div class="jfc-salary">$1,700 – $2,200 / mo USD</div><div class="jfc-posted">3 days ago</div></div>
+      </div>
+      <div class="job-full-card" id="job-support" onclick="openJobModal('support')">
+        <div class="jfc-top"><div class="jfc-role">Technical Support Specialist</div><button class="jfc-save" onclick="toggleSave(event,'support')">🤍</button></div>
+        <div class="jfc-meta"><span>🌍 Remote · Colombia</span><span>⏱ Full time</span><span>📅 Posted 1 week ago</span></div>
+        <div class="jfc-tags"><div class="jtag hot">Growing fast</div><div class="jtag">C1 English required</div><div class="jtag">2+ years exp</div><div class="jtag">Technical background</div></div>
+        <div class="jfc-desc">Handle Tier 1 & 2 support tickets for a US SaaS platform. Troubleshoot product issues, escalate complex bugs, and maintain customer satisfaction above 95% CSAT.</div>
+        <div class="jfc-bottom"><div class="jfc-salary">$1,400 – $1,800 / mo USD</div><div class="jfc-posted">1 week ago</div></div>
+      </div>
+      <div class="job-full-card" id="job-mktg" onclick="openJobModal('mktg')">
+        <div class="jfc-top"><div class="jfc-role">Marketing Ops / Content Specialist</div><button class="jfc-save" onclick="toggleSave(event,'mktg')">🤍</button></div>
+        <div class="jfc-meta"><span>🌍 Remote · Colombia</span><span>⏱ Full time</span><span>📅 Posted 1 week ago</span></div>
+        <div class="jfc-tags"><div class="jtag">C1 English required</div><div class="jtag">2+ years exp</div><div class="jtag">HubSpot / Marketo</div></div>
+        <div class="jfc-desc">Manage email campaigns, create content for demand gen, and maintain marketing automation workflows. Work closely with a US-based growth team across all channels.</div>
+        <div class="jfc-bottom"><div class="jfc-salary">$2,200 – $2,800 / mo USD</div><div class="jfc-posted">1 week ago</div></div>
+      </div>
+      <div class="job-full-card" id="job-ops" onclick="openJobModal('ops')">
+        <div class="jfc-top"><div class="jfc-role">Operations Manager</div><button class="jfc-save" onclick="toggleSave(event,'ops')">🤍</button></div>
+        <div class="jfc-meta"><span>🌍 Remote · Colombia</span><span>⏱ Full time</span><span>📅 Posted 2 weeks ago</span></div>
+        <div class="jfc-tags"><div class="jtag">C1 English required</div><div class="jtag">4+ years exp</div><div class="jtag">Process-driven</div></div>
+        <div class="jfc-desc">Own internal operations for a growing US SaaS company. Build processes, coordinate cross-functional teams, and drive operational efficiency across the organization.</div>
+        <div class="jfc-bottom"><div class="jfc-salary">$2,500 – $3,200 / mo USD</div><div class="jfc-posted">2 weeks ago</div></div>
+      </div>
+      <div class="job-full-card" id="job-dev" onclick="openJobModal('dev')">
+        <div class="jfc-top"><div class="jfc-role">Software Developer (Full Stack)</div><button class="jfc-save" onclick="toggleSave(event,'dev')">🤍</button></div>
+        <div class="jfc-meta"><span>🌍 Remote · Colombia</span><span>⏱ Full time</span><span>📅 Posted 2 weeks ago</span></div>
+        <div class="jfc-tags"><div class="jtag">C1 English required</div><div class="jtag">3+ years exp</div><div class="jtag">React / Node</div></div>
+        <div class="jfc-desc">Build and maintain features for a US SaaS product used by 10,000+ users. Work in a modern React + Node stack with a remote-first, async-friendly team.</div>
+        <div class="jfc-bottom"><div class="jfc-salary">$3,000 – $4,000 / mo USD</div><div class="jfc-posted">2 weeks ago</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════
+       APPLICATIONS PAGE
+  ══════════════════════════ -->
+  <div class="page" id="page-applications">
+    <div class="page-title">My Applications</div>
+    <div class="page-sub">Track every role you've applied to and see where you stand.</div>
+    <div class="apps-list">
+
+      <!-- Active application -->
+      <div class="app-card">
+        <div class="app-top">
+          <div><div class="app-role">Customer Success Manager</div><div style="font-size:11px;color:var(--g5);margin-top:2px;">Applied April 10, 2026</div></div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <span class="badge badge-purple">Stage 2 — Profile Review</span>
+            <button class="btn btn-danger btn-sm" onclick="openWithdrawModal('csm')">Withdraw</button>
+          </div>
+        </div>
+        <div class="app-stages">
+          <div class="app-stage done"><div class="app-stage-dot">✓</div><div class="app-stage-label">Applied</div></div>
+          <div class="app-stage current"><div class="app-stage-dot">2</div><div class="app-stage-label">Profile Review</div></div>
+          <div class="app-stage"><div class="app-stage-dot">3</div><div class="app-stage-label">Background Check</div></div>
+          <div class="app-stage"><div class="app-stage-dot">4</div><div class="app-stage-label">Assessment</div></div>
+          <div class="app-stage"><div class="app-stage-dot">5</div><div class="app-stage-label">Presented</div></div>
+          <div class="app-stage"><div class="app-stage-dot">6</div><div class="app-stage-label">Client Review</div></div>
+          <div class="app-stage"><div class="app-stage-dot">🎉</div><div class="app-stage-label">Hired</div></div>
+        </div>
+        <div class="app-bottom">
+          <div class="app-status-text">⏳ Our team is reviewing your profile. We'll update you within 2–3 business days.</div>
+        </div>
+      </div>
+
+      <!-- Saved / not yet applied -->
+      <div class="app-card" style="border-style:dashed;">
+        <div class="app-top">
+          <div><div class="app-role">SDR / Sales Development Rep</div><div style="font-size:11px;color:var(--g5);margin-top:2px;">Saved — not applied yet</div></div>
+          <span class="badge badge-gray">Saved</span>
+        </div>
+        <div class="app-bottom">
+          <div class="app-status-text">You saved this role. Apply when you're ready.</div>
+          <button class="btn btn-primary btn-sm" onclick="openJobModal('sdr')">View & apply →</button>
+        </div>
+      </div>
+
+      <!-- Withdrawn -->
+      <div class="app-card app-withdrawn">
+        <div class="app-top">
+          <div><div class="app-role">Technical Support Specialist</div><div style="font-size:11px;color:var(--g5);margin-top:2px;">Withdrew April 5, 2026</div></div>
+          <span class="badge badge-gray">Withdrew from process</span>
+        </div>
+        <div class="app-bottom">
+          <div class="app-status-text">You withdrew from this application. The recruiting team has been notified.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════
+       ASSESSMENT PAGE
+  ══════════════════════════ -->
+  <div class="page" id="page-assessment">
+    <div class="page-title">Assessment</div>
+    <div class="page-sub">Your AI-generated technical assessment — tailored to the role you applied for.</div>
+
+    <!-- Ready state -->
+    <div class="assess-ready">
+      <div class="assess-ready-title">📝 Your assessment is ready.</div>
+      <div class="assess-ready-sub">This assessment was generated specifically for the <strong>Customer Success Manager</strong> role. It covers SaaS fundamentals, customer communication, and role-specific scenarios.</div>
+      <div class="assess-rules">
+        <div class="assess-rule"><div class="assess-rule-icon">⏱</div><div class="assess-rule-text"><strong style="display:block;margin-bottom:2px;">30 minutes</strong>Timer starts when you click Begin. Cannot be paused.</div></div>
+        <div class="assess-rule"><div class="assess-rule-icon">📷</div><div class="assess-rule-text"><strong style="display:block;margin-bottom:2px;">Camera required</strong>Your camera must be on for the duration of the assessment.</div></div>
+        <div class="assess-rule"><div class="assess-rule-icon">🖥</div><div class="assess-rule-text"><strong style="display:block;margin-bottom:2px;">Screen share required</strong>You must share your screen before the assessment begins.</div></div>
+        <div class="assess-rule"><div class="assess-rule-icon">🚫</div><div class="assess-rule-text"><strong style="display:block;margin-bottom:2px;">No outside help</strong>Tab switching and copy-paste are monitored and flagged.</div></div>
+      </div>
+      <button class="btn btn-green" style="font-size:14px;padding:13px 32px;" onclick="toast('Assessment feature coming soon — this is a preview.','')">Begin assessment →</button>
+    </div>
+
+    <!-- Completed state (hidden for demo — uncomment to preview)
+    <div class="assess-result">
+      <div class="assess-score">87<span style="font-size:28px;color:var(--g4);">/100</span></div>
+      <div class="assess-score-label">Your assessment score · Customer Success Manager</div>
+      <div class="assess-breakdown">
+        <div class="abreak"><div class="abreak-n" style="color:var(--green);">43/50</div><div class="abreak-l">Technical questions</div></div>
+        <div class="abreak"><div class="abreak-n" style="color:var(--purple);">Advanced</div><div class="abreak-l">English level</div></div>
+        <div class="abreak"><div class="abreak-n" style="color:var(--amber);">Strong</div><div class="abreak-l">Culture fit</div></div>
+      </div>
+    </div>
+    -->
+
+  </div>
+
+  <!-- ══════════════════════════
+       REFERRALS PAGE
+  ══════════════════════════ -->
+  <div class="page" id="page-referrals">
+    <div class="page-title">Refer a friend</div>
+    <div class="page-sub">Earn $100 USD when someone you refer gets placed and completes 3 months at a company.</div>
+
+    <div class="ref-hero">
+      <div class="ref-hero-left">
+        <div class="ref-hero-title">Share your link. Earn $100 USD.</div>
+        <div class="ref-hero-sub">Know a talented Colombian professional who should be on Nearwork? Refer them. If they get placed and stay for 3 months — you get $100 USD. No cap on how many people you can refer.</div>
+        <div class="ref-link-wrap">
+          <input class="ref-link-input" id="ref-link" value="app.nearwork.co/join?ref=BYRON001" readonly>
+          <button class="btn-copy" id="copy-btn" onclick="copyRefLink()">Copy link</button>
+        </div>
+      </div>
+      <div class="ref-hero-right">
+        <div class="ref-stat"><div class="ref-stat-n">0</div><div class="ref-stat-l">Referred</div></div>
+        <div class="ref-stat"><div class="ref-stat-n">0</div><div class="ref-stat-l">Placed</div></div>
+        <div class="ref-stat"><div class="ref-stat-n"><em>$0</em></div><div class="ref-stat-l">Earned</div></div>
+      </div>
+    </div>
+
+    <div class="how-steps">
+      <div class="how-step"><div class="how-step-num">1</div><div class="how-step-title">Share your link</div><div class="how-step-desc">Send your unique referral link to a Colombian professional you think is a great fit for a US SaaS role.</div></div>
+      <div class="how-step"><div class="how-step-num">2</div><div class="how-step-title">They apply & get placed</div><div class="how-step-desc">They create their profile, apply for roles, and go through Nearwork's vetting process. If they get hired, we track it.</div></div>
+      <div class="how-step"><div class="how-step-num">3</div><div class="how-step-title">You earn $100 USD</div><div class="how-step-desc">Once your referral completes 3 months at the company, Nearwork sends you $100 USD — straight to your account.</div></div>
+    </div>
+
+    <div class="section-label">My referrals</div>
+    <div class="ref-table">
+      <div class="ref-table-hdr"><div>Name</div><div>Date referred</div><div>Status</div><div>Payout</div></div>
+      <div class="ref-empty">You haven't referred anyone yet. Share your link to get started.</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════
+       PROFILE PAGE
+  ══════════════════════════ -->
+  <div class="page" id="page-profile">
+    <div class="page-title">My Profile</div>
+    <div class="page-sub">Keep your profile updated to increase your chances of being matched with the right role.</div>
+
+    <div class="profile-layout">
+
+      <!-- sidebar -->
+      <div class="profile-sidebar">
+        <div class="profile-photo-card">
+          <div class="profile-avatar">BG</div>
+          <div class="profile-name">Byron Giraldo</div>
+          <div class="profile-email">byron@email.com</div>
+          <button class="btn btn-ghost btn-sm" style="width:100%;">Change photo</button>
+          <div class="profile-complete" style="margin-top:16px;">
+            <div class="profile-prog-bar"><div class="profile-prog-fill" style="width:65%;"></div></div>
+            <div class="profile-prog-label"><span>Profile completion</span><span style="font-weight:700;color:var(--purple);">65%</span></div>
+          </div>
+          <div class="profile-visibility hidden" style="margin-top:12px;">
+            <strong>🔒 Not visible in ATS</strong>
+            Complete your profile to appear in our talent pool.
+          </div>
+          <div class="profile-checklist" style="margin-top:10px;">
+            <div class="pcheck done"><span class="pcheck-icon">✓</span> Personal info</div>
+            <div class="pcheck done"><span class="pcheck-icon">✓</span> Professional info</div>
+            <div class="pcheck done"><span class="pcheck-icon">✓</span> Languages & skills</div>
+            <div class="pcheck todo"><span class="pcheck-icon">○</span> Work experience</div>
+            <div class="pcheck todo"><span class="pcheck-icon">○</span> CV uploaded</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- main form -->
+      <div class="profile-main">
+
+        <!-- warm message -->
+        <div class="card">
+          <div class="warm-message">
+            <strong>We know this is a lot — thank you. 🙏</strong>
+            Every piece of information helps us match you with the right role faster, and gives our team what they need to present you in the best possible light to clients. The more complete your profile, the stronger your application.
+          </div>
+
+          <!-- Personal info -->
+          <div class="profile-section-title">Personal information</div>
+          <div class="field-row">
+            <div class="field"><label>First name</label><input type="text" value="Byron"></div>
+            <div class="field"><label>Last name</label><input type="text" value="Giraldo"></div>
+          </div>
+          <div class="field"><label>Email address</label><input type="text" value="byron@email.com" disabled style="background:var(--g1);color:var(--g5);cursor:not-allowed;"><div class="field-hint">Email cannot be changed. Contact support if needed.</div></div>
+          <div class="field-row">
+            <div class="field"><label>Phone number</label><input type="tel" placeholder="+57 300 000 0000" value="+57 310 555 0192"></div>
+            <div class="field"><label>Preferred contact method</label>
+              <select>
+                <option>WhatsApp & Email</option>
+                <option>WhatsApp only</option>
+                <option>Email only</option>
+              </select>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>City</label><input type="text" placeholder="e.g. Medellín" value="Rionegro, Antioquia"></div>
+            <div class="field"><label>LinkedIn URL</label><input type="url" placeholder="linkedin.com/in/yourname" value="linkedin.com/in/byrongiraldo"></div>
+          </div>
+        </div>
+
+        <!-- Professional info -->
+        <div class="profile-section">
+          <div class="profile-section-title">Professional information</div>
+          <div class="field-row">
+            <div class="field"><label>Years of experience</label><select><option>1 year</option><option>2 years</option><option selected>3 years</option><option>4 years</option><option>5+ years</option><option>8+ years</option><option>10+ years</option></select></div>
+            <div class="field"><label>Current role / title</label><input type="text" placeholder="e.g. Customer Success Manager" value="Sales Manager"></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>Current monthly salary</label>
+              <div style="display:flex;gap:8px;">
+                <input type="number" placeholder="Amount" style="flex:1;" value="3500000">
+                <select style="width:90px;padding:10px 8px;border:1.5px solid var(--g3);border-radius:9px;font-size:12px;font-family:'Poppins',sans-serif;outline:none;appearance:none;"><option>COP</option><option>USD</option></select>
+              </div>
+            </div>
+            <div class="field"><label>Expected monthly salary</label>
+              <div style="display:flex;gap:8px;">
+                <input type="number" placeholder="Amount" style="flex:1;" value="2200">
+                <select style="width:90px;padding:10px 8px;border:1.5px solid var(--g3);border-radius:9px;font-size:12px;font-family:'Poppins',sans-serif;outline:none;appearance:none;"><option>COP</option><option selected>USD</option></select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Languages -->
+        <div class="profile-section">
+          <div class="profile-section-title">Languages</div>
+          <div id="lang-list">
+            <div class="lang-row">
+              <div class="field"><label>Language</label><input type="text" value="Spanish" placeholder="Language"></div>
+              <div class="field"><label>Level</label><select><option>Native</option></select></div>
+              <button class="lang-remove" onclick="this.parentElement.remove()">✕</button>
+            </div>
+            <div class="lang-row">
+              <div class="field"><label>Language</label><input type="text" value="English" placeholder="Language"></div>
+              <div class="field"><label>Level</label><select><option>Basic</option><option>Conversational</option><option>Professional</option><option selected>C1 Advanced</option><option>Native</option></select></div>
+              <button class="lang-remove" onclick="this.parentElement.remove()">✕</button>
+            </div>
+          </div>
+          <button class="add-exp-btn" onclick="addLang()">+ Add language</button>
+        </div>
+
+        <!-- Skills -->
+        <div class="profile-section">
+          <div class="profile-section-title">Skills</div>
+          <div class="skills-wrap" id="skills-wrap">
+            <div class="skill-tag">Salesforce <button class="skill-tag-remove" onclick="this.parentElement.remove()">✕</button></div>
+            <div class="skill-tag">HubSpot <button class="skill-tag-remove" onclick="this.parentElement.remove()">✕</button></div>
+            <div class="skill-tag">Customer Success <button class="skill-tag-remove" onclick="this.parentElement.remove()">✕</button></div>
+            <div class="skill-tag">Zendesk <button class="skill-tag-remove" onclick="this.parentElement.remove()">✕</button></div>
+          </div>
+          <div class="skill-input-row">
+            <input class="skill-input" id="skill-input" placeholder="Add a skill (e.g. Intercom, Jira, SQL...)" onkeydown="if(event.key==='Enter'){addSkill();event.preventDefault();}">
+            <button class="btn btn-ghost btn-sm" onclick="addSkill()">Add</button>
+          </div>
+        </div>
+
+        <!-- Work experience -->
+        <div class="profile-section">
+          <div class="profile-section-title">Work experience</div>
+          <div id="exp-list">
+            <div class="exp-block">
+              <div class="exp-block-top">
+                <div><div class="exp-block-title">Kaseya</div><div class="exp-block-sub">Sales Development Manager · Jan 2026 – Present</div></div>
+                <button class="btn-remove" onclick="this.closest('.exp-block').remove()">Remove</button>
+              </div>
+              <div class="field-row">
+                <div class="field"><label>Company name</label><input type="text" value="Kaseya"></div>
+                <div class="field"><label>Company phone (for reference)</label><input type="tel" placeholder="+1 305 000 0000" value="+1 305 218 7000"></div>
+              </div>
+              <div class="field"><label>Job title</label><input type="text" value="Sales Development Manager"></div>
+              <div class="field-row">
+                <div class="field"><label>Start date</label><input type="month" value="2026-01"></div>
+                <div class="field"><label>End date</label><input type="month" disabled style="opacity:.4;"><div class="field-hint" style="margin-top:3px;"><label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" checked onchange="this.closest('.field').querySelector('input[type=month]').disabled=this.checked"> I currently work here</label></div></div>
+              </div>
+              <div class="field"><label>What did you do in this role?</label><textarea placeholder="Brief description of your responsibilities and achievements...">Managed a team of SDRs across LATAM, exceeded quarterly targets by 23%, and implemented new outbound playbooks.</textarea></div>
+            </div>
+          </div>
+          <button class="add-exp-btn" onclick="addExp()">+ Add work experience</button>
+        </div>
+
+        <!-- CV Upload -->
+        <div class="profile-section">
+          <div class="profile-section-title">CV / Resume</div>
+          <div id="cv-area">
+            <div class="cv-upload" onclick="document.getElementById('cv-input').click()">
+              <input type="file" id="cv-input" accept=".pdf" style="display:none" onchange="handleCV(event)">
+              <span class="cv-upload-icon">📄</span>
+              <div class="cv-upload-title">Upload your CV</div>
+              <div class="cv-upload-sub">PDF only · Max 5MB · Replaces previous version</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Save button -->
+        <div style="display:flex;justify-content:flex-end;gap:10px;">
+          <button class="btn btn-ghost">Cancel</button>
+          <button class="btn btn-primary" onclick="saveProfile()">Save changes</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════
+       SETTINGS PAGE
+  ══════════════════════════ -->
+  <div class="page" id="page-settings">
+    <div class="page-title">Settings</div>
+    <div class="page-sub">Manage your account preferences and security.</div>
+    <div class="settings-list">
+
+      <div class="settings-section">
+        <div class="settings-title">Change password</div>
+        <div class="field"><label>Current password</label><input type="password" placeholder="••••••••"></div>
+        <div class="field"><label>New password</label><input type="password" placeholder="Min. 8 characters"></div>
+        <div class="field"><label>Confirm new password</label><input type="password" placeholder="Repeat new password"></div>
+        <button class="btn btn-primary btn-sm" onclick="toast('Password updated successfully.','ok')">Update password</button>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-title">Email notifications</div>
+        <div class="toggle-row">
+          <div><div class="toggle-label">Application status updates</div><div class="toggle-sub">When your application moves to a new stage</div></div>
+          <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+        </div>
+        <div class="toggle-row">
+          <div><div class="toggle-label">Assessment notifications</div><div class="toggle-sub">When an assessment is ready or results are available</div></div>
+          <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+        </div>
+        <div class="toggle-row">
+          <div><div class="toggle-label">Meeting scheduled</div><div class="toggle-sub">When Nearwork schedules a call with you or a client</div></div>
+          <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+        </div>
+        <div class="toggle-row">
+          <div><div class="toggle-label">Information requested</div><div class="toggle-sub">When Nearwork asks for additional documents or info</div></div>
+          <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+        </div>
+        <div class="toggle-row">
+          <div><div class="toggle-label">New job alerts</div><div class="toggle-sub">When new roles matching your profile are posted</div></div>
+          <button class="toggle" onclick="this.classList.toggle('on')"></button>
+        </div>
+        <div class="toggle-row">
+          <div><div class="toggle-label">Referral updates</div><div class="toggle-sub">When a referred friend's status changes or payout is ready</div></div>
+          <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-title">Connected accounts</div>
+        <div class="toggle-row">
+          <div><div class="toggle-label">Google</div><div class="toggle-sub">Connected as byron@gmail.com</div></div>
+          <span class="badge badge-green">Connected</span>
+        </div>
+        <div class="toggle-row">
+          <div><div class="toggle-label">Apple</div><div class="toggle-sub">Not connected</div></div>
+          <button class="btn btn-ghost btn-sm">Connect</button>
+        </div>
+      </div>
+
+      <div class="settings-section" style="border-color:rgba(239,68,68,0.2);">
+        <div class="settings-title" style="color:var(--red);">Danger zone</div>
+        <div class="toggle-row">
+          <div><div class="toggle-label">Delete my account</div><div class="toggle-sub">Permanently delete your profile, applications, and all data. This cannot be undone.</div></div>
+          <button class="btn btn-danger btn-sm" onclick="toast('Please contact support to delete your account.','bad')">Delete account</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- ══ JOB DETAIL MODAL ══ -->
+<div class="modal-bg" id="job-modal" onclick="if(event.target===this)closeJobModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;">Open role · Remote · Colombia</div>
+        <div class="modal-role" id="modal-role">Customer Success Manager</div>
+      </div>
+      <button class="modal-close" onclick="closeJobModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-meta" id="modal-meta">
+        <span>🌍 Remote · Colombia</span><span>⏱ Full time</span><span>💰 $2,000–$2,800/mo USD</span><span>📅 Posted 2 days ago</span>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;" id="modal-tags">
+        <div class="jtag hot">Most hired</div><div class="jtag">C1 English required</div><div class="jtag">3+ years exp</div>
+      </div>
+      <div class="modal-section-title">About the role</div>
+      <div class="modal-desc" id="modal-desc">Own the post-sale relationship with US SaaS clients. Drive adoption, reduce churn, and expand accounts. You'll be the primary point of contact for a portfolio of 20–40 customers, running QBRs, onboarding new accounts, and identifying expansion opportunities.</div>
+      <div class="modal-section-title">Requirements</div>
+      <div class="modal-req">
+        <div class="modal-req-item"><div class="modal-req-dot"></div>C1 English — assessed by Nearwork before presentation</div>
+        <div class="modal-req-item"><div class="modal-req-dot"></div>3+ years in a Customer Success or Account Management role</div>
+        <div class="modal-req-item"><div class="modal-req-dot"></div>SaaS company experience preferred</div>
+        <div class="modal-req-item"><div class="modal-req-dot"></div>Familiarity with tools like Salesforce, HubSpot, or Gainsight</div>
+        <div class="modal-req-item"><div class="modal-req-dot"></div>Colombia-based — full timezone overlap with US required</div>
+      </div>
+      <div class="modal-section-title">What you'll do</div>
+      <div class="modal-desc">Manage a portfolio of 20–40 SaaS customers. Run onboarding sessions, quarterly business reviews, and proactive health check-ins. Work closely with the US sales team on expansion opportunities and renewals.</div>
+      <div style="background:var(--pp);border-radius:10px;padding:14px 16px;margin-top:18px;font-size:12px;color:var(--g6);line-height:1.65;">
+        <strong style="color:var(--purple);display:block;margin-bottom:3px;">🛡️ Nearwork guarantee</strong>
+        Every hire comes with a 6-month replacement guarantee. If this placement doesn't work out in the first 6 months, Nearwork replaces the candidate at no cost to the company.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="toggleSave(event,'modal-job');this.textContent=this.textContent==='🤍 Save role'?'💜 Saved':'🤍 Save role'">🤍 Save role</button>
+      <button class="btn btn-primary" onclick="applyToJob()">Apply for this role →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ WITHDRAW MODAL ══ -->
+<div class="modal-bg" id="withdraw-modal" onclick="if(event.target===this)closeWithdrawModal()">
+  <div class="modal withdraw-modal">
+    <div class="modal-body" style="padding:28px;">
+      <span class="withdraw-icon">⚠️</span>
+      <div class="withdraw-title">Withdraw application?</div>
+      <div class="withdraw-sub">If you withdraw, you'll be removed from the process for this role. The Nearwork recruiting team will be notified automatically. This cannot be undone.</div>
+      <div class="field"><label>Reason (optional)</label><textarea placeholder="Let us know why you're withdrawing — this helps us improve." style="min-height:80px;"></textarea></div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;">
+        <button class="btn btn-ghost" onclick="closeWithdrawModal()">Cancel</button>
+        <button class="btn btn-danger" onclick="confirmWithdraw()">Yes, withdraw my application</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══ NAVIGATION ══ */
+const PAGES = ['dashboard','jobs','applications','assessment','referrals','profile','settings'];
+
+function showPage(id){
+  PAGES.forEach(p=>{
+    document.getElementById('page-'+p).classList.toggle('show',p===id);
+    const tab = document.getElementById('tab-'+p);
+    if(tab) tab.classList.toggle('active',p===id);
+  });
+  window.scrollTo(0,0);
+  closeNotifs();
+  closeAvatarMenu();
+}
+
+/* ══ NOTIFICATIONS ══ */
+function toggleNotifs(){
+  const drop = document.getElementById('notif-drop');
+  drop.classList.toggle('show');
+  closeAvatarMenu();
+}
+function closeNotifs(){ document.getElementById('notif-drop').classList.remove('show'); }
+function markAllRead(){
+  document.querySelectorAll('.notif-item.unread').forEach(i=>i.classList.remove('unread'));
+  document.querySelectorAll('.notif-dot').forEach(d=>d.classList.add('read'));
+  document.getElementById('bell-badge').style.display='none';
+  toast('All notifications marked as read.','ok');
+}
+
+/* ══ AVATAR MENU ══ */
+function toggleAvatarMenu(){
+  const m = document.getElementById('avatar-menu');
+  m.classList.toggle('show');
+  closeNotifs();
+}
+function closeAvatarMenu(){ document.getElementById('avatar-menu').classList.remove('show'); }
+
+document.addEventListener('click',e=>{
+  if(!e.target.closest('#bell-wrap')) closeNotifs();
+  if(!e.target.closest('#avatar-wrap')) closeAvatarMenu();
+});
+
+/* ══ JOBS ══ */
+const jobData = {
+  csm:{role:'Customer Success Manager',meta:'🌍 Remote · Colombia &nbsp;⏱ Full time &nbsp;💰 $2,000–$2,800/mo USD &nbsp;📅 2 days ago',desc:'Own the post-sale relationship with US SaaS clients. Drive adoption, reduce churn, and expand accounts. You\'ll be the primary point of contact for a portfolio of 20–40 customers, running QBRs, onboarding, and identifying expansion opportunities.'},
+  sdr:{role:'SDR / Sales Development Rep',meta:'🌍 Remote · Colombia &nbsp;⏱ Full time &nbsp;💰 $1,700–$2,200/mo USD &nbsp;📅 3 days ago',desc:'Prospect and qualify outbound leads for a US SaaS sales team. Book demos, maintain CRM hygiene, and hit weekly activity targets. Fast-paced, high-growth environment with strong career trajectory.'},
+  support:{role:'Technical Support Specialist',meta:'🌍 Remote · Colombia &nbsp;⏱ Full time &nbsp;💰 $1,400–$1,800/mo USD &nbsp;📅 1 week ago',desc:'Handle Tier 1 & 2 support tickets for a US SaaS platform. Troubleshoot product issues, escalate complex bugs, and maintain CSAT above 95%.'},
+  mktg:{role:'Marketing Ops / Content Specialist',meta:'🌍 Remote · Colombia &nbsp;⏱ Full time &nbsp;💰 $2,200–$2,800/mo USD &nbsp;📅 1 week ago',desc:'Manage email campaigns, create content for demand gen, and maintain marketing automation workflows in HubSpot or Marketo.'},
+  ops:{role:'Operations Manager',meta:'🌍 Remote · Colombia &nbsp;⏱ Full time &nbsp;💰 $2,500–$3,200/mo USD &nbsp;📅 2 weeks ago',desc:'Own internal operations for a growing US SaaS company. Build processes, coordinate cross-functional teams, and drive efficiency across the organization.'},
+  dev:{role:'Software Developer (Full Stack)',meta:'🌍 Remote · Colombia &nbsp;⏱ Full time &nbsp;💰 $3,000–$4,000/mo USD &nbsp;📅 2 weeks ago',desc:'Build and maintain features for a US SaaS product used by 10,000+ users. Work in a modern React + Node stack with a remote-first team.'},
+};
+
+function openJobModal(id){
+  const d = jobData[id]||jobData.csm;
+  document.getElementById('modal-role').textContent = d.role;
+  document.getElementById('modal-desc').textContent = d.desc;
+  document.getElementById('job-modal').classList.add('show');
+}
+function closeJobModal(){ document.getElementById('job-modal').classList.remove('show'); }
+
+function applyToJob(){
+  closeJobModal();
+  toast('Application submitted! You\'ll receive a confirmation email shortly.','ok');
+  setTimeout(()=>showPage('applications'),1200);
+}
+
+const savedJobs = new Set();
+function toggleSave(e,id){
+  e.stopPropagation();
+  const btn = e.target;
+  if(savedJobs.has(id)){ savedJobs.delete(id); btn.textContent='🤍'; toast('Removed from saved roles.',''); }
+  else { savedJobs.add(id); btn.textContent='💜'; toast('Role saved! Find it in My Applications.','ok'); }
+}
+
+function filterJobs(q){
+  const cards = document.querySelectorAll('.job-full-card');
+  let visible=0;
+  cards.forEach(c=>{ const show=!q||c.textContent.toLowerCase().includes((q||'').toLowerCase()); c.style.display=show?'':'none'; if(show)visible++; });
+  document.getElementById('jobs-count').textContent=`Showing ${visible} open role${visible!==1?'s':''}`;
+}
+
+/* ══ WITHDRAW ══ */
+let withdrawTarget = null;
+function openWithdrawModal(id){ withdrawTarget=id; document.getElementById('withdraw-modal').classList.add('show'); }
+function closeWithdrawModal(){ document.getElementById('withdraw-modal').classList.remove('show'); }
+function confirmWithdraw(){
+  closeWithdrawModal();
+  toast('Application withdrawn. The recruiting team has been notified.','');
+}
+
+/* ══ PROFILE ══ */
+function addExp(){
+  const list = document.getElementById('exp-list');
+  const block = document.createElement('div');
+  block.className = 'exp-block';
+  block.innerHTML = `
+    <div class="exp-block-top">
+      <div><div class="exp-block-title">New experience</div></div>
+      <button class="btn-remove" onclick="this.closest('.exp-block').remove()">Remove</button>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Company name</label><input type="text" placeholder="Company name" oninput="this.closest('.exp-block').querySelector('.exp-block-title').textContent=this.value||'New experience'"></div>
+      <div class="field"><label>Company phone (for reference)</label><input type="tel" placeholder="+1 000 000 0000"></div>
+    </div>
+    <div class="field"><label>Job title</label><input type="text" placeholder="Your title"></div>
+    <div class="field-row">
+      <div class="field"><label>Start date</label><input type="month"></div>
+      <div class="field"><label>End date</label><input type="month"><div class="field-hint" style="margin-top:3px;"><label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" onchange="this.closest('.field').querySelector('input[type=month]').disabled=this.checked"> I currently work here</label></div></div>
+    </div>
+    <div class="field"><label>What did you do in this role?</label><textarea placeholder="Brief description of your responsibilities and achievements..."></textarea></div>`;
+  list.appendChild(block);
+}
+
+function addLang(){
+  const list = document.getElementById('lang-list');
+  const row = document.createElement('div');
+  row.className='lang-row';
+  row.innerHTML=`<div class="field"><label>Language</label><input type="text" placeholder="Language"></div><div class="field"><label>Level</label><select><option>Basic</option><option>Conversational</option><option>Professional</option><option>C1 Advanced</option><option>Native</option></select></div><button class="lang-remove" onclick="this.parentElement.remove()">✕</button>`;
+  list.appendChild(row);
+}
+
+function addSkill(){
+  const inp = document.getElementById('skill-input');
+  const val = inp.value.trim();
+  if(!val) return;
+  const wrap = document.getElementById('skills-wrap');
+  const tag = document.createElement('div');
+  tag.className='skill-tag';
+  tag.innerHTML=`${val} <button class="skill-tag-remove" onclick="this.parentElement.remove()">✕</button>`;
+  wrap.appendChild(tag);
+  inp.value='';
+}
+
+function handleCV(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  if(file.type!=='application/pdf'){ toast('Please upload a PDF file.','bad'); return; }
+  if(file.size>5*1024*1024){ toast('File too large. Maximum 5MB.','bad'); return; }
+  const area = document.getElementById('cv-area');
+  area.innerHTML=`<div class="cv-uploaded"><div class="cv-file-info"><div class="cv-file-icon">📄</div><div><div class="cv-file-name">${file.name}</div><div class="cv-file-size">${(file.size/1024).toFixed(0)} KB · PDF</div></div></div><button class="btn btn-ghost btn-sm" onclick="replaceCV()">Replace</button></div>`;
+  toast('CV uploaded successfully.','ok');
+}
+
+function replaceCV(){
+  document.getElementById('cv-area').innerHTML=`<div class="cv-upload" onclick="document.getElementById('cv-input').click()"><input type="file" id="cv-input" accept=".pdf" style="display:none" onchange="handleCV(event)"><span class="cv-upload-icon">📄</span><div class="cv-upload-title">Upload your CV</div><div class="cv-upload-sub">PDF only · Max 5MB · Replaces previous version</div></div>`;
+}
+
+function saveProfile(){
+  toast('Profile saved successfully.','ok');
+}
+
+/* ══ REFERRALS ══ */
+function copyRefLink(){
+  const val = document.getElementById('ref-link').value;
+  navigator.clipboard.writeText(val).catch(()=>{});
+  const btn = document.getElementById('copy-btn');
+  btn.textContent='Copied!'; btn.classList.add('copied');
+  setTimeout(()=>{ btn.textContent='Copy link'; btn.classList.remove('copied'); },2500);
+}
+
+/* ══ SIGN OUT ══ */
+function signOut(){
+  toast('Signing out...','');
+  setTimeout(()=>window.location.href='candidate-login.html',800);
+}
+
+/* ══ TOAST ══ */
+function toast(msg,t){
+  const el = document.getElementById('toast');
+  el.textContent=msg; el.className='toast show '+(t||'');
+  setTimeout(()=>el.classList.remove('show'),3200);
+}
+</script>
+</body>
+</html>
