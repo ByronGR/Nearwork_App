@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nearwork Admin | HQ</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --purple:#6C3CE1;--pd:#4F28B8;--pl:#8B5CF6;--pp:#F0EBFF;
+  --black:#0D0D0D;--white:#fff;
+  --g1:#F9FAFB;--g2:#F3F4F6;--g3:#D1D5DB;--g4:#9CA3AF;--g5:#6B7280;--g6:#374151;
+  --green:#10B981;--gl:#6EE7B7;--red:#EF4444;--amber:#F59E0B;--blue:#2563EB;
+  --nav-h:60px;
+}
+html{scroll-behavior:smooth;}
+body{font-family:'Poppins',sans-serif;background:var(--g1);color:var(--black);min-height:100vh;}
+
+/* IMPERSONATE BANNER */
+.imp-banner{background:var(--amber);padding:8px 24px;display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:600;color:#000;display:none;}
+.imp-banner.show{display:flex;}
+.imp-btn{background:#000;color:#fff;font-size:11px;font-weight:700;padding:5px 14px;border-radius:6px;border:none;cursor:pointer;font-family:'Poppins',sans-serif;}
+
+/* NAV */
+.nav{position:sticky;top:0;z-index:200;height:var(--nav-h);background:var(--black);border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;padding:0 24px;gap:0;}
+.nav-logo{font-size:17px;font-weight:900;color:#fff;letter-spacing:-1px;cursor:pointer;text-decoration:none;flex-shrink:0;margin-right:8px;}
+.nav-logo span{color:var(--pl);}
+.nav-admin-chip{font-size:9px;font-weight:700;color:var(--amber);background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);padding:2px 8px;border-radius:99px;margin-right:24px;text-transform:uppercase;letter-spacing:.1em;}
+.nav-tabs{display:flex;align-items:center;gap:1px;flex:1;overflow-x:auto;}
+.nav-tabs::-webkit-scrollbar{display:none;}
+.ntab{padding:6px 12px;font-size:12px;font-weight:500;color:rgba(255,255,255,0.5);border-radius:7px;cursor:pointer;border:none;background:none;font-family:'Poppins',sans-serif;white-space:nowrap;transition:all .15s;}
+.ntab:hover{color:#fff;background:rgba(255,255,255,0.08);}
+.ntab.on{color:#fff;background:rgba(255,255,255,0.12);font-weight:600;}
+.nav-right{display:flex;align-items:center;gap:10px;margin-left:auto;flex-shrink:0;}
+.bell-wrap{position:relative;}
+.bell-btn{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.bell-btn svg{width:15px;height:15px;stroke:rgba(255,255,255,0.6);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.bell-badge{position:absolute;top:-2px;right:-2px;width:15px;height:15px;border-radius:50%;background:var(--red);color:#fff;font-size:8px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid var(--black);}
+.notif-drop{position:absolute;top:calc(100% + 10px);right:0;width:300px;background:#fff;border:1px solid var(--g3);border-radius:13px;box-shadow:0 12px 40px rgba(0,0,0,0.15);opacity:0;pointer-events:none;transform:translateY(-6px);transition:opacity .2s,transform .2s;z-index:400;}
+.notif-drop.open{opacity:1;pointer-events:all;transform:translateY(0);}
+.nd-hdr{padding:12px 15px;border-bottom:1px solid var(--g2);display:flex;justify-content:space-between;align-items:center;}
+.nd-title{font-size:13px;font-weight:700;}
+.nd-mark{font-size:11px;color:var(--purple);cursor:pointer;font-weight:500;}
+.nd-list{max-height:280px;overflow-y:auto;}
+.nd-item{padding:11px 15px;border-bottom:1px solid var(--g2);cursor:pointer;display:flex;gap:9px;transition:background .15s;}
+.nd-item:last-child{border-bottom:none;}
+.nd-item:hover{background:var(--g1);}
+.nd-item.unread{background:#FAFBFF;}
+.nd-dot{width:6px;height:6px;border-radius:50%;background:var(--purple);flex-shrink:0;margin-top:5px;}
+.nd-dot.read{background:var(--g3);}
+.nd-txt{font-size:11px;color:var(--g6);line-height:1.5;}
+.nd-time{font-size:9px;color:var(--g4);margin-top:2px;}
+.av-wrap{position:relative;}
+.av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--pl));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;cursor:pointer;border:2px solid rgba(108,60,225,0.4);}
+.av-menu{position:absolute;top:calc(100% + 10px);right:0;width:200px;background:#fff;border:1px solid var(--g3);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.1);padding:6px;opacity:0;pointer-events:none;transform:translateY(-6px);transition:opacity .2s,transform .2s;z-index:400;}
+.av-menu.open{opacity:1;pointer-events:all;transform:translateY(0);}
+.av-info{padding:10px 12px 8px;border-bottom:1px solid var(--g2);margin-bottom:4px;}
+.av-name{font-size:13px;font-weight:700;}
+.av-role{font-size:11px;color:var(--purple);font-weight:600;}
+.av-item{padding:8px 12px;font-size:13px;color:var(--g6);border-radius:7px;cursor:pointer;font-weight:500;transition:background .15s;}
+.av-item:hover{background:var(--g1);}
+.av-item.danger{color:var(--red);}
+.av-item.danger:hover{background:#FEF2F2;}
+.av-div{height:1px;background:var(--g2);margin:4px 0;}
+
+/* LAYOUT */
+.main{max-width:1400px;margin:0 auto;padding:28px 24px;}
+.page{display:none;}
+.page.show{display:block;animation:pgIn .22s ease both;}
+@keyframes pgIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+/* SHARED */
+.badge{display:inline-flex;align-items:center;font-size:10px;font-weight:700;padding:3px 8px;border-radius:99px;}
+.b-green{background:rgba(16,185,129,0.1);color:var(--green);}
+.b-purple{background:var(--pp);color:var(--purple);}
+.b-amber{background:rgba(245,158,11,0.1);color:var(--amber);}
+.b-gray{background:var(--g2);color:var(--g5);}
+.b-red{background:rgba(239,68,68,0.08);color:var(--red);}
+.b-blue{background:#EFF6FF;color:var(--blue);}
+.b-dark{background:var(--black);color:#fff;}
+.btn{padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;font-family:'Poppins',sans-serif;border:none;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px;text-decoration:none;}
+.btn-p{background:var(--purple);color:#fff;}
+.btn-p:hover{background:var(--pd);transform:translateY(-1px);}
+.btn-g{background:var(--green);color:#fff;}
+.btn-g:hover{background:#059669;}
+.btn-ghost{background:var(--g1);color:var(--g6);border:1px solid var(--g3);}
+.btn-ghost:hover{border-color:var(--purple);color:var(--purple);}
+.btn-sm{padding:5px 12px;font-size:11px;}
+.btn-danger{background:rgba(239,68,68,0.08);color:var(--red);border:1px solid rgba(239,68,68,0.2);}
+.btn-danger:hover{background:rgba(239,68,68,0.15);}
+.slbl{font-size:10px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.12em;margin-bottom:10px;}
+.ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:16px;flex-wrap:wrap;}
+.ph-title{font-size:22px;font-weight:800;color:var(--black);letter-spacing:-1px;margin-bottom:3px;}
+.ph-sub{font-size:13px;color:var(--g5);}
+.card{background:#fff;border-radius:14px;border:1px solid var(--g3);padding:22px;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:11px;font-weight:700;color:var(--black);margin-bottom:5px;letter-spacing:.03em;}
+.field input,.field select,.field textarea{width:100%;padding:10px 13px;border:1.5px solid var(--g3);border-radius:9px;font-size:13px;font-family:'Poppins',sans-serif;color:var(--black);background:#fff;outline:none;transition:border-color .2s;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--purple);}
+.field textarea{resize:vertical;min-height:80px;line-height:1.5;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.field-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.toolbar{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;align-items:center;}
+.sbox{flex:1;min-width:200px;position:relative;}
+.sbox input{width:100%;padding:9px 13px 9px 36px;border:1.5px solid var(--g3);border-radius:9px;font-size:13px;font-family:'Poppins',sans-serif;background:#fff;outline:none;transition:border-color .2s;}
+.sbox input:focus{border-color:var(--purple);}
+.si{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--g4);font-size:13px;pointer-events:none;}
+.fsel{padding:9px 28px 9px 12px;border:1.5px solid var(--g3);border-radius:9px;font-size:12px;font-family:'Poppins',sans-serif;color:var(--g6);background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236B7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E") no-repeat right 10px center;outline:none;cursor:pointer;appearance:none;}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .25s;backdrop-filter:blur(4px);}
+.modal-bg.open{opacity:1;pointer-events:all;}
+.modal{background:#fff;border-radius:16px;width:100%;max-width:580px;max-height:92vh;overflow-y:auto;transform:scale(.95);transition:transform .25s;}
+.modal-bg.open .modal{transform:scale(1);}
+.modal.sm{max-width:440px;}
+.modal.lg{max-width:780px;}
+.modal-hdr{padding:20px 24px;border-bottom:1px solid var(--g2);display:flex;align-items:center;justify-content:space-between;}
+.modal-title{font-size:16px;font-weight:800;color:var(--black);letter-spacing:-.5px;}
+.modal-close{width:28px;height:28px;border-radius:50%;background:var(--g2);border:none;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;}
+.modal-body{padding:22px 24px;}
+.modal-footer{padding:16px 24px;border-top:1px solid var(--g2);display:flex;justify-content:flex-end;gap:10px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--black);color:#fff;font-size:12px;font-weight:500;padding:11px 20px;border-radius:9px;box-shadow:0 8px 32px rgba(0,0,0,0.2);transition:transform .35s cubic-bezier(.4,0,.2,1);z-index:999;white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.toast.ok{background:var(--green);}
+.toast.bad{background:var(--red);}
+
+/* ══ DASHBOARD PAGE ══ */
+.metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+.metric-card{background:#fff;border-radius:13px;border:1.5px solid var(--g3);padding:20px;transition:border-color .2s,transform .2s;}
+.metric-card:hover{border-color:var(--purple);transform:translateY(-2px);}
+.metric-card.dark{background:var(--black);border-color:transparent;}
+.mc-eye{font-size:10px;font-weight:700;color:var(--g4);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;}
+.metric-card.dark .mc-eye{color:rgba(255,255,255,0.4);}
+.mc-num{font-size:30px;font-weight:900;color:var(--black);letter-spacing:-2px;line-height:1;margin-bottom:4px;}
+.metric-card.dark .mc-num{color:#fff;}
+.mc-sub{font-size:11px;color:var(--g5);line-height:1.4;}
+.metric-card.dark .mc-sub{color:rgba(255,255,255,0.35);}
+.mc-trend{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;margin-top:7px;padding:2px 7px;border-radius:99px;}
+.mc-trend.up{background:rgba(16,185,129,0.1);color:var(--green);}
+.mc-trend.down{background:rgba(239,68,68,0.08);color:var(--red);}
+.mc-trend.neu{background:var(--g2);color:var(--g5);}
+
+.dash-grid{display:grid;grid-template-columns:1fr 340px;gap:16px;margin-bottom:20px;}
+.bandwidth-list{display:flex;flex-direction:column;gap:8px;margin-top:12px;}
+.bw-item{display:flex;align-items:center;gap:12px;padding:11px 14px;background:var(--g1);border-radius:10px;border:1px solid var(--g3);}
+.bw-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0;}
+.bw-name{font-size:12px;font-weight:700;color:var(--black);margin-bottom:1px;}
+.bw-role{font-size:10px;color:var(--g5);}
+.bw-count{margin-left:auto;text-align:right;}
+.bw-num{font-size:16px;font-weight:900;color:var(--purple);letter-spacing:-1px;line-height:1;}
+.bw-lbl{font-size:9px;color:var(--g4);}
+.bw-bar{height:4px;background:var(--g2);border-radius:99px;overflow:hidden;margin-top:4px;width:60px;}
+.bw-fill{height:4px;border-radius:99px;background:var(--purple);}
+
+/* activity */
+.act-list{display:flex;flex-direction:column;gap:0;}
+.act-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--g2);}
+.act-item:last-child{border-bottom:none;}
+.act-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.act-txt{font-size:12px;color:var(--g6);line-height:1.5;flex:1;}
+.act-txt strong{color:var(--black);}
+.act-time{font-size:10px;color:var(--g4);flex-shrink:0;margin-top:2px;white-space:nowrap;}
+
+/* ══ ORGANIZATIONS PAGE ══ */
+.org-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;}
+.org-card{background:#fff;border-radius:13px;border:1.5px solid var(--g3);padding:20px;transition:border-color .2s,transform .2s;}
+.org-card:hover{border-color:var(--purple);transform:translateY(-2px);}
+.org-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;}
+.org-logo{width:40px;height:40px;border-radius:10px;background:var(--pp);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:var(--purple);flex-shrink:0;}
+.org-name{font-size:14px;font-weight:700;color:var(--black);margin-bottom:2px;}
+.org-domain{font-size:11px;color:var(--g5);font-family:monospace;}
+.org-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
+.os{background:var(--g1);border-radius:8px;padding:8px 10px;}
+.os-n{font-size:16px;font-weight:800;color:var(--black);letter-spacing:-1px;line-height:1;margin-bottom:1px;}
+.os-l{font-size:9px;color:var(--g5);}
+.org-actions{display:flex;gap:6px;flex-wrap:wrap;}
+
+/* ══ CANDIDATES PAGE ══ */
+.cand-table{background:#fff;border-radius:13px;border:1px solid var(--g3);overflow:hidden;}
+.ct-hdr{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 100px;padding:11px 18px;background:var(--g1);border-bottom:1px solid var(--g2);font-size:10px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.08em;gap:12px;}
+.ct-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 100px;padding:14px 18px;border-bottom:1px solid var(--g2);font-size:12px;color:var(--g6);align-items:center;gap:12px;transition:background .15s;cursor:pointer;}
+.ct-row:last-child{border-bottom:none;}
+.ct-row:hover{background:var(--g1);}
+.ct-cand{display:flex;align-items:center;gap:10px;}
+.ct-av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;flex-shrink:0;}
+.ct-name{font-size:13px;font-weight:700;color:var(--black);margin-bottom:1px;}
+.ct-code{font-size:9px;color:var(--g4);font-family:monospace;font-weight:600;}
+.score-pill{display:inline-flex;align-items:center;justify-content:center;width:36px;height:22px;border-radius:99px;font-size:11px;font-weight:800;}
+.sp-g{background:rgba(16,185,129,0.1);color:var(--green);}
+.sp-a{background:rgba(245,158,11,0.1);color:var(--amber);}
+.sp-r{background:rgba(239,68,68,0.08);color:var(--red);}
+
+/* smart match */
+.smart-match{background:linear-gradient(135deg,var(--black),#1a0a3e);border-radius:14px;padding:22px;margin-bottom:20px;display:flex;gap:20px;align-items:flex-end;flex-wrap:wrap;}
+.sm-title{font-size:14px;font-weight:700;color:#fff;margin-bottom:6px;}
+.sm-sub{font-size:11px;color:rgba(255,255,255,0.45);margin-bottom:14px;}
+.sm-fields{display:flex;gap:10px;flex-wrap:wrap;flex:1;}
+.sm-sel{padding:9px 28px 9px 12px;border:1px solid rgba(255,255,255,0.15);border-radius:8px;font-size:12px;font-family:'Poppins',sans-serif;color:#fff;background:rgba(255,255,255,0.08) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffffff' d='M6 8L1 3h10z'/%3E%3C/svg%3E") no-repeat right 10px center;outline:none;cursor:pointer;appearance:none;}
+.btn-match{background:var(--green);color:#fff;padding:9px 20px;border-radius:8px;font-size:12px;font-weight:700;font-family:'Poppins',sans-serif;border:none;cursor:pointer;white-space:nowrap;}
+
+/* ══ OPENINGS PAGE ══ */
+.openings-table{background:#fff;border-radius:13px;border:1px solid var(--g3);overflow:hidden;}
+.ot-hdr{display:grid;grid-template-columns:2fr 1.5fr 1fr 1fr 1fr 120px;padding:11px 18px;background:var(--g1);border-bottom:1px solid var(--g2);font-size:10px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.08em;gap:12px;}
+.ot-row{display:grid;grid-template-columns:2fr 1.5fr 1fr 1fr 1fr 120px;padding:13px 18px;border-bottom:1px solid var(--g2);font-size:12px;color:var(--g6);align-items:center;gap:12px;transition:background .15s;cursor:pointer;}
+.ot-row:last-child{border-bottom:none;}
+.ot-row:hover{background:var(--g1);}
+.ot-role{font-size:13px;font-weight:700;color:var(--black);margin-bottom:1px;}
+.ot-code{font-size:9px;color:var(--g4);font-family:monospace;font-weight:600;}
+.pub-toggle{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;}
+.toggle{width:36px;height:20px;border-radius:99px;background:var(--g3);border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;}
+.toggle.on{background:var(--green);}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,0.2);}
+.toggle.on::after{transform:translateX(16px);}
+
+/* ══ ASSESSMENTS PAGE ══ */
+.assess-list{display:flex;flex-direction:column;gap:14px;}
+.assess-card{background:#fff;border-radius:13px;border:1.5px solid var(--g3);padding:20px;}
+.assess-card.pending{border-color:rgba(245,158,11,0.3);background:rgba(245,158,11,0.02);}
+.assess-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;}
+.assess-role{font-size:14px;font-weight:700;color:var(--black);margin-bottom:2px;}
+.assess-meta{font-size:11px;color:var(--g5);}
+.q-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
+.q-item{background:var(--g1);border-radius:9px;padding:12px 14px;display:flex;align-items:flex-start;gap:10px;}
+.q-num{font-size:11px;font-weight:700;color:var(--purple);flex-shrink:0;width:20px;}
+.q-text{font-size:12px;color:var(--g6);line-height:1.5;flex:1;}
+.q-edit{background:none;border:none;font-size:11px;color:var(--g4);cursor:pointer;flex-shrink:0;padding:2px 6px;border-radius:5px;}
+.q-edit:hover{background:var(--g2);color:var(--purple);}
+.q-remove{background:none;border:none;font-size:11px;color:var(--g4);cursor:pointer;flex-shrink:0;padding:2px 6px;}
+.q-remove:hover{color:var(--red);}
+
+/* ══ HIRED PAGE ══ */
+.hired-table{background:#fff;border-radius:13px;border:1px solid var(--g3);overflow:hidden;}
+.ht-hdr{display:grid;grid-template-columns:2fr 1.5fr 1fr 1fr 1fr 100px;padding:11px 18px;background:var(--g1);border-bottom:1px solid var(--g2);font-size:10px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.08em;gap:12px;}
+.ht-row{display:grid;grid-template-columns:2fr 1.5fr 1fr 1fr 1fr 100px;padding:13px 18px;border-bottom:1px solid var(--g2);font-size:12px;color:var(--g6);align-items:center;gap:12px;transition:background .15s;}
+.ht-row:last-child{border-bottom:none;}
+.ht-row:hover{background:var(--g1);}
+.guar-bar{height:4px;background:var(--g2);border-radius:99px;overflow:hidden;margin-top:4px;}
+.guar-fill{height:4px;border-radius:99px;}
+
+/* ══ BLOG PAGE ══ */
+.blog-layout{display:grid;grid-template-columns:1fr 320px;gap:16px;align-items:start;}
+.blog-list{display:flex;flex-direction:column;gap:10px;}
+.blog-card{background:#fff;border-radius:12px;border:1.5px solid var(--g3);padding:18px;display:flex;align-items:flex-start;gap:14px;cursor:pointer;transition:border-color .2s;}
+.blog-card:hover{border-color:var(--purple);}
+.blog-card.draft{border-style:dashed;}
+.blog-thumb{width:64px;height:64px;border-radius:10px;background:var(--pp);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;}
+.blog-title{font-size:14px;font-weight:700;color:var(--black);margin-bottom:3px;letter-spacing:-.3px;}
+.blog-excerpt{font-size:11px;color:var(--g5);line-height:1.5;margin-bottom:8px;}
+.blog-meta{font-size:10px;color:var(--g4);display:flex;gap:10px;}
+
+/* Rich text editor */
+.rte-wrap{border:1.5px solid var(--g3);border-radius:10px;overflow:hidden;}
+.rte-toolbar{display:flex;gap:2px;padding:8px 10px;background:var(--g1);border-bottom:1px solid var(--g3);flex-wrap:wrap;}
+.rte-btn{padding:5px 9px;border:none;background:none;border-radius:6px;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;color:var(--g6);font-weight:600;transition:background .15s;}
+.rte-btn:hover{background:var(--g3);}
+.rte-btn.on{background:var(--pp);color:var(--purple);}
+.rte-sep{width:1px;background:var(--g3);margin:2px 4px;}
+.rte-content{min-height:300px;padding:16px;font-size:14px;line-height:1.75;color:var(--black);outline:none;}
+.rte-content h1{font-size:24px;font-weight:800;letter-spacing:-1px;margin-bottom:8px;}
+.rte-content h2{font-size:18px;font-weight:700;margin-bottom:6px;}
+.rte-content h3{font-size:15px;font-weight:700;margin-bottom:4px;}
+.rte-content p{margin-bottom:10px;}
+.rte-content a{color:var(--purple);}
+.rte-content ul,.rte-content ol{margin-left:20px;margin-bottom:10px;}
+.rte-content blockquote{border-left:3px solid var(--purple);padding-left:14px;color:var(--g5);font-style:italic;margin:10px 0;}
+
+/* ══ TEAM PAGE ══ */
+.team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
+.team-card{background:#fff;border-radius:13px;border:1.5px solid var(--g3);padding:20px;transition:border-color .2s;}
+.team-card:hover{border-color:var(--purple);}
+.tc-top{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.tc-av{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;flex-shrink:0;}
+.tc-name{font-size:14px;font-weight:700;color:var(--black);margin-bottom:2px;}
+.tc-role{font-size:11px;color:var(--g5);}
+.tc-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.tcs{background:var(--g1);border-radius:8px;padding:9px 11px;}
+.tcs-n{font-size:18px;font-weight:900;color:var(--purple);letter-spacing:-1px;line-height:1;margin-bottom:1px;}
+.tcs-l{font-size:9px;color:var(--g5);}
+.tc-actions{display:flex;gap:6px;}
+
+/* AUDIT LOG */
+.audit-table{background:#fff;border-radius:13px;border:1px solid var(--g3);overflow:hidden;}
+.au-hdr{display:grid;grid-template-columns:1fr 1fr 1fr 140px;padding:11px 18px;background:var(--g1);border-bottom:1px solid var(--g2);font-size:10px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.08em;gap:12px;}
+.au-row{display:grid;grid-template-columns:1fr 1fr 1fr 140px;padding:12px 18px;border-bottom:1px solid var(--g2);font-size:12px;color:var(--g6);align-items:center;gap:12px;}
+.au-row:last-child{border-bottom:none;}
+.au-who{font-size:12px;font-weight:600;color:var(--black);}
+.au-behalf{font-size:10px;color:var(--g4);}
+.au-action{font-size:12px;color:var(--g6);line-height:1.4;}
+.au-time{font-size:10px;color:var(--g4);}
+
+@media(max-width:900px){
+  .metric-grid{grid-template-columns:1fr 1fr;}
+  .dash-grid{grid-template-columns:1fr;}
+  .blog-layout{grid-template-columns:1fr;}
+  .ct-hdr,.ct-row{grid-template-columns:1fr 1fr 80px;}
+  .ct-hdr>*:nth-child(n+4),.ct-row>*:nth-child(n+4){display:none;}
+  .ot-hdr,.ot-row{grid-template-columns:1fr 1fr 100px;}
+  .ot-hdr>*:nth-child(n+4),.ot-row>*:nth-child(n+4){display:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- IMPERSONATE BANNER -->
+<div class="imp-banner" id="imp-banner">
+  <span>👁 You are viewing as <strong id="imp-org-name">Crestline SaaS</strong> — any changes you make will affect their account</span>
+  <button class="imp-btn" onclick="exitImpersonate()">← Exit to Admin</button>
+</div>
+
+<!-- NAV -->
+<nav class="nav">
+  <a class="nav-logo" onclick="showPage('dashboard')">Near<span>work</span></a>
+  <div class="nav-admin-chip">Admin HQ</div>
+  <div class="nav-tabs">
+    <button class="ntab on" id="tab-dashboard" onclick="showPage('dashboard')">Dashboard</button>
+    <button class="ntab" id="tab-orgs" onclick="showPage('orgs')">Organizations</button>
+    <button class="ntab" id="tab-candidates" onclick="showPage('candidates')">Candidates</button>
+    <button class="ntab" id="tab-openings" onclick="showPage('openings')">Openings</button>
+    <button class="ntab" id="tab-assessments" onclick="showPage('assessments')">Assessments</button>
+    <button class="ntab" id="tab-hired" onclick="showPage('hired')">Hired</button>
+    <button class="ntab" id="tab-blog" onclick="showPage('blog')">Blog</button>
+    <button class="ntab" id="tab-team" onclick="showPage('team')">Team</button>
+    <button class="ntab" id="tab-audit" onclick="showPage('audit')">Audit Log</button>
+  </div>
+  <div class="nav-right">
+    <div class="bell-wrap" id="bell-wrap">
+      <div class="bell-btn" onclick="toggleDrop('notif-drop')">
+        <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </div>
+      <div class="bell-badge">4</div>
+      <div class="notif-drop" id="notif-drop">
+        <div class="nd-hdr"><span class="nd-title">Notifications</span><span class="nd-mark" onclick="markAllRead()">Mark all read</span></div>
+        <div class="nd-list">
+          <div class="nd-item unread"><div class="nd-dot"></div><div><div class="nd-txt"><strong>New candidate</strong> — María López completed her profile. Ready for ATS review.</div><div class="nd-time">10 min ago</div></div></div>
+          <div class="nd-item unread"><div class="nd-dot"></div><div><div class="nd-txt"><strong>Assessment ready</strong> — David Herrera completed his technical assessment. Score: 87/100.</div><div class="nd-time">1 hour ago</div></div></div>
+          <div class="nd-item unread"><div class="nd-dot"></div><div><div class="nd-txt"><strong>Crestline SaaS</strong> left a note on David Herrera's profile.</div><div class="nd-time">2 hours ago</div></div></div>
+          <div class="nd-item unread"><div class="nd-dot"></div><div><div class="nd-txt"><strong>New organization</strong> — Axiom Tech onboarded. Essential plan, 3 seats.</div><div class="nd-time">1 day ago</div></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="av-wrap" id="av-wrap">
+      <div class="av" onclick="toggleDrop('av-menu')">BG</div>
+      <div class="av-menu" id="av-menu">
+        <div class="av-info"><div class="av-name">Byron Giraldo</div><div class="av-role">Super Admin · Nearwork</div></div>
+        <div class="av-item" onclick="showPage('team')">⚙️ Team settings</div>
+        <div class="av-div"></div>
+        <div class="av-item danger" onclick="signOut()">Sign out</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="main">
+
+  <!-- ══════════════════════════════
+       DASHBOARD
+  ══════════════════════════════ -->
+  <div class="page show" id="page-dashboard">
+    <div class="ph">
+      <div><div class="ph-title">Good morning, Byron 👋</div><div class="ph-sub">Here's your Nearwork HQ overview for today.</div></div>
+      <div style="display:flex;gap:8px;"><button class="btn btn-ghost btn-sm" onclick="showPage('audit')">View audit log</button><button class="btn btn-p btn-sm" onclick="openModal('new-opening-modal')">+ New opening</button></div>
+    </div>
+
+    <div class="metric-grid">
+      <div class="metric-card dark">
+        <div class="mc-eye">🏢 Active organizations</div>
+        <div class="mc-num">3</div>
+        <div class="mc-sub">Crestline · Axiom · NovaDash</div>
+        <div class="mc-trend up">↑ 1 added this month</div>
+      </div>
+      <div class="metric-card">
+        <div class="mc-eye">📋 Active openings</div>
+        <div class="mc-num">5</div>
+        <div class="mc-sub">Across all organizations</div>
+        <div class="mc-trend neu">3 Nearwork · 2 client review</div>
+      </div>
+      <div class="metric-card">
+        <div class="mc-eye">👥 Candidates in pipeline</div>
+        <div class="mc-num">24</div>
+        <div class="mc-sub">Active across all openings</div>
+        <div class="mc-trend up">↑ 6 new this week</div>
+      </div>
+      <div class="metric-card">
+        <div class="mc-eye">🎉 Hires this month</div>
+        <div class="mc-num">2</div>
+        <div class="mc-sub">Valentina Ríos · Jorge Pérez</div>
+        <div class="mc-trend up">↑ On track vs target</div>
+      </div>
+    </div>
+
+    <div class="dash-grid">
+      <!-- Activity feed -->
+      <div class="card">
+        <div style="font-size:13px;font-weight:700;color:var(--black);margin-bottom:14px;display:flex;align-items:center;gap:8px;">
+          <div style="width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;"></div>
+          Live activity
+        </div>
+        <style>@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.5;}}</style>
+        <div class="act-list">
+          <div class="act-item"><div class="act-dot" style="background:var(--green);"></div><div class="act-txt"><strong>María López</strong> completed her profile — now visible in ATS (85/100 score)</div><div class="act-time">10 min ago</div></div>
+          <div class="act-item"><div class="act-dot" style="background:var(--purple);"></div><div class="act-txt"><strong>David Herrera</strong> completed technical assessment — Score: 87/100, no integrity flags</div><div class="act-time">1 hr ago</div></div>
+          <div class="act-item"><div class="act-dot" style="background:var(--blue);"></div><div class="act-txt"><strong>Alex Chen</strong> (Crestline) left a note on David Herrera's profile</div><div class="act-time">2 hrs ago</div></div>
+          <div class="act-item"><div class="act-dot" style="background:var(--amber);"></div><div class="act-txt"><strong>Byron Giraldo</strong> moved Isabella Gómez to Background Check stage</div><div class="act-time">3 hrs ago</div></div>
+          <div class="act-item"><div class="act-dot" style="background:var(--green);"></div><div class="act-txt"><strong>Axiom Tech</strong> onboarded — Essential plan, 3 seats, first opening created</div><div class="act-time">1 day ago</div></div>
+          <div class="act-item"><div class="act-dot" style="background:var(--purple);"></div><div class="act-txt"><strong>Valentina Ríos</strong> hired by Crestline SaaS — 6-month guarantee started</div><div class="act-time">2 days ago</div></div>
+        </div>
+      </div>
+
+      <!-- Recruiter bandwidth -->
+      <div class="card">
+        <div style="font-size:13px;font-weight:700;color:var(--black);margin-bottom:14px;">Recruiter bandwidth</div>
+        <div class="bandwidth-list">
+          <div class="bw-item">
+            <div class="bw-av" style="background:linear-gradient(135deg,var(--purple),var(--pl));">BG</div>
+            <div style="flex:1;"><div class="bw-name">Byron Giraldo</div><div class="bw-role">Lead Recruiter</div></div>
+            <div class="bw-count"><div class="bw-num">4</div><div class="bw-lbl">openings</div><div class="bw-bar"><div class="bw-fill" style="width:80%;"></div></div></div>
+          </div>
+          <div class="bw-item">
+            <div class="bw-av" style="background:linear-gradient(135deg,#10B981,#059669);">NS</div>
+            <div style="flex:1;"><div class="bw-name">Nany Salcedo</div><div class="bw-role">Recruiter (COO)</div></div>
+            <div class="bw-count"><div class="bw-num">1</div><div class="bw-lbl">openings</div><div class="bw-bar"><div class="bw-fill" style="width:20%;"></div></div></div>
+          </div>
+          <div class="bw-item">
+            <div class="bw-av" style="background:linear-gradient(135deg,#F59E0B,#D97706);">AG</div>
+            <div style="flex:1;"><div class="bw-name">Andres García</div><div class="bw-role">Recruiter (CQO)</div></div>
+            <div class="bw-count"><div class="bw-num">0</div><div class="bw-lbl">openings</div><div class="bw-bar"><div class="bw-fill" style="width:0%;"></div></div></div>
+          </div>
+        </div>
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--g2);">
+          <div class="slbl" style="margin-bottom:6px;">Pipeline health by org</div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div style="display:flex;align-items:center;gap:8px;font-size:11px;"><span style="flex:1;font-weight:600;color:var(--black);">Crestline SaaS</span><span style="color:var(--green);font-weight:700;">82%</span></div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:11px;"><span style="flex:1;font-weight:600;color:var(--black);">Axiom Tech</span><span style="color:var(--amber);font-weight:700;">45%</span></div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:11px;"><span style="flex:1;font-weight:600;color:var(--black);">NovaDash</span><span style="color:var(--amber);font-weight:700;">60%</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       ORGANIZATIONS
+  ══════════════════════════════ -->
+  <div class="page" id="page-orgs">
+    <div class="ph">
+      <div><div class="ph-title">Organizations</div><div class="ph-sub">All client organizations on Nearwork.</div></div>
+      <button class="btn btn-p btn-sm" onclick="openModal('new-org-modal')">+ New organization</button>
+    </div>
+    <div class="toolbar">
+      <div class="sbox"><span class="si">🔍</span><input type="text" placeholder="Search organizations..."></div>
+      <select class="fsel"><option>All plans</option><option>Standard</option><option>Lite</option><option>Essential</option><option>Elite</option></select>
+      <select class="fsel"><option>All statuses</option><option>Active</option><option>On hold</option><option>Suspended</option></select>
+    </div>
+    <div class="org-grid">
+      <!-- Org 1 -->
+      <div class="org-card">
+        <div class="org-top">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="org-logo">CS</div>
+            <div><div class="org-name">Crestline SaaS</div><div class="org-domain">crestline.io</div></div>
+          </div>
+          <span class="badge b-green">Active</span>
+        </div>
+        <div class="org-stats">
+          <div class="os"><div class="os-n">2</div><div class="os-l">Active openings</div></div>
+          <div class="os"><div class="os-n">8</div><div class="os-l">Candidates</div></div>
+          <div class="os"><div class="os-n">3</div><div class="os-l">Team members</div></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <span class="badge b-purple">Essential Plan</span>
+          <span style="font-size:10px;color:var(--g4);">Joined Jan 2026</span>
+        </div>
+        <div class="org-actions">
+          <button class="btn btn-p btn-sm" onclick="impersonate('Crestline SaaS')">👁 View as client</button>
+          <button class="btn btn-ghost btn-sm" onclick="openModal('edit-org-modal')">Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="toast('Organization suspended.','ok')">Suspend</button>
+        </div>
+      </div>
+      <!-- Org 2 -->
+      <div class="org-card">
+        <div class="org-top">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="org-logo" style="background:rgba(16,185,129,0.1);color:var(--green);">AT</div>
+            <div><div class="org-name">Axiom Tech</div><div class="org-domain">axiomtech.io</div></div>
+          </div>
+          <span class="badge b-green">Active</span>
+        </div>
+        <div class="org-stats">
+          <div class="os"><div class="os-n">2</div><div class="os-l">Active openings</div></div>
+          <div class="os"><div class="os-n">9</div><div class="os-l">Candidates</div></div>
+          <div class="os"><div class="os-n">2</div><div class="os-l">Team members</div></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <span class="badge b-blue">Lite Plan</span>
+          <span style="font-size:10px;color:var(--g4);">Joined Mar 2026</span>
+        </div>
+        <div class="org-actions">
+          <button class="btn btn-p btn-sm" onclick="impersonate('Axiom Tech')">👁 View as client</button>
+          <button class="btn btn-ghost btn-sm" onclick="openModal('edit-org-modal')">Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="toast('Organization suspended.','ok')">Suspend</button>
+        </div>
+      </div>
+      <!-- Org 3 -->
+      <div class="org-card">
+        <div class="org-top">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="org-logo" style="background:rgba(239,68,68,0.08);color:var(--red);">ND</div>
+            <div><div class="org-name">NovaDash</div><div class="org-domain">novadash.com</div></div>
+          </div>
+          <span class="badge b-amber">On hold</span>
+        </div>
+        <div class="org-stats">
+          <div class="os"><div class="os-n">1</div><div class="os-l">Active openings</div></div>
+          <div class="os"><div class="os-n">7</div><div class="os-l">Candidates</div></div>
+          <div class="os"><div class="os-n">2</div><div class="os-l">Team members</div></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <span class="badge b-purple">Essential Plan</span>
+          <span style="font-size:10px;color:var(--g4);">Joined Feb 2026</span>
+        </div>
+        <div class="org-actions">
+          <button class="btn btn-p btn-sm" onclick="impersonate('NovaDash')">👁 View as client</button>
+          <button class="btn btn-ghost btn-sm" onclick="openModal('edit-org-modal')">Edit</button>
+          <button class="btn btn-g btn-sm" onclick="toast('Organization reactivated.','ok')">Reactivate</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       CANDIDATES
+  ══════════════════════════════ -->
+  <div class="page" id="page-candidates">
+    <div class="ph">
+      <div><div class="ph-title">Candidates</div><div class="ph-sub">Full ATS — all candidates across all openings.</div></div>
+      <button class="btn btn-ghost btn-sm" onclick="showPage('audit')">Export</button>
+    </div>
+
+    <!-- Smart match -->
+    <div class="smart-match">
+      <div style="flex:1;">
+        <div class="sm-title">⚡ Smart candidate match</div>
+        <div class="sm-sub">Select a role and skills — we'll rank the best available candidates for you.</div>
+        <div class="sm-fields">
+          <select class="sm-sel"><option>Select role...</option><option>Customer Success Manager</option><option>SDR / Sales Dev Rep</option><option>Technical Support</option><option>Marketing Ops</option><option>Developer</option><option>Operations</option></select>
+          <select class="sm-sel"><option>Experience level...</option><option>Junior (0-2 yrs)</option><option>Mid (2-5 yrs)</option><option>Senior (5+ yrs)</option></select>
+          <select class="sm-sel"><option>Salary range...</option><option>$1,000–$1,500/mo</option><option>$1,500–$2,000/mo</option><option>$2,000–$2,500/mo</option><option>$2,500+/mo</option></select>
+        </div>
+      </div>
+      <button class="btn-match" onclick="toast('Showing best matched candidates ↓','ok')">Find best matches →</button>
+    </div>
+
+    <div class="toolbar">
+      <div class="sbox"><span class="si">🔍</span><input type="text" placeholder="Search by name, code, email, skill..."></div>
+      <select class="fsel"><option>All stages</option><option>Applied</option><option>Profile Review</option><option>Background Check</option><option>Assessment</option><option>Presented</option><option>Client Review</option><option>Hired</option><option>Did Not Continue</option></select>
+      <select class="fsel"><option>All orgs</option><option>Crestline SaaS</option><option>Axiom Tech</option><option>NovaDash</option></select>
+      <select class="fsel"><option>All scores</option><option>80–100 (Strong)</option><option>60–79 (Good)</option><option>Below 60</option></select>
+    </div>
+
+    <div class="cand-table">
+      <div class="ct-hdr"><div>Candidate</div><div>Score</div><div>Stage</div><div>Opening</div><div>Status</div><div>Actions</div></div>
+      <div class="ct-row" onclick="openModal('cand-detail-modal')">
+        <div class="ct-cand"><div class="ct-av" style="background:linear-gradient(135deg,#EC4899,#BE185D);">DH</div><div><div class="ct-name">David Herrera</div><div class="ct-code">NW-C-2N6Q8</div></div></div>
+        <div><span class="score-pill sp-g">91</span></div>
+        <div><span class="badge b-green">Client Review</span></div>
+        <div style="font-size:11px;">CSM · Crestline</div>
+        <div><span class="badge b-green">Active</span></div>
+        <div onclick="event.stopPropagation()" style="display:flex;gap:4px;">
+          <button class="btn btn-ghost btn-sm" onclick="openModal('cand-detail-modal')">View</button>
+          <button class="btn btn-danger btn-sm" onclick="toast('Candidate banned from future openings.','ok')">Ban</button>
+        </div>
+      </div>
+      <div class="ct-row" onclick="openModal('cand-detail-modal')">
+        <div class="ct-cand"><div class="ct-av" style="background:linear-gradient(135deg,#F59E0B,#D97706);">ML</div><div><div class="ct-name">María López</div><div class="ct-code">NW-C-5B9W3</div></div></div>
+        <div><span class="score-pill sp-g">85</span></div>
+        <div><span class="badge b-green">Client Review</span></div>
+        <div style="font-size:11px;">CSM · Crestline</div>
+        <div><span class="badge b-green">Active</span></div>
+        <div onclick="event.stopPropagation()" style="display:flex;gap:4px;"><button class="btn btn-ghost btn-sm" onclick="openModal('cand-detail-modal')">View</button><button class="btn btn-danger btn-sm" onclick="toast('Candidate banned.','ok')">Ban</button></div>
+      </div>
+      <div class="ct-row" onclick="openModal('cand-detail-modal')">
+        <div class="ct-cand"><div class="ct-av" style="background:linear-gradient(135deg,#8B5CF6,#6C3CE1);">SM</div><div><div class="ct-name">Sofía Moreno</div><div class="ct-code">NW-C-7T2R5</div></div></div>
+        <div><span class="score-pill sp-a">79</span></div>
+        <div><span class="badge b-purple">Profile Review</span></div>
+        <div style="font-size:11px;">CSM · Crestline</div>
+        <div><span class="badge b-green">Active</span></div>
+        <div onclick="event.stopPropagation()" style="display:flex;gap:4px;"><button class="btn btn-ghost btn-sm">View</button><button class="btn btn-danger btn-sm" onclick="toast('Candidate banned.','ok')">Ban</button></div>
+      </div>
+      <div class="ct-row" onclick="openModal('cand-detail-modal')">
+        <div class="ct-cand"><div class="ct-av" style="background:linear-gradient(135deg,#6C3CE1,#8B5CF6);">IG</div><div><div class="ct-name">Isabella Gómez</div><div class="ct-code">NW-C-8X4K2</div></div></div>
+        <div><span class="score-pill sp-a">72</span></div>
+        <div><span class="badge b-gray">Applied</span></div>
+        <div style="font-size:11px;">CSM · Crestline</div>
+        <div><span class="badge b-green">Active</span></div>
+        <div onclick="event.stopPropagation()" style="display:flex;gap:4px;"><button class="btn btn-ghost btn-sm">View</button><button class="btn btn-danger btn-sm" onclick="toast('Candidate banned.','ok')">Ban</button></div>
+      </div>
+      <div class="ct-row" onclick="openModal('cand-detail-modal')">
+        <div class="ct-cand"><div class="ct-av" style="background:linear-gradient(135deg,#6B7280,#9CA3AF);">JM</div><div><div class="ct-name">Jorge Méndez</div><div class="ct-code">NW-C-1A3F7</div></div></div>
+        <div><span class="score-pill sp-r">44</span></div>
+        <div><span class="badge b-red">Did Not Continue</span></div>
+        <div style="font-size:11px;">CSM · Crestline</div>
+        <div><span class="badge b-red">Banned</span></div>
+        <div onclick="event.stopPropagation()" style="display:flex;gap:4px;"><button class="btn btn-ghost btn-sm">View</button><button class="btn btn-g btn-sm" onclick="toast('Ban lifted.','ok')">Unban</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       OPENINGS
+  ══════════════════════════════ -->
+  <div class="page" id="page-openings">
+    <div class="ph">
+      <div><div class="ph-title">Openings</div><div class="ph-sub">All openings across all organizations.</div></div>
+      <button class="btn btn-p btn-sm" onclick="openModal('new-opening-modal')">+ New opening</button>
+    </div>
+    <div class="toolbar">
+      <div class="sbox"><span class="si">🔍</span><input type="text" placeholder="Search openings..."></div>
+      <select class="fsel"><option>All orgs</option><option>Crestline SaaS</option><option>Axiom Tech</option><option>NovaDash</option></select>
+      <select class="fsel"><option>All statuses</option><option>Active</option><option>On hold</option><option>Closed</option></select>
+      <select class="fsel"><option>All recruiters</option><option>Byron Giraldo</option><option>Nany Salcedo</option><option>Andres García</option></select>
+    </div>
+    <div class="openings-table">
+      <div class="ot-hdr"><div>Opening</div><div>Organization</div><div>Recruiter</div><div>Candidates</div><div>Status</div><div>Public</div></div>
+      <div class="ot-row" onclick="openModal('edit-opening-modal')">
+        <div><div class="ot-role">Customer Success Manager</div><div class="ot-code">NW-CSM-4X8B</div></div>
+        <div style="font-size:12px;font-weight:600;">Crestline SaaS</div>
+        <div style="font-size:12px;">Byron Giraldo</div>
+        <div><span class="badge b-purple">8 active</span></div>
+        <div><span class="badge b-green">Active</span></div>
+        <div onclick="event.stopPropagation()"><div class="pub-toggle"><button class="toggle on" onclick="this.classList.toggle('on')"></button><span style="color:var(--green);font-size:11px;">Published</span></div></div>
+      </div>
+      <div class="ot-row" onclick="openModal('edit-opening-modal')">
+        <div><div class="ot-role">SDR / Sales Development Rep</div><div class="ot-code">NW-SDR-9K2M</div></div>
+        <div style="font-size:12px;font-weight:600;">Crestline SaaS</div>
+        <div style="font-size:12px;">Byron Giraldo</div>
+        <div><span class="badge b-purple">5 active</span></div>
+        <div><span class="badge b-green">Active</span></div>
+        <div onclick="event.stopPropagation()"><div class="pub-toggle"><button class="toggle on" onclick="this.classList.toggle('on')"></button><span style="color:var(--green);font-size:11px;">Published</span></div></div>
+      </div>
+      <div class="ot-row" onclick="openModal('edit-opening-modal')">
+        <div><div class="ot-role">Technical Support Specialist</div><div class="ot-code">NW-SUP-3B7R</div></div>
+        <div style="font-size:12px;font-weight:600;">Axiom Tech</div>
+        <div style="font-size:12px;">Nany Salcedo</div>
+        <div><span class="badge b-amber">4 active</span></div>
+        <div><span class="badge b-amber">On hold</span></div>
+        <div onclick="event.stopPropagation()"><div class="pub-toggle"><button class="toggle" onclick="this.classList.toggle('on')"></button><span style="color:var(--g4);font-size:11px;">Draft</span></div></div>
+      </div>
+      <div class="ot-row" onclick="openModal('edit-opening-modal')">
+        <div><div class="ot-role">Operations Manager</div><div class="ot-code">NW-OPS-5P2W</div></div>
+        <div style="font-size:12px;font-weight:600;">Axiom Tech</div>
+        <div style="font-size:12px;">Andres García</div>
+        <div><span class="badge b-gray">2 active</span></div>
+        <div><span class="badge b-green">Active</span></div>
+        <div onclick="event.stopPropagation()"><div class="pub-toggle"><button class="toggle on" onclick="this.classList.toggle('on')"></button><span style="color:var(--green);font-size:11px;">Published</span></div></div>
+      </div>
+      <div class="ot-row" onclick="openModal('edit-opening-modal')">
+        <div><div class="ot-role">Marketing Ops Specialist</div><div class="ot-code">NW-MKT-7Q4N</div></div>
+        <div style="font-size:12px;font-weight:600;">NovaDash</div>
+        <div style="font-size:12px;">Byron Giraldo</div>
+        <div><span class="badge b-amber">5 active</span></div>
+        <div><span class="badge b-amber">On hold</span></div>
+        <div onclick="event.stopPropagation()"><div class="pub-toggle"><button class="toggle" onclick="this.classList.toggle('on')"></button><span style="color:var(--g4);font-size:11px;">Draft</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       ASSESSMENTS
+  ══════════════════════════════ -->
+  <div class="page" id="page-assessments">
+    <div class="ph">
+      <div><div class="ph-title">Assessments</div><div class="ph-sub">Review AI-generated questions before launching to candidates.</div></div>
+    </div>
+    <div class="assess-list">
+
+      <!-- Pending review -->
+      <div class="assess-card pending">
+        <div class="assess-top">
+          <div>
+            <div class="assess-role">Customer Success Manager</div>
+            <div class="assess-meta">For: David Herrera (NW-C-2N6Q8) · Crestline SaaS · Generated by AI Apr 10, 2026</div>
+          </div>
+          <span class="badge b-amber">⏳ Awaiting your review</span>
+        </div>
+        <div class="slbl">Questions (10 total · 30 minutes)</div>
+        <div class="q-list">
+          <div class="q-item"><div class="q-num">Q1</div><div class="q-text">A customer's usage has dropped 40% over the past 30 days and they haven't responded to your last two emails. Walk me through exactly what you would do in the next 48 hours.</div><button class="q-edit" onclick="toast('Edit mode — coming soon.','')">✏️</button><button class="q-remove" onclick="this.closest('.q-item').remove();toast('Question removed.','')">✕</button></div>
+          <div class="q-item"><div class="q-num">Q2</div><div class="q-text">You're preparing for a quarterly business review with a customer who is up for renewal in 60 days but hasn't hit their success metrics. How do you structure the QBR?</div><button class="q-edit" onclick="toast('Edit mode — coming soon.','')">✏️</button><button class="q-remove" onclick="this.closest('.q-item').remove();toast('Question removed.','')">✕</button></div>
+          <div class="q-item"><div class="q-num">Q3</div><div class="q-text">Describe a situation where a customer asked you for a feature that doesn't exist. How did you handle the conversation and what was the outcome?</div><button class="q-edit" onclick="toast('Edit mode — coming soon.','')">✏️</button><button class="q-remove" onclick="this.closest('.q-item').remove();toast('Question removed.','')">✕</button></div>
+          <div class="q-item"><div class="q-num">Q4</div><div class="q-text">What does a healthy customer look like 90 days after onboarding? What metrics would you track?</div><button class="q-edit" onclick="toast('Edit mode — coming soon.','')">✏️</button><button class="q-remove" onclick="this.closest('.q-item').remove();toast('Question removed.','')">✕</button></div>
+          <div class="q-item"><div class="q-num">Q5</div><div class="q-text">You discover a customer is using a competitor product alongside yours. What do you do?</div><button class="q-edit" onclick="toast('Edit mode — coming soon.','')">✏️</button><button class="q-remove" onclick="this.closest('.q-item').remove();toast('Question removed.','')">✕</button></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:4px;">
+          <button class="btn btn-g" onclick="toast('Assessment approved and launched to David Herrera. Email sent.','ok')">✓ Approve & launch →</button>
+          <button class="btn btn-ghost" onclick="toast('Assessment regenerated with new questions.','ok')">↺ Regenerate questions</button>
+          <button class="btn btn-ghost" onclick="toast('Question added.','ok')">+ Add question</button>
+        </div>
+      </div>
+
+      <!-- Completed -->
+      <div class="assess-card">
+        <div class="assess-top">
+          <div>
+            <div class="assess-role">Customer Success Manager</div>
+            <div class="assess-meta">For: David Herrera · Completed Apr 8, 2026 · Score: 87/100 · No integrity flags</div>
+          </div>
+          <span class="badge b-green">✓ Completed</span>
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <div style="background:var(--g1);border-radius:8px;padding:12px 16px;text-align:center;"><div style="font-size:28px;font-weight:900;color:var(--purple);letter-spacing:-2px;">87</div><div style="font-size:10px;color:var(--g5);">Overall score</div></div>
+          <div style="background:var(--g1);border-radius:8px;padding:12px 16px;text-align:center;"><div style="font-size:20px;font-weight:900;color:var(--green);">43/50</div><div style="font-size:10px;color:var(--g5);">Technical</div></div>
+          <div style="background:var(--g1);border-radius:8px;padding:12px 16px;text-align:center;"><div style="font-size:16px;font-weight:800;color:var(--green);">Advanced</div><div style="font-size:10px;color:var(--g5);">English level</div></div>
+          <div style="background:var(--g1);border-radius:8px;padding:12px 16px;text-align:center;"><div style="font-size:16px;font-weight:800;color:var(--green);">✓ Clean</div><div style="font-size:10px;color:var(--g5);">Integrity</div></div>
+          <div style="background:var(--g1);border-radius:8px;padding:12px 16px;text-align:center;"><div style="font-size:14px;font-weight:800;color:var(--black);">28 min</div><div style="font-size:10px;color:var(--g5);">Time taken</div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       HIRED CANDIDATES
+  ══════════════════════════════ -->
+  <div class="page" id="page-hired">
+    <div class="ph">
+      <div><div class="ph-title">Hired Candidates</div><div class="ph-sub">All placements — with time at company and guarantee status.</div></div>
+      <button class="btn btn-ghost btn-sm">Export CSV</button>
+    </div>
+    <div class="hired-table">
+      <div class="ht-hdr"><div>Candidate</div><div>Company · Role</div><div>Hire date</div><div>Time at company</div><div>Guarantee</div><div>Referral</div></div>
+      <div class="ht-row">
+        <div class="ct-cand"><div class="ct-av" style="background:linear-gradient(135deg,#10B981,#059669);">VR</div><div><div class="ct-name">Valentina Ríos</div><div class="ct-code">NW-C-9A2K1</div></div></div>
+        <div><div style="font-size:12px;font-weight:600;">Crestline SaaS</div><div style="font-size:10px;color:var(--g5);">Customer Success Manager</div></div>
+        <div style="font-size:12px;">Jan 12, 2026</div>
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--black);">3 months, 4 days</div>
+          <div class="guar-bar"><div class="guar-fill" style="width:53%;background:var(--green);"></div></div>
+        </div>
+        <div><span class="badge b-green">✓ Active · 78 days left</span></div>
+        <div><span class="badge b-gray">None</span></div>
+      </div>
+      <div class="ht-row">
+        <div class="ct-cand"><div class="ct-av" style="background:linear-gradient(135deg,#6C3CE1,#8B5CF6);">JP</div><div><div class="ct-name">Jorge Pérez</div><div class="ct-code">NW-C-4M8R2</div></div></div>
+        <div><div style="font-size:12px;font-weight:600;">Axiom Tech</div><div style="font-size:10px;color:var(--g5);">SDR / Sales Development Rep</div></div>
+        <div style="font-size:12px;">Feb 1, 2026</div>
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--black);">2 months, 11 days</div>
+          <div class="guar-bar"><div class="guar-fill" style="width:39%;background:var(--amber);"></div></div>
+        </div>
+        <div><span class="badge b-amber">⏳ Active · 109 days left</span></div>
+        <div>
+          <div style="font-size:11px;font-weight:600;color:var(--black);">Valentina Ríos</div>
+          <div style="font-size:10px;color:var(--g5);">Pending · 3mo check Jun 1</div>
+          <button class="btn btn-g btn-sm" style="margin-top:4px;" onclick="toast('$100 USD payout triggered for Valentina Ríos.','ok')">Pay $100 →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       BLOG
+  ══════════════════════════════ -->
+  <div class="page" id="page-blog">
+    <div class="ph">
+      <div><div class="ph-title">Blog</div><div class="ph-sub">Create and manage Nearwork content for nearwork.co/blog.</div></div>
+      <button class="btn btn-p btn-sm" onclick="openBlogEditor()">+ New post</button>
+    </div>
+    <div class="blog-layout">
+      <div>
+        <div class="slbl">Published (2)</div>
+        <div class="blog-list" id="blog-list">
+          <div class="blog-card">
+            <div class="blog-thumb">📊</div>
+            <div style="flex:1;">
+              <div class="blog-title">The State of Colombian Talent — 2026</div>
+              <div class="blog-excerpt">Why Colombia surpassed every other LatAm country to become the #1 nearshore destination for US companies.</div>
+              <div class="blog-meta"><span>Published Apr 5, 2026</span><span>·</span><span>Byron Giraldo</span></div>
+              <div style="display:flex;gap:6px;margin-top:8px;">
+                <button class="btn btn-ghost btn-sm" onclick="openBlogEditor('Colombia Report 2026')">Edit</button>
+                <button class="btn btn-danger btn-sm" onclick="toast('Post unpublished.','ok')">Unpublish</button>
+              </div>
+            </div>
+          </div>
+          <div class="blog-card">
+            <div class="blog-thumb">💰</div>
+            <div style="flex:1;">
+              <div class="blog-title">Colombia vs US Salary Guide — 2026</div>
+              <div class="blog-excerpt">Role-by-role salary comparison for the top 12 SaaS positions including CSM, SDR, Engineering, and Operations.</div>
+              <div class="blog-meta"><span>Published Mar 28, 2026</span><span>·</span><span>Byron Giraldo</span></div>
+              <div style="display:flex;gap:6px;margin-top:8px;">
+                <button class="btn btn-ghost btn-sm" onclick="openBlogEditor('Salary Guide 2026')">Edit</button>
+                <button class="btn btn-danger btn-sm" onclick="toast('Post unpublished.','ok')">Unpublish</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="slbl" style="margin-top:20px;">Drafts (1)</div>
+        <div class="blog-list">
+          <div class="blog-card draft">
+            <div class="blog-thumb" style="background:var(--g2);">✍️</div>
+            <div style="flex:1;">
+              <div class="blog-title">Why the Timezone Advantage Matters More Than You Think</div>
+              <div class="blog-excerpt">Draft — last edited Apr 11, 2026</div>
+              <div style="display:flex;gap:6px;margin-top:8px;">
+                <button class="btn btn-ghost btn-sm" onclick="openBlogEditor('Timezone Advantage')">Edit</button>
+                <button class="btn btn-p btn-sm" onclick="toast('Post published to nearwork.co/blog','ok')">Publish</button>
+                <button class="btn btn-danger btn-sm" onclick="toast('Draft deleted.','ok')">Delete</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Editor panel -->
+      <div class="card" id="blog-editor" style="display:none;">
+        <div style="font-size:13px;font-weight:700;color:var(--black);margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;">
+          <span id="editor-title-label">New post</span>
+          <button class="btn btn-ghost btn-sm" onclick="closeBlogEditor()">✕ Close</button>
+        </div>
+        <div class="field"><label>Post title</label><input type="text" id="post-title" placeholder="Enter post title..."></div>
+        <div class="field"><label>Slug (URL)</label><input type="text" id="post-slug" placeholder="e.g. colombia-salary-guide-2026"></div>
+        <div class="field"><label>Category</label><select><option>Market report</option><option>Hiring guide</option><option>Case study</option><option>Company news</option></select></div>
+        <div class="field">
+          <label>Content</label>
+          <div class="rte-wrap">
+            <div class="rte-toolbar">
+              <button class="rte-btn" onclick="fmt('bold')" title="Bold"><b>B</b></button>
+              <button class="rte-btn" onclick="fmt('italic')" title="Italic"><i>I</i></button>
+              <button class="rte-btn" onclick="fmt('underline')" title="Underline"><u>U</u></button>
+              <div class="rte-sep"></div>
+              <button class="rte-btn" onclick="fmt('formatBlock','h1')" title="H1">H1</button>
+              <button class="rte-btn" onclick="fmt('formatBlock','h2')" title="H2">H2</button>
+              <button class="rte-btn" onclick="fmt('formatBlock','h3')" title="H3">H3</button>
+              <div class="rte-sep"></div>
+              <button class="rte-btn" onclick="fmt('insertUnorderedList')" title="Bullet list">• List</button>
+              <button class="rte-btn" onclick="fmt('insertOrderedList')" title="Numbered list">1. List</button>
+              <button class="rte-btn" onclick="fmt('formatBlock','blockquote')" title="Quote">❝</button>
+              <div class="rte-sep"></div>
+              <button class="rte-btn" onclick="insertLink()" title="Link">🔗</button>
+            </div>
+            <div class="rte-content" id="rte-content" contenteditable="true" placeholder="Start writing your post..."></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:4px;">
+          <button class="btn btn-p" onclick="toast('Post published to nearwork.co/blog','ok')">Publish now</button>
+          <button class="btn btn-ghost" onclick="toast('Draft saved.','ok')">Save draft</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       TEAM
+  ══════════════════════════════ -->
+  <div class="page" id="page-team">
+    <div class="ph">
+      <div><div class="ph-title">Team</div><div class="ph-sub">Nearwork employees and their access levels.</div></div>
+      <button class="btn btn-p btn-sm" onclick="openModal('new-team-modal')">+ Add team member</button>
+    </div>
+    <div class="team-grid">
+      <div class="team-card">
+        <div class="tc-top"><div class="tc-av" style="background:linear-gradient(135deg,var(--purple),var(--pl));">BG</div><div><div class="tc-name">Byron Giraldo</div><div class="tc-role">Super Admin · CEO</div></div></div>
+        <div class="tc-stats">
+          <div class="tcs"><div class="tcs-n">4</div><div class="tcs-l">Active openings</div></div>
+          <div class="tcs"><div class="tcs-n">3</div><div class="tcs-l">Orgs assigned</div></div>
+        </div>
+        <div style="margin-bottom:10px;"><span class="badge b-dark">Super Admin</span></div>
+        <div class="tc-actions"><button class="btn btn-ghost btn-sm" style="opacity:.4;cursor:not-allowed;">Edit (you)</button></div>
+      </div>
+      <div class="team-card">
+        <div class="tc-top"><div class="tc-av" style="background:linear-gradient(135deg,#10B981,#059669);">NS</div><div><div class="tc-name">Nany Salcedo</div><div class="tc-role">Recruiter · COO</div></div></div>
+        <div class="tc-stats">
+          <div class="tcs"><div class="tcs-n">1</div><div class="tcs-l">Active openings</div></div>
+          <div class="tcs"><div class="tcs-n">1</div><div class="tcs-l">Orgs assigned</div></div>
+        </div>
+        <div style="margin-bottom:10px;"><span class="badge b-purple">Recruiter</span></div>
+        <div class="tc-actions"><button class="btn btn-ghost btn-sm" onclick="openModal('edit-team-modal')">Edit access</button><button class="btn btn-danger btn-sm" onclick="toast('Team member deactivated.','ok')">Deactivate</button></div>
+      </div>
+      <div class="team-card">
+        <div class="tc-top"><div class="tc-av" style="background:linear-gradient(135deg,#F59E0B,#D97706);">AG</div><div><div class="tc-name">Andres García</div><div class="tc-role">Recruiter · CQO</div></div></div>
+        <div class="tc-stats">
+          <div class="tcs"><div class="tcs-n">0</div><div class="tcs-l">Active openings</div></div>
+          <div class="tcs"><div class="tcs-n">0</div><div class="tcs-l">Orgs assigned</div></div>
+        </div>
+        <div style="margin-bottom:10px;"><span class="badge b-amber">Limited access</span></div>
+        <div class="tc-actions"><button class="btn btn-ghost btn-sm" onclick="openModal('edit-team-modal')">Edit access</button><button class="btn btn-danger btn-sm" onclick="toast('Team member deactivated.','ok')">Deactivate</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       AUDIT LOG
+  ══════════════════════════════ -->
+  <div class="page" id="page-audit">
+    <div class="ph">
+      <div><div class="ph-title">Audit Log</div><div class="ph-sub">Every action on the platform — who, what, when.</div></div>
+      <button class="btn btn-ghost btn-sm">Export CSV</button>
+    </div>
+    <div class="toolbar">
+      <div class="sbox"><span class="si">🔍</span><input type="text" placeholder="Search audit log..."></div>
+      <select class="fsel"><option>All users</option><option>Byron Giraldo</option><option>Alex Chen (Crestline)</option><option>Sarah Kim (Crestline)</option></select>
+      <select class="fsel"><option>All actions</option><option>Stage moved</option><option>Profile updated</option><option>CV downloaded</option><option>Note added</option><option>Org created</option><option>User invited</option></select>
+      <input type="date" style="padding:9px 12px;border:1.5px solid var(--g3);border-radius:9px;font-size:12px;font-family:'Poppins',sans-serif;outline:none;">
+    </div>
+    <div class="audit-table">
+      <div class="au-hdr"><div>Who</div><div>Action</div><div>Target</div><div>Timestamp</div></div>
+      <div class="au-row"><div><div class="au-who">Byron Giraldo</div><div class="au-behalf">Super Admin</div></div><div class="au-action">Moved <strong>David Herrera</strong> from Stage 4 → Stage 5 (Presented)</div><div style="font-size:11px;color:var(--g6);">Crestline SaaS · NW-CSM-4X8B</div><div class="au-time">Apr 12, 2026 · 10:42am</div></div>
+      <div class="au-row"><div><div class="au-who">Alex Chen</div><div class="au-behalf">Crestline SaaS · Admin</div></div><div class="au-action">Left a note on <strong>David Herrera's</strong> profile</div><div style="font-size:11px;color:var(--g6);">Crestline SaaS · NW-C-2N6Q8</div><div class="au-time">Apr 12, 2026 · 9:42am</div></div>
+      <div class="au-row"><div><div class="au-who">Byron Giraldo</div><div class="au-behalf">Super Admin</div></div><div class="au-action">Approved and launched assessment for <strong>David Herrera</strong></div><div style="font-size:11px;color:var(--g6);">Crestline SaaS · NW-CSM-4X8B</div><div class="au-time">Apr 11, 2026 · 3:30pm</div></div>
+      <div class="au-row"><div><div class="au-who">Sarah Kim</div><div class="au-behalf">Crestline SaaS · Hiring Manager</div></div><div class="au-action">Downloaded CV of <strong>María López</strong></div><div style="font-size:11px;color:var(--g6);">Crestline SaaS · NW-C-5B9W3</div><div class="au-time">Apr 11, 2026 · 2:15pm</div></div>
+      <div class="au-row"><div><div class="au-who">Byron Giraldo</div><div class="au-behalf">on behalf of Crestline SaaS</div></div><div class="au-action">Switched into Crestline SaaS environment (impersonate mode)</div><div style="font-size:11px;color:var(--g6);">Organization view</div><div class="au-time">Apr 10, 2026 · 4:00pm</div></div>
+      <div class="au-row"><div><div class="au-who">Byron Giraldo</div><div class="au-behalf">Super Admin</div></div><div class="au-action">Created new organization <strong>Axiom Tech</strong> · Essential plan</div><div style="font-size:11px;color:var(--g6);">NW-ORG-3B7F</div><div class="au-time">Apr 9, 2026 · 11:20am</div></div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- ══ MODALS ══ -->
+
+<!-- New Org -->
+<div class="modal-bg" id="new-org-modal" onclick="if(event.target===this)closeModal('new-org-modal')">
+  <div class="modal sm">
+    <div class="modal-hdr"><div class="modal-title">New organization</div><button class="modal-close" onclick="closeModal('new-org-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="field"><label>Company name</label><input type="text" placeholder="Crestline SaaS"></div>
+      <div class="field"><label>Domain</label><input type="text" placeholder="crestline.io"></div>
+      <div class="field"><label>Plan</label><select><option>Standard</option><option>Lite</option><option>Essential</option><option>Elite</option></select></div>
+      <div class="field"><label>Seats</label><input type="number" value="3" min="1"></div>
+      <div class="field"><label>Primary contact email</label><input type="email" placeholder="ceo@company.com"></div>
+      <div class="field"><label>Primary color (branding)</label><input type="color" value="#6C3CE1" style="height:40px;cursor:pointer;"></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('new-org-modal')">Cancel</button><button class="btn btn-p" onclick="closeModal('new-org-modal');toast('Organization created successfully!','ok')">Create organization →</button></div>
+  </div>
+</div>
+
+<!-- Edit Org -->
+<div class="modal-bg" id="edit-org-modal" onclick="if(event.target===this)closeModal('edit-org-modal')">
+  <div class="modal sm">
+    <div class="modal-hdr"><div class="modal-title">Edit organization — Crestline SaaS</div><button class="modal-close" onclick="closeModal('edit-org-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="field"><label>Company name</label><input type="text" value="Crestline SaaS"></div>
+      <div class="field"><label>Domain</label><input type="text" value="crestline.io"></div>
+      <div class="field"><label>Plan</label><select><option>Standard</option><option>Lite</option><option selected>Essential</option><option>Elite</option></select></div>
+      <div class="field"><label>Seats</label><input type="number" value="3" min="1"></div>
+      <div class="field"><label>Status</label><select><option>Active</option><option>On hold</option><option>Suspended</option></select></div>
+      <div class="field"><label>Primary color (branding)</label><input type="color" value="#6C3CE1" style="height:40px;cursor:pointer;"></div>
+      <div class="field"><label>Reset admin password</label><input type="email" placeholder="Enter user email to send reset link..."></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('edit-org-modal')">Cancel</button><button class="btn btn-p" onclick="closeModal('edit-org-modal');toast('Organization updated.','ok')">Save changes</button></div>
+  </div>
+</div>
+
+<!-- New Opening -->
+<div class="modal-bg" id="new-opening-modal" onclick="if(event.target===this)closeModal('new-opening-modal')">
+  <div class="modal">
+    <div class="modal-hdr"><div class="modal-title">Create new opening</div><button class="modal-close" onclick="closeModal('new-opening-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="field-row">
+        <div class="field"><label>Organization</label><select><option>Crestline SaaS</option><option>Axiom Tech</option><option>NovaDash</option></select></div>
+        <div class="field"><label>Role type</label><select><option>Customer Success Manager</option><option>SDR / Sales Dev Rep</option><option>Technical Support</option><option>Marketing Ops</option><option>Software Developer</option><option>Operations Manager</option><option>Other</option></select></div>
+      </div>
+      <div class="field"><label>Job title (exact)</label><input type="text" placeholder="e.g. Senior Customer Success Manager"></div>
+      <div class="field-row">
+        <div class="field"><label>Recruiter assigned</label><select><option>Byron Giraldo</option><option>Nany Salcedo</option><option>Andres García</option></select></div>
+        <div class="field"><label>Target hires</label><input type="number" value="1" min="1"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Salary min (USD/mo)</label><input type="number" placeholder="2000"></div>
+        <div class="field"><label>Salary max (USD/mo)</label><input type="number" placeholder="2800"></div>
+      </div>
+      <div class="field"><label>Job description</label><textarea placeholder="Describe the role, responsibilities, requirements..."></textarea></div>
+      <div class="field-row">
+        <div class="field"><label>Experience required</label><select><option>Junior (0-2 yrs)</option><option>Mid (2-5 yrs)</option><option>Senior (5+ yrs)</option></select></div>
+        <div class="field"><label>English requirement</label><select><option>B2 Professional</option><option>C1 Advanced</option><option>Native only</option></select></div>
+      </div>
+      <div class="field"><label>Kick-off call notes</label><textarea placeholder="What we discussed with the client — salary budget, culture, team size, tools, start date..."></textarea></div>
+      <div class="field-row">
+        <div class="field"><label>Publish to nearwork.co/jobs?</label><select><option>Yes — publish immediately</option><option>No — keep internal</option></select></div>
+        <div class="field"><label>Opening code (auto-generated)</label><input type="text" value="NW-CSM-8P4Q" readonly style="background:var(--g1);color:var(--g5);cursor:not-allowed;font-family:monospace;"></div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('new-opening-modal')">Cancel</button><button class="btn btn-p" onclick="closeModal('new-opening-modal');toast('Opening created and published!','ok')">Create opening →</button></div>
+  </div>
+</div>
+
+<!-- Edit Opening -->
+<div class="modal-bg" id="edit-opening-modal" onclick="if(event.target===this)closeModal('edit-opening-modal')">
+  <div class="modal">
+    <div class="modal-hdr"><div class="modal-title">Edit opening — NW-CSM-4X8B</div><button class="modal-close" onclick="closeModal('edit-opening-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="field-row">
+        <div class="field"><label>Organization</label><select><option selected>Crestline SaaS</option><option>Axiom Tech</option><option>NovaDash</option></select></div>
+        <div class="field"><label>Recruiter assigned</label><select><option selected>Byron Giraldo</option><option>Nany Salcedo</option><option>Andres García</option></select></div>
+      </div>
+      <div class="field"><label>Job title</label><input type="text" value="Customer Success Manager"></div>
+      <div class="field-row">
+        <div class="field"><label>Status</label><select><option selected>Active</option><option>On hold</option><option>Closed</option></select></div>
+        <div class="field"><label>Target hires</label><input type="number" value="1"></div>
+      </div>
+      <div class="field"><label>Job description</label><textarea>Own the post-sale relationship with US SaaS clients. Drive adoption, reduce churn, and expand accounts...</textarea></div>
+      <div class="field"><label>Kick-off notes</label><textarea>Looking for a senior CSM to own 25-40 accounts in the $10K-$50K ARR range. Must have SaaS experience...</textarea></div>
+      <div class="field-row">
+        <div class="field"><label>Publish to nearwork.co/jobs?</label><select><option selected>Yes — published</option><option>No — unpublish</option></select></div>
+        <div class="field"><label>Opening code</label><input type="text" value="NW-CSM-4X8B" readonly style="background:var(--g1);color:var(--g5);cursor:not-allowed;font-family:monospace;"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger" onclick="closeModal('edit-opening-modal');toast('Opening closed.','ok')">Close opening</button>
+      <button class="btn btn-ghost" onclick="closeModal('edit-opening-modal')">Cancel</button>
+      <button class="btn btn-p" onclick="closeModal('edit-opening-modal');toast('Opening updated.','ok')">Save changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- New Team Member -->
+<div class="modal-bg" id="new-team-modal" onclick="if(event.target===this)closeModal('new-team-modal')">
+  <div class="modal sm">
+    <div class="modal-hdr"><div class="modal-title">Add team member</div><button class="modal-close" onclick="closeModal('new-team-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="field"><label>Full name</label><input type="text" placeholder="Jane Doe"></div>
+      <div class="field"><label>Work email (@nearwork.co)</label><input type="email" placeholder="jane@nearwork.co"></div>
+      <div class="field"><label>Role / title</label><input type="text" placeholder="Recruiter"></div>
+      <div class="field"><label>Access level</label><select><option>Recruiter — manage assigned openings only</option><option>Senior Recruiter — manage all openings</option><option>Admin — full access except super admin</option></select></div>
+      <div class="field"><label>Assign to organizations</label><select multiple style="height:90px;"><option>Crestline SaaS</option><option>Axiom Tech</option><option>NovaDash</option></select><div style="font-size:10px;color:var(--g4);margin-top:3px;">Hold Cmd/Ctrl to select multiple</div></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('new-team-modal')">Cancel</button><button class="btn btn-p" onclick="closeModal('new-team-modal');toast('Team member invited. Email sent.','ok')">Send invite →</button></div>
+  </div>
+</div>
+
+<!-- Edit Team Member -->
+<div class="modal-bg" id="edit-team-modal" onclick="if(event.target===this)closeModal('edit-team-modal')">
+  <div class="modal sm">
+    <div class="modal-hdr"><div class="modal-title">Edit access — Nany Salcedo</div><button class="modal-close" onclick="closeModal('edit-team-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="field"><label>Access level</label><select><option selected>Recruiter — manage assigned openings only</option><option>Senior Recruiter — manage all openings</option><option>Admin — full access except super admin</option></select></div>
+      <div class="field"><label>Assigned organizations</label><select multiple style="height:90px;"><option selected>Axiom Tech</option><option>Crestline SaaS</option><option>NovaDash</option></select></div>
+      <div class="field"><label>Reset password</label><button class="btn btn-ghost btn-sm" onclick="toast('Password reset email sent to nany@nearwork.co','ok')">Send reset email</button></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('edit-team-modal')">Cancel</button><button class="btn btn-p" onclick="closeModal('edit-team-modal');toast('Access updated.','ok')">Save changes</button></div>
+  </div>
+</div>
+
+<!-- Candidate Detail -->
+<div class="modal-bg" id="cand-detail-modal" onclick="if(event.target===this)closeModal('cand-detail-modal')">
+  <div class="modal lg">
+    <div class="modal-hdr">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#EC4899,#BE185D);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;">DH</div>
+        <div><div style="font-size:15px;font-weight:800;color:var(--black);">David Herrera</div><div style="font-size:10px;color:var(--g4);font-family:monospace;">NW-C-2N6Q8</div></div>
+        <span class="badge b-green" style="margin-left:6px;">Stage 6 — Client Review</span>
+      </div>
+      <button class="modal-close" onclick="closeModal('cand-detail-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:16px;">
+        <div style="background:var(--g1);border-radius:8px;padding:10px 12px;"><div style="font-size:9px;font-weight:700;color:var(--g5);text-transform:uppercase;margin-bottom:2px;">Score</div><div style="font-size:22px;font-weight:900;color:var(--green);">91</div></div>
+        <div style="background:var(--g1);border-radius:8px;padding:10px 12px;"><div style="font-size:9px;font-weight:700;color:var(--g5);text-transform:uppercase;margin-bottom:2px;">Role match</div><div style="font-size:18px;font-weight:900;color:var(--purple);">96%</div></div>
+        <div style="background:var(--g1);border-radius:8px;padding:10px 12px;"><div style="font-size:9px;font-weight:700;color:var(--g5);text-transform:uppercase;margin-bottom:2px;">Assessment</div><div style="font-size:18px;font-weight:900;color:var(--green);">87/100</div></div>
+        <div style="background:var(--g1);border-radius:8px;padding:10px 12px;"><div style="font-size:9px;font-weight:700;color:var(--g5);text-transform:uppercase;margin-bottom:2px;">Referral source</div><div style="font-size:12px;font-weight:700;color:var(--black);">None</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+        <div style="background:var(--g1);border-radius:8px;padding:10px 12px;"><div style="font-size:9px;font-weight:700;color:var(--g5);text-transform:uppercase;margin-bottom:2px;">Email</div><div style="font-size:12px;font-weight:600;">david.herrera@gmail.com</div></div>
+        <div style="background:var(--g1);border-radius:8px;padding:10px 12px;"><div style="font-size:9px;font-weight:700;color:var(--g5);text-transform:uppercase;margin-bottom:2px;">Phone</div><div style="font-size:12px;font-weight:600;">+57 310 555 0192</div></div>
+        <div style="background:var(--g1);border-radius:8px;padding:10px 12px;"><div style="font-size:9px;font-weight:700;color:var(--g5);text-transform:uppercase;margin-bottom:2px;">City</div><div style="font-size:12px;font-weight:600;">Bogotá, Colombia</div></div>
+        <div style="background:var(--g1);border-radius:8px;padding:10px 12px;"><div style="font-size:9px;font-weight:700;color:var(--g5);text-transform:uppercase;margin-bottom:2px;">Expected salary</div><div style="font-size:12px;font-weight:600;">$2,400/mo USD</div></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-p btn-sm" onclick="closeModal('cand-detail-modal');toast('Moving to next stage...','ok')">Move to next stage</button>
+        <button class="btn btn-ghost btn-sm" onclick="toast('CV downloaded.','ok')">⬇ Download CV</button>
+        <button class="btn btn-ghost btn-sm" onclick="toast('Assessment launched.','ok')">Launch assessment</button>
+        <button class="btn btn-danger btn-sm" onclick="closeModal('cand-detail-modal');toast('Candidate banned from future openings.','ok')">Ban candidate</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══ PAGES ══ */
+const PAGES=['dashboard','orgs','candidates','openings','assessments','hired','blog','team','audit'];
+function showPage(id){
+  PAGES.forEach(p=>{
+    document.getElementById('page-'+p).classList.toggle('show',p===id);
+    const t=document.getElementById('tab-'+p);
+    if(t) t.classList.toggle('on',p===id);
+  });
+  window.scrollTo(0,0);
+  closeAllDrops();
+}
+
+/* ══ IMPERSONATE ══ */
+function impersonate(orgName){
+  // Open client dashboard in new tab
+  const url = 'client-dashboard.html';
+  const win = window.open(url,'_blank');
+  // Show banner on THIS admin tab
+  document.getElementById('imp-org-name').textContent = orgName;
+  document.getElementById('imp-banner').classList.add('show');
+  toast('Viewing '+orgName+' environment in new tab','ok');
+}
+function exitImpersonate(){
+  document.getElementById('imp-banner').classList.remove('show');
+  toast('Returned to Admin HQ','ok');
+}
+
+/* ══ MODALS ══ */
+function openModal(id){ document.getElementById(id)?.classList.add('open'); }
+function closeModal(id){ document.getElementById(id)?.classList.remove('open'); }
+
+/* ══ DROPDOWNS ══ */
+function toggleDrop(id){
+  document.getElementById(id)?.classList.toggle('open');
+  ['notif-drop','av-menu'].forEach(el=>{ if(el!==id) document.getElementById(el)?.classList.remove('open'); });
+}
+function closeAllDrops(){ ['notif-drop','av-menu'].forEach(id=>document.getElementById(id)?.classList.remove('open')); }
+document.addEventListener('click',e=>{
+  if(!e.target.closest('#bell-wrap')) document.getElementById('notif-drop')?.classList.remove('open');
+  if(!e.target.closest('#av-wrap')) document.getElementById('av-menu')?.classList.remove('open');
+});
+
+/* ══ NOTIFICATIONS ══ */
+function markAllRead(){
+  document.querySelectorAll('.nd-item.unread').forEach(i=>i.classList.remove('unread'));
+  document.querySelectorAll('.nd-dot').forEach(d=>d.classList.add('read'));
+  document.querySelector('.bell-badge').style.display='none';
+  toast('All notifications marked as read.','ok');
+}
+
+/* ══ BLOG EDITOR ══ */
+function openBlogEditor(title){
+  document.getElementById('blog-editor').style.display='block';
+  if(title){
+    document.getElementById('editor-title-label').textContent='Editing: '+title;
+    document.getElementById('post-title').value=title;
+  } else {
+    document.getElementById('editor-title-label').textContent='New post';
+    document.getElementById('post-title').value='';
+    document.getElementById('rte-content').innerHTML='';
+  }
+  document.getElementById('blog-editor').scrollIntoView({behavior:'smooth'});
+}
+function closeBlogEditor(){
+  document.getElementById('blog-editor').style.display='none';
+}
+function fmt(cmd,val){
+  document.getElementById('rte-content').focus();
+  document.execCommand(cmd,false,val||null);
+}
+function insertLink(){
+  const url=prompt('Enter URL:');
+  if(url){ document.getElementById('rte-content').focus(); document.execCommand('createLink',false,url); }
+}
+
+/* ══ SIGN OUT ══ */
+function signOut(){ toast('Signing out...',''); setTimeout(()=>window.location.href='login.html',800); }
+
+/* ══ TOAST ══ */
+function toast(msg,t){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.className='toast show '+(t||'');
+  setTimeout(()=>el.classList.remove('show'),3500);
+}
+</script>
+</body>
+</html>
