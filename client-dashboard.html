@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Client Portal | Nearwork</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --purple:#6C3CE1;--pd:#4F28B8;--pl:#8B5CF6;--pp:#F0EBFF;
+  --black:#0D0D0D;--white:#fff;
+  --g1:#F9FAFB;--g2:#F3F4F6;--g3:#D1D5DB;--g4:#9CA3AF;--g5:#6B7280;--g6:#374151;
+  --green:#10B981;--gl:#6EE7B7;--red:#EF4444;--amber:#F59E0B;--blue:#2563EB;
+}
+html{scroll-behavior:smooth;}
+body{font-family:'Poppins',sans-serif;background:var(--g1);color:var(--black);min-height:100vh;}
+
+/* ══ NAV ══ */
+.nav{position:sticky;top:0;z-index:200;height:60px;background:#fff;border-bottom:1px solid var(--g3);display:flex;align-items:center;padding:0 28px;gap:0;}
+.nav-logo{font-size:18px;font-weight:900;color:var(--black);letter-spacing:-1px;cursor:pointer;text-decoration:none;flex-shrink:0;margin-right:32px;}
+.nav-logo span{color:var(--purple);}
+.nav-tabs{display:flex;align-items:center;gap:2px;flex:1;}
+.nav-tab{padding:7px 14px;font-size:13px;font-weight:500;color:var(--g5);border-radius:8px;cursor:pointer;transition:color .15s,background .15s;border:none;background:none;font-family:'Poppins',sans-serif;}
+.nav-tab:hover{color:var(--black);background:var(--g1);}
+.nav-tab.active{color:var(--purple);background:var(--pp);font-weight:600;}
+.nav-right{display:flex;align-items:center;gap:12px;margin-left:auto;}
+.bell-wrap{position:relative;}
+.bell-btn{width:36px;height:36px;border-radius:50%;background:var(--g1);border:1px solid var(--g3);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.bell-btn svg{width:16px;height:16px;stroke:var(--g5);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.bell-badge{position:absolute;top:-2px;right:-2px;width:16px;height:16px;border-radius:50%;background:var(--red);color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid #fff;}
+.notif-drop{position:absolute;top:calc(100% + 10px);right:0;width:320px;background:#fff;border:1px solid var(--g3);border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,0.1);opacity:0;pointer-events:none;transform:translateY(-6px);transition:opacity .2s,transform .2s;z-index:300;}
+.notif-drop.open{opacity:1;pointer-events:all;transform:translateY(0);}
+.notif-hdr{padding:14px 16px;border-bottom:1px solid var(--g2);display:flex;justify-content:space-between;align-items:center;}
+.notif-hdr span{font-size:13px;font-weight:700;}
+.notif-mark{font-size:11px;color:var(--purple);cursor:pointer;font-weight:500;}
+.notif-list{max-height:300px;overflow-y:auto;}
+.ni{padding:12px 16px;border-bottom:1px solid var(--g2);cursor:pointer;display:flex;gap:10px;transition:background .15s;}
+.ni:last-child{border-bottom:none;}
+.ni:hover{background:var(--g1);}
+.ni.unread{background:#FAFBFF;}
+.ndot{width:7px;height:7px;border-radius:50%;background:var(--purple);flex-shrink:0;margin-top:5px;}
+.ndot.r{background:var(--g3);}
+.ni-txt{font-size:12px;color:var(--g6);line-height:1.5;}
+.ni-time{font-size:10px;color:var(--g4);margin-top:2px;}
+.avatar-wrap{position:relative;}
+.avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#1a6fc4,#2d8fe8);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;cursor:pointer;border:2px solid #dbeafe;}
+.av-menu{position:absolute;top:calc(100% + 10px);right:0;width:220px;background:#fff;border:1px solid var(--g3);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.1);padding:6px;opacity:0;pointer-events:none;transform:translateY(-6px);transition:opacity .2s,transform .2s;z-index:300;}
+.av-menu.open{opacity:1;pointer-events:all;transform:translateY(0);}
+.av-info{padding:10px 12px 8px;border-bottom:1px solid var(--g2);margin-bottom:4px;}
+.av-name{font-size:13px;font-weight:700;}
+.av-co{font-size:11px;color:var(--g5);}
+.av-plan{display:inline-block;font-size:9px;font-weight:700;color:var(--purple);background:var(--pp);padding:2px 7px;border-radius:99px;margin-top:4px;}
+.ami{padding:9px 12px;font-size:13px;color:var(--g6);border-radius:8px;cursor:pointer;font-weight:500;transition:background .15s;}
+.ami:hover{background:var(--g1);}
+.ami.danger{color:var(--red);}
+.ami.danger:hover{background:#FEF2F2;}
+.am-div{height:1px;background:var(--g2);margin:4px 0;}
+
+/* ══ LAYOUT ══ */
+.main{max-width:1280px;margin:0 auto;padding:28px 24px;}
+.page{display:none;}
+.page.show{display:block;animation:fi .25s ease both;}
+@keyframes fi{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+/* ══ SHARED ══ */
+.badge{display:inline-flex;align-items:center;font-size:10px;font-weight:700;padding:3px 9px;border-radius:99px;}
+.bg-green{background:rgba(16,185,129,0.1);color:var(--green);}
+.bg-purple{background:var(--pp);color:var(--purple);}
+.bg-amber{background:rgba(245,158,11,0.1);color:var(--amber);}
+.bg-gray{background:var(--g2);color:var(--g5);}
+.bg-red{background:rgba(239,68,68,0.08);color:var(--red);}
+.bg-blue{background:#EFF6FF;color:var(--blue);}
+.bg-dark{background:var(--black);color:#fff;}
+.btn{padding:9px 20px;border-radius:8px;font-size:13px;font-weight:600;font-family:'Poppins',sans-serif;border:none;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px;text-decoration:none;}
+.btn-p{background:var(--purple);color:#fff;}
+.btn-p:hover{background:var(--pd);}
+.btn-g{background:var(--green);color:#fff;}
+.btn-g:hover{background:#059669;}
+.btn-ghost{background:var(--g1);color:var(--g6);border:1px solid var(--g3);}
+.btn-ghost:hover{border-color:var(--purple);color:var(--purple);}
+.btn-sm{padding:6px 14px;font-size:12px;}
+.btn-danger{background:rgba(239,68,68,0.08);color:var(--red);border:1px solid rgba(239,68,68,0.2);}
+
+/* toolbar */
+.toolbar{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;}
+.search-box{flex:1;min-width:200px;position:relative;}
+.search-box input{width:100%;padding:10px 13px 10px 38px;border:1.5px solid var(--g3);border-radius:9px;font-size:13px;font-family:'Poppins',sans-serif;background:#fff;outline:none;transition:border-color .2s;}
+.search-box input:focus{border-color:var(--purple);}
+.si{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--g4);font-size:14px;pointer-events:none;}
+.fsel{padding:10px 30px 10px 12px;border:1.5px solid var(--g3);border-radius:9px;font-size:12px;font-family:'Poppins',sans-serif;color:var(--g6);background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236B7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E") no-repeat right 10px center;outline:none;cursor:pointer;appearance:none;}
+.code-inp{padding:10px 13px;border:1.5px solid var(--g3);border-radius:9px;font-size:12px;font-family:'Poppins',sans-serif;outline:none;width:210px;text-transform:uppercase;letter-spacing:.04em;}
+.code-inp:focus{border-color:var(--purple);}
+.code-inp::placeholder{text-transform:none;letter-spacing:0;}
+
+/* tab pills */
+.tab-row{display:flex;gap:2px;margin-bottom:20px;background:var(--g2);border-radius:10px;padding:4px;width:fit-content;}
+.tp{padding:7px 18px;border-radius:7px;font-size:13px;font-weight:500;color:var(--g5);cursor:pointer;border:none;background:none;font-family:'Poppins',sans-serif;transition:all .2s;}
+.tp.on{background:#fff;color:var(--black);font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,0.08);}
+.tc{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:99px;font-size:9px;font-weight:700;margin-left:5px;}
+.tp.on .tc{background:var(--purple);color:#fff;}
+.tp .tc{background:var(--g3);color:var(--g5);}
+
+/* ══ DASHBOARD / HOME ══ */
+.dash-header{margin-bottom:24px;}
+.dash-header h1{font-size:22px;font-weight:800;color:var(--black);letter-spacing:-1px;margin-bottom:3px;}
+.dash-header p{font-size:13px;color:var(--g5);}
+
+/* WOW metrics row */
+.wow-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+.wow-card{background:#fff;border-radius:14px;border:1.5px solid var(--g3);padding:20px;position:relative;overflow:hidden;transition:border-color .2s,transform .2s;}
+.wow-card:hover{border-color:var(--purple);transform:translateY(-2px);}
+.wow-card.savings{background:linear-gradient(135deg,#0D0D0D,#1a0a3e);border-color:transparent;}
+.wow-eyebrow{font-size:10px;font-weight:700;color:var(--g4);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;}
+.wow-card.savings .wow-eyebrow{color:rgba(255,255,255,0.4);}
+.wow-num{font-size:28px;font-weight:900;color:var(--black);letter-spacing:-1.5px;line-height:1;margin-bottom:4px;}
+.wow-card.savings .wow-num{color:#fff;font-size:32px;}
+.wow-num em{color:var(--green);font-style:normal;}
+.wow-sub{font-size:11px;color:var(--g5);line-height:1.4;}
+.wow-card.savings .wow-sub{color:rgba(255,255,255,0.4);}
+.wow-trend{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;margin-top:6px;padding:2px 8px;border-radius:99px;}
+.wow-trend.up{background:rgba(16,185,129,0.1);color:var(--green);}
+.wow-trend.neutral{background:var(--g2);color:var(--g5);}
+
+/* pipeline health */
+.health-bar-wrap{margin-top:8px;}
+.health-bar{height:5px;background:var(--g2);border-radius:99px;overflow:hidden;}
+.health-fill{height:5px;border-radius:99px;transition:width .8s ease;}
+
+/* savings counter animation */
+@keyframes countUp{from{opacity:0;}to{opacity:1;}}
+.savings-counter{animation:countUp .5s ease;}
+
+/* ══ OPENINGS GRID ══ */
+.openings-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;}
+.oc{background:#fff;border-radius:14px;border:1.5px solid var(--g3);padding:22px;cursor:pointer;transition:border-color .2s,transform .2s,box-shadow .2s;position:relative;}
+.oc:hover{border-color:var(--purple);transform:translateY(-3px);box-shadow:0 8px 28px rgba(108,60,225,0.1);}
+.oc.hired-card{border-color:rgba(16,185,129,0.3);}
+.oc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+.oc-role{font-size:15px;font-weight:700;color:var(--black);letter-spacing:-.3px;margin-bottom:2px;}
+.oc-code{font-size:10px;font-weight:700;color:var(--g4);letter-spacing:.08em;font-family:monospace;}
+.oc-meta{display:flex;gap:10px;font-size:11px;color:var(--g5);margin-bottom:12px;flex-wrap:wrap;}
+.oc-health{margin-bottom:12px;}
+.oc-health-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;}
+.oc-health-label{font-size:10px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.08em;}
+.oc-health-score{font-size:12px;font-weight:800;color:var(--black);}
+.oc-recruiter{display:flex;align-items:center;gap:8px;padding:9px 11px;background:var(--g1);border-radius:9px;margin-bottom:12px;}
+.oc-rec-av{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--pl));display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff;flex-shrink:0;}
+.oc-rec-name{font-size:11px;font-weight:600;color:var(--black);}
+.oc-rec-role{font-size:10px;color:var(--g5);}
+.oc-bottom{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.oc-cands{font-size:11px;color:var(--g5);}
+.oc-cands strong{color:var(--black);}
+.oc-target{font-size:10px;font-weight:700;color:var(--purple);background:var(--pp);padding:3px 8px;border-radius:99px;}
+
+/* guarantee bar */
+.guarantee-strip{display:flex;align-items:center;gap:10px;margin-top:10px;padding:10px 12px;background:rgba(16,185,129,0.05);border:1px solid rgba(16,185,129,0.2);border-radius:9px;}
+.gs-icon{font-size:14px;flex-shrink:0;}
+.gs-content{flex:1;}
+.gs-label{font-size:10px;font-weight:700;color:var(--green);margin-bottom:3px;}
+.gs-bar{height:4px;background:rgba(16,185,129,0.15);border-radius:99px;overflow:hidden;}
+.gs-fill{height:4px;background:var(--green);border-radius:99px;}
+.gs-days{font-size:10px;color:var(--g5);margin-top:2px;}
+
+/* ══ OPENING DETAIL ══ */
+.detail-back{display:inline-flex;align-items:center;gap:5px;background:var(--g1);border:1px solid var(--g3);border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;color:var(--g5);cursor:pointer;margin-bottom:20px;font-family:'Poppins',sans-serif;transition:all .2s;}
+.detail-back:hover{border-color:var(--purple);color:var(--purple);}
+.detail-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:16px;flex-wrap:wrap;}
+.detail-role{font-size:24px;font-weight:800;color:var(--black);letter-spacing:-1.5px;margin-bottom:3px;}
+.detail-code{font-size:11px;font-weight:700;color:var(--g4);letter-spacing:.1em;font-family:monospace;}
+
+/* Health + stats row */
+.detail-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+.dstat{background:#fff;border-radius:12px;border:1px solid var(--g3);padding:16px;}
+.dstat-label{font-size:10px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;}
+.dstat-val{font-size:18px;font-weight:800;color:var(--black);letter-spacing:-1px;}
+.dstat-sub{font-size:11px;color:var(--g5);margin-top:2px;}
+
+/* Health score card */
+.health-card{background:linear-gradient(135deg,#0D0D0D,#1a0a3e);border-radius:12px;padding:16px;}
+.health-card .dstat-label{color:rgba(255,255,255,0.4);}
+.health-card .dstat-val{color:#fff;}
+.health-card .dstat-sub{color:rgba(255,255,255,0.35);}
+.health-items{display:flex;flex-direction:column;gap:3px;margin-top:8px;}
+.hi{display:flex;align-items:center;gap:5px;font-size:10px;color:rgba(255,255,255,0.5);}
+.hi.ok{color:var(--gl);}
+.hi.warn{color:var(--amber);}
+
+/* Kickoff structured display */
+.kickoff-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;background:#fff;border-radius:14px;border:1.5px solid rgba(108,60,225,0.2);overflow:hidden;margin-bottom:20px;}
+.kickoff-header{grid-column:1/-1;background:var(--purple);padding:14px 18px;display:flex;align-items:center;gap:10px;}
+.kickoff-header-title{font-size:13px;font-weight:700;color:#fff;}
+.kickoff-header-sub{font-size:11px;color:rgba(255,255,255,0.6);}
+.kf-item{padding:13px 18px;border-bottom:1px solid rgba(108,60,225,0.08);border-right:1px solid rgba(108,60,225,0.08);}
+.kf-item:nth-child(even){border-right:none;}
+.kf-item:nth-last-child(-n+2){border-bottom:none;}
+.kf-label{font-size:10px;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px;}
+.kf-value{font-size:13px;font-weight:600;color:var(--black);line-height:1.4;}
+.kf-value.note{font-weight:400;font-size:12px;color:var(--g6);}
+.kickoff-full{grid-column:1/-1;}
+
+/* Recruiter row */
+.recruiter-row{background:#fff;border-radius:12px;border:1px solid var(--g3);padding:16px;display:flex;align-items:center;gap:14px;margin-bottom:20px;}
+.rec-av{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--pl));display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff;flex-shrink:0;}
+.rec-name{font-size:14px;font-weight:700;color:var(--black);margin-bottom:2px;}
+.rec-title{font-size:11px;color:var(--g5);margin-bottom:5px;}
+.rec-links{display:flex;gap:10px;}
+.rec-link{font-size:11px;font-weight:600;color:var(--purple);text-decoration:none;display:flex;align-items:center;gap:3px;}
+.rec-link:hover{text-decoration:underline;}
+.rec-optional{margin-left:auto;text-align:right;}
+.rec-optional-label{font-size:10px;color:var(--g4);margin-bottom:4px;}
+
+/* ══ KANBAN ══ */
+.kanban-section{margin-bottom:24px;}
+.kanban-legend{display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap;}
+.kl-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--g5);}
+.kl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.kanban-scroll{overflow-x:auto;padding-bottom:4px;}
+.kanban{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;min-width:980px;}
+.k-col{border:1.5px solid var(--g3);border-radius:12px;overflow:hidden;background:#fff;display:flex;flex-direction:column;}
+.k-col.nw{border-color:rgba(108,60,225,0.25);}
+.k-col.cl{border-color:rgba(16,185,129,0.35);}
+.k-header{padding:10px 12px;border-bottom:1.5px solid var(--g3);display:flex;align-items:center;justify-content:space-between;}
+.k-col.nw .k-header{background:rgba(108,60,225,0.04);border-bottom-color:rgba(108,60,225,0.15);}
+.k-col.cl .k-header{background:rgba(16,185,129,0.04);border-bottom-color:rgba(16,185,129,0.15);}
+.k-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--g5);}
+.k-col.nw .k-title{color:var(--purple);}
+.k-col.cl .k-title{color:var(--green);}
+.k-cnt{width:18px;height:18px;border-radius:50%;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;background:var(--g2);color:var(--g5);}
+.k-col.nw .k-cnt{background:var(--pp);color:var(--purple);}
+.k-col.cl .k-cnt{background:rgba(16,185,129,0.1);color:var(--green);}
+.k-owner{font-size:8px;font-weight:600;padding:1px 6px;border-radius:99px;margin-top:3px;display:block;}
+.k-col.nw .k-owner{background:rgba(108,60,225,0.1);color:var(--purple);}
+.k-col.cl .k-owner{background:rgba(16,185,129,0.1);color:var(--green);}
+.k-body{padding:10px;display:flex;flex-direction:column;gap:8px;flex:1;min-height:120px;}
+.k-empty{border:1.5px dashed var(--g3);border-radius:8px;padding:14px 8px;text-align:center;font-size:10px;color:var(--g4);}
+
+/* Candidate cards in kanban */
+.kc{background:#fff;border:1.5px solid var(--g3);border-radius:10px;padding:11px;cursor:pointer;transition:border-color .2s,transform .15s,box-shadow .2s;}
+.kc:hover{border-color:var(--purple);transform:translateY(-2px);box-shadow:0 4px 16px rgba(108,60,225,0.1);}
+.kc.cl-moveable{border-left:3px solid var(--green);}
+.kc-top{display:flex;align-items:center;gap:7px;margin-bottom:7px;}
+.kc-av{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff;flex-shrink:0;}
+.kc-info{flex:1;min-width:0;}
+.kc-name{font-size:11px;font-weight:700;color:var(--black);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.kc-code{font-size:9px;color:var(--g4);font-family:monospace;font-weight:600;}
+.kc-score-row{display:flex;align-items:center;gap:4px;}
+.kc-score-num{font-size:11px;font-weight:800;color:var(--black);width:22px;flex-shrink:0;}
+.kc-bar{flex:1;height:3px;border-radius:99px;background:var(--g2);overflow:hidden;}
+.kc-fill{height:3px;border-radius:99px;}
+.kc-tags{display:flex;gap:3px;flex-wrap:wrap;margin-top:6px;}
+.kt{font-size:8px;font-weight:600;padding:2px 5px;border-radius:99px;background:var(--g2);color:var(--g5);}
+.kt.match{background:var(--pp);color:var(--purple);}
+.kt.top{background:rgba(16,185,129,0.1);color:var(--green);}
+.kc-updated{font-size:9px;color:var(--g4);margin-top:5px;}
+
+/* interview scheduled badge on card */
+.kc-interview{display:flex;align-items:center;gap:3px;font-size:8px;font-weight:700;color:var(--blue);background:#EFF6FF;padding:2px 6px;border-radius:99px;margin-top:5px;width:fit-content;}
+
+/* ══ ACTIVITY TIMELINE ══ */
+.timeline-section{background:#fff;border-radius:14px;border:1px solid var(--g3);padding:20px;margin-bottom:20px;}
+.tl-title{font-size:13px;font-weight:700;color:var(--black);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.tl-live{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(.8);}}
+.tl-group{margin-bottom:14px;}
+.tl-date{font-size:10px;font-weight:700;color:var(--g4);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;}
+.tl-item{display:flex;gap:10px;margin-bottom:6px;align-items:flex-start;}
+.tl-dot-wrap{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+.tl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.tl-line{width:1px;flex:1;background:var(--g3);margin:3px 0;}
+.tl-text{font-size:12px;color:var(--g6);line-height:1.5;flex:1;}
+.tl-text strong{color:var(--black);}
+.tl-time{font-size:10px;color:var(--g4);flex-shrink:0;white-space:nowrap;margin-top:2px;}
+
+/* ══ COMPARISON TABLE ══ */
+.compare-section{background:#fff;border-radius:14px;border:1.5px solid rgba(16,185,129,0.2);overflow:hidden;margin-bottom:20px;}
+.compare-hdr{background:linear-gradient(135deg,rgba(16,185,129,0.08),rgba(16,185,129,0.03));padding:14px 18px;border-bottom:1px solid rgba(16,185,129,0.15);display:flex;align-items:center;gap:8px;}
+.compare-hdr-title{font-size:13px;font-weight:700;color:var(--black);}
+.compare-hdr-sub{font-size:11px;color:var(--g5);}
+.compare-table{width:100%;border-collapse:collapse;}
+.compare-table th{text-align:left;padding:11px 16px;font-size:11px;font-weight:700;color:var(--g5);border-bottom:1px solid var(--g2);background:var(--g1);}
+.compare-table th.cand-col{text-align:center;}
+.compare-table td{padding:11px 16px;font-size:12px;color:var(--g6);border-bottom:1px solid var(--g2);vertical-align:middle;}
+.compare-table tr:last-child td{border-bottom:none;}
+.compare-table td.cand-col{text-align:center;font-weight:600;color:var(--black);}
+.compare-table td.metric{font-size:11px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.06em;}
+.best-val{color:var(--green)!important;}
+.cand-av-sm{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff;margin:0 auto 3px;}
+.cand-name-sm{font-size:11px;font-weight:700;color:var(--black);}
+.cand-code-sm{font-size:9px;color:var(--g4);font-family:monospace;}
+.score-pill{display:inline-flex;align-items:center;justify-content:center;width:36px;height:22px;border-radius:99px;font-size:11px;font-weight:800;}
+.sp-green{background:rgba(16,185,129,0.1);color:var(--green);}
+.sp-amber{background:rgba(245,158,11,0.1);color:var(--amber);}
+.sp-red{background:rgba(239,68,68,0.08);color:var(--red);}
+
+/* ══ CANDIDATE FULL MODAL ══ */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:400;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .25s;backdrop-filter:blur(4px);}
+.modal-bg.open{opacity:1;pointer-events:all;}
+.modal{background:#fff;border-radius:18px;width:100%;max-width:780px;max-height:92vh;overflow:hidden;display:flex;flex-direction:column;transform:scale(.95);transition:transform .25s;}
+.modal-bg.open .modal{transform:scale(1);}
+.modal-nav{padding:16px 22px;border-bottom:1px solid var(--g2);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.modal-nav-l{display:flex;align-items:center;gap:11px;}
+.mc-av{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;flex-shrink:0;}
+.mc-name{font-size:15px;font-weight:800;color:var(--black);letter-spacing:-.5px;}
+.mc-code{font-size:10px;font-weight:700;color:var(--g4);letter-spacing:.08em;font-family:monospace;margin-top:1px;}
+.mc-close{width:30px;height:30px;border-radius:50%;background:var(--g2);border:none;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.modal-tabs-row{display:flex;border-bottom:1px solid var(--g2);padding:0 22px;flex-shrink:0;overflow-x:auto;}
+.mt{padding:11px 14px;font-size:12px;font-weight:500;color:var(--g5);cursor:pointer;border:none;background:none;font-family:'Poppins',sans-serif;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .15s,border-color .15s;white-space:nowrap;}
+.mt.on{color:var(--purple);border-bottom-color:var(--purple);font-weight:700;}
+.modal-body{flex:1;overflow-y:auto;padding:22px;}
+.mtc{display:none;}
+.mtc.show{display:block;}
+
+/* Score ring */
+.score-section{display:flex;align-items:center;gap:18px;margin-bottom:18px;}
+.score-ring{width:80px;height:80px;position:relative;flex-shrink:0;}
+.score-ring svg{position:absolute;inset:0;transform:rotate(-90deg);}
+.score-ring-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:var(--black);}
+.score-breakdown{display:grid;grid-template-columns:1fr 1fr;gap:7px;flex:1;}
+.sbi{background:var(--g1);border-radius:8px;padding:9px 11px;}
+.sbi-l{font-size:9px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px;}
+.sbi-v{font-size:14px;font-weight:800;color:var(--black);}
+
+/* Match score highlight */
+.match-highlight{background:linear-gradient(135deg,rgba(16,185,129,0.08),rgba(16,185,129,0.03));border:1.5px solid rgba(16,185,129,0.2);border-radius:10px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;gap:14px;}
+.mh-score{font-size:32px;font-weight:900;color:var(--green);letter-spacing:-2px;}
+.mh-label{font-size:13px;font-weight:700;color:var(--black);margin-bottom:2px;}
+.mh-sub{font-size:11px;color:var(--g5);}
+
+/* info grid */
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:16px;}
+.ii{background:var(--g1);border-radius:8px;padding:10px 12px;}
+.ii-l{font-size:9px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px;}
+.ii-v{font-size:13px;font-weight:600;color:var(--black);}
+.skills-wrap{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;}
+.stag{background:var(--pp);color:var(--purple);font-size:11px;font-weight:600;padding:4px 10px;border-radius:99px;}
+
+/* stage mover */
+.stage-mover{background:rgba(16,185,129,0.05);border:1.5px solid rgba(16,185,129,0.25);border-radius:12px;padding:16px;margin-top:16px;}
+.sm-title{font-size:12px;font-weight:700;color:var(--green);margin-bottom:6px;}
+.sm-desc{font-size:11px;color:var(--g5);margin-bottom:12px;line-height:1.5;}
+.sm-btns{display:flex;gap:8px;flex-wrap:wrap;}
+.btn-hire{background:var(--green);color:#fff;padding:9px 18px;border-radius:8px;font-size:12px;font-weight:700;font-family:'Poppins',sans-serif;border:none;cursor:pointer;}
+.btn-hire:hover{background:#059669;}
+.btn-schedule{background:var(--pp);color:var(--purple);border:1.5px solid rgba(108,60,225,0.2);padding:9px 18px;border-radius:8px;font-size:12px;font-weight:700;font-family:'Poppins',sans-serif;cursor:pointer;}
+.btn-schedule:hover{background:var(--pp);border-color:var(--purple);}
+.btn-pass{background:rgba(239,68,68,0.08);color:var(--red);border:1px solid rgba(239,68,68,0.2);padding:9px 18px;border-radius:8px;font-size:12px;font-weight:700;font-family:'Poppins',sans-serif;cursor:pointer;}
+
+/* post hire check-ins */
+.checkin-list{display:flex;flex-direction:column;gap:8px;}
+.checkin-item{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--g1);border-radius:10px;}
+.checkin-month{font-size:11px;font-weight:700;color:var(--black);width:60px;flex-shrink:0;}
+.checkin-status{flex:1;}
+.checkin-note{font-size:11px;color:var(--g5);}
+.checkin-date{font-size:10px;color:var(--g4);}
+
+/* notes */
+.notes-list{display:flex;flex-direction:column;gap:9px;margin-bottom:14px;}
+.note-item{background:var(--g1);border-radius:10px;padding:12px 14px;}
+.note-author{font-size:11px;font-weight:700;color:var(--black);margin-bottom:3px;display:flex;align-items:center;gap:6px;}
+.note-tag{font-size:9px;font-weight:600;padding:1px 6px;border-radius:99px;}
+.note-tag.nw{background:var(--pp);color:var(--purple);}
+.note-tag.cl{background:#EFF6FF;color:var(--blue);}
+.note-text{font-size:12px;color:var(--g6);line-height:1.6;}
+.note-time{font-size:10px;color:var(--g4);margin-top:3px;}
+.note-input{width:100%;padding:10px 13px;border:1.5px solid var(--g3);border-radius:9px;font-size:13px;font-family:'Poppins',sans-serif;outline:none;resize:none;min-height:72px;transition:border-color .2s;}
+.note-input:focus{border-color:var(--purple);}
+
+/* exp */
+.exp-item{border-left:2px solid var(--g3);padding:7px 13px;margin-bottom:10px;}
+.exp-title{font-size:13px;font-weight:700;color:var(--black);}
+.exp-co{font-size:11px;color:var(--g5);margin-bottom:2px;}
+.exp-dates{font-size:10px;color:var(--g4);}
+.exp-desc{font-size:12px;color:var(--g6);margin-top:4px;line-height:1.6;}
+
+/* cv */
+.cv-row{display:flex;align-items:center;justify-content:space-between;background:var(--g1);border-radius:10px;padding:14px 16px;margin-bottom:14px;}
+.cv-info{display:flex;align-items:center;gap:10px;}
+.cv-preview{background:var(--g2);border-radius:10px;height:360px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;color:var(--g4);}
+
+/* modal footer */
+.modal-footer{padding:14px 22px;border-top:1px solid var(--g2);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.mf-stage{font-size:12px;color:var(--g5);}
+.mf-stage strong{color:var(--black);}
+
+/* ══ INTERVIEW SCHEDULER MODAL ══ */
+.scheduler-modal{max-width:520px;}
+.sched-body{padding:24px;}
+.sched-title{font-size:18px;font-weight:800;color:var(--black);letter-spacing:-1px;margin-bottom:4px;}
+.sched-sub{font-size:12px;color:var(--g5);margin-bottom:20px;line-height:1.6;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:11px;font-weight:700;color:var(--black);margin-bottom:5px;letter-spacing:.03em;}
+.field input,.field select,.field textarea{width:100%;padding:10px 13px;border:1.5px solid var(--g3);border-radius:9px;font-size:13px;font-family:'Poppins',sans-serif;color:var(--black);background:#fff;outline:none;transition:border-color .2s;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--purple);}
+.field textarea{min-height:72px;resize:vertical;}
+.field-row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.duration-btns{display:flex;gap:8px;}
+.dur-btn{flex:1;padding:9px;border:1.5px solid var(--g3);border-radius:8px;font-size:12px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;background:#fff;color:var(--g6);transition:all .2s;}
+.dur-btn.on{border-color:var(--purple);background:var(--pp);color:var(--purple);}
+.platform-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.plat-btn{padding:10px 12px;border:1.5px solid var(--g3);border-radius:9px;font-size:12px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;background:#fff;color:var(--g6);display:flex;align-items:center;gap:7px;transition:all .2s;}
+.plat-btn.on{border-color:var(--purple);background:var(--pp);color:var(--purple);}
+.plat-icon{font-size:16px;}
+.recruiter-toggle-row{display:flex;align-items:center;justify-content:space-between;background:var(--g1);border-radius:9px;padding:12px 14px;margin-bottom:14px;}
+.rt-label{font-size:13px;font-weight:500;color:var(--black);}
+.rt-sub{font-size:11px;color:var(--g5);margin-top:1px;}
+.toggle{width:40px;height:22px;border-radius:99px;background:var(--g3);border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;}
+.toggle.on{background:var(--purple);}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,0.2);}
+.toggle.on::after{transform:translateX(18px);}
+.sched-footer{display:flex;gap:10px;justify-content:flex-end;padding-top:4px;}
+
+/* ══ SETTINGS ══ */
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.sc{background:#fff;border-radius:14px;border:1px solid var(--g3);padding:22px;}
+.sc.full{grid-column:1/-1;}
+.sc-title{font-size:14px;font-weight:700;color:var(--black);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;}
+.plan-dark{background:linear-gradient(135deg,#0D0D0D,#1a0a3e);border-radius:12px;padding:20px;}
+.plan-name{font-size:18px;font-weight:900;color:#fff;letter-spacing:-.5px;margin-bottom:3px;}
+.plan-seats{font-size:12px;color:rgba(255,255,255,0.45);margin-bottom:12px;}
+.plan-feats{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
+.pf{font-size:12px;color:rgba(255,255,255,0.55);display:flex;align-items:center;gap:6px;}
+.pf::before{content:'✓';color:var(--gl);font-weight:700;}
+.plan-note{font-size:11px;color:rgba(255,255,255,0.3);}
+.plan-note a{color:var(--gl);text-decoration:none;font-weight:600;}
+.csm-block{display:flex;align-items:center;gap:13px;background:var(--pp);border-radius:11px;padding:14px;}
+.csm-av{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--pl));display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;flex-shrink:0;}
+.csm-name{font-size:13px;font-weight:700;color:var(--black);margin-bottom:2px;}
+.csm-title{font-size:11px;color:var(--g5);margin-bottom:5px;}
+.csm-links{display:flex;gap:9px;}
+.csm-link{font-size:11px;font-weight:600;color:var(--purple);text-decoration:none;}
+.team-tbl{width:100%;border-collapse:collapse;}
+.team-tbl th{text-align:left;font-size:10px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.08em;padding:8px 10px;border-bottom:1px solid var(--g2);}
+.team-tbl td{padding:11px 10px;border-bottom:1px solid var(--g2);font-size:13px;color:var(--g6);vertical-align:middle;}
+.team-tbl tr:last-child td{border-bottom:none;}
+.t-av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--g2);}
+.toggle-row:last-child{border-bottom:none;}
+.tl-lbl{font-size:13px;font-weight:500;color:var(--black);}
+.tl-sub{font-size:11px;color:var(--g5);margin-top:1px;}
+
+/* section label */
+.slbl{font-size:10px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.12em;margin-bottom:10px;margin-top:20px;}
+.slbl:first-child{margin-top:0;}
+
+/* toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--black);color:#fff;font-size:12px;font-weight:500;padding:11px 20px;border-radius:9px;box-shadow:0 8px 32px rgba(0,0,0,0.2);transition:transform .35s cubic-bezier(.4,0,.2,1);z-index:999;white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.toast.ok{background:var(--green);}
+.toast.bad{background:var(--red);}
+
+/* invite modal */
+.invite-modal-inner{max-width:420px;}
+.im-body{padding:24px;}
+.im-title{font-size:17px;font-weight:800;color:var(--black);letter-spacing:-1px;margin-bottom:5px;}
+.im-sub{font-size:12px;color:var(--g5);margin-bottom:18px;line-height:1.6;}
+
+@media(max-width:900px){
+  .wow-grid{grid-template-columns:1fr 1fr;}
+  .detail-stats{grid-template-columns:1fr 1fr;}
+  .settings-grid{grid-template-columns:1fr;}
+  .kanban{min-width:700px;}
+  .info-grid{grid-template-columns:1fr;}
+  .score-breakdown{grid-template-columns:1fr;}
+  .field-row-2{grid-template-columns:1fr;}
+  .compare-table th.cand-col,.compare-table td.cand-col{display:none;}
+  .compare-table th.cand-col:first-of-type,.compare-table td.cand-col:first-of-type{display:table-cell;}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <a class="nav-logo" onclick="showPage('openings')">Near<span>work</span></a>
+  <div class="nav-tabs">
+    <button class="nav-tab active" id="tab-openings" onclick="showPage('openings')">Openings</button>
+    <button class="nav-tab" id="tab-settings" onclick="showPage('settings')">Settings</button>
+  </div>
+  <div class="nav-right">
+    <div class="bell-wrap" id="bell-wrap">
+      <div class="bell-btn" onclick="toggleEl('notif-drop','open')">
+        <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </div>
+      <div class="bell-badge">2</div>
+      <div class="notif-drop" id="notif-drop">
+        <div class="notif-hdr"><span>Notifications</span><span class="notif-mark" onclick="markRead()">Mark all read</span></div>
+        <div class="notif-list">
+          <div class="ni unread"><div class="ndot"></div><div><div class="ni-txt"><strong>David Herrera</strong> is ready for your review. Check his full scorecard and assessment results.</div><div class="ni-time">3 hours ago</div></div></div>
+          <div class="ni unread"><div class="ndot"></div><div><div class="ni-txt">Interview with <strong>María López</strong> confirmed for April 14 at 10am EST.</div><div class="ni-time">1 day ago</div></div></div>
+          <div class="ni"><div class="ndot r"></div><div><div class="ni-txt">3 new candidates added to your SDR pipeline.</div><div class="ni-time">2 days ago</div></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="avatar-wrap" id="avatar-wrap">
+      <div class="avatar" onclick="toggleEl('av-menu','open')">AC</div>
+      <div class="av-menu" id="av-menu">
+        <div class="av-info"><div class="av-name">Alex Chen</div><div class="av-co">Crestline SaaS</div><div class="av-plan">Essential Plan</div></div>
+        <div class="ami" onclick="showPage('settings')">⚙️ Settings</div>
+        <div class="am-div"></div>
+        <div class="ami danger" onclick="signOut()">Sign out</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="main">
+
+  <!-- ══════════════════════════════════════
+       OPENINGS PAGE
+  ══════════════════════════════════════ -->
+  <div class="page show" id="page-openings">
+    <div style="margin-bottom:24px;">
+      <h1 style="font-size:22px;font-weight:800;letter-spacing:-1px;margin-bottom:3px;">Good morning, Alex 👋</h1>
+      <p style="font-size:13px;color:var(--g5);">Here's everything happening with your Crestline SaaS hiring pipeline.</p>
+    </div>
+
+    <!-- WOW metrics -->
+    <div class="wow-grid">
+      <div class="wow-card savings">
+        <div class="wow-eyebrow">💰 Annual savings with Nearwork</div>
+        <div class="wow-num savings-counter">$<span id="savings-num">0</span></div>
+        <div class="wow-sub">vs equivalent US market salaries · 3 hires</div>
+        <div class="wow-trend up" style="margin-top:8px;">↑ $44K added per new hire</div>
+      </div>
+      <div class="wow-card">
+        <div class="wow-eyebrow">⚡ Your avg. time to hire</div>
+        <div class="wow-num">18<span style="font-size:16px;font-weight:500;color:var(--g4);"> days</span></div>
+        <div class="wow-sub">Industry average: 45 days</div>
+        <div class="wow-trend up">2.5× faster than average</div>
+      </div>
+      <div class="wow-card">
+        <div class="wow-eyebrow">📋 Active openings</div>
+        <div class="wow-num">2</div>
+        <div class="wow-sub">CSM + SDR in pipeline</div>
+        <div class="wow-trend neutral">8 candidates active</div>
+      </div>
+      <div class="wow-card">
+        <div class="wow-eyebrow">🛡️ Guarantee status</div>
+        <div class="wow-num" style="font-size:18px;letter-spacing:-.5px;">134 days</div>
+        <div class="wow-sub">Remaining on Valentina Ríos</div>
+        <div style="margin-top:8px;"><div class="health-bar"><div class="health-fill" style="width:78%;background:var(--green);"></div></div></div>
+      </div>
+    </div>
+
+    <!-- toolbar -->
+    <div class="toolbar">
+      <div class="search-box"><span class="si">🔍</span><input type="text" placeholder="Search openings by role or keyword..."></div>
+      <select class="fsel"><option>All roles</option><option>Customer Success</option><option>SDR / Sales</option><option>Support</option><option>Operations</option></select>
+      <input class="code-inp" placeholder="Search by code e.g. NW-CSM-4X8B" id="code-inp">
+      <button class="btn btn-ghost btn-sm" onclick="searchCode()">Find →</button>
+    </div>
+
+    <!-- tabs -->
+    <div class="tab-row">
+      <button class="tp on" onclick="switchTab('active',this)">Active <span class="tc">2</span></button>
+      <button class="tp" onclick="switchTab('hired',this)">Already Hired <span class="tc">1</span></button>
+    </div>
+
+    <!-- Active openings -->
+    <div id="tab-active">
+      <div class="openings-grid">
+
+        <div class="oc" onclick="openDetail('csm')">
+          <div class="oc-top">
+            <div><div class="oc-role">Customer Success Manager</div><div class="oc-code">NW-CSM-4X8B</div></div>
+            <span class="badge bg-amber">Your review needed</span>
+          </div>
+          <div class="oc-meta"><span>🌍 Remote · Colombia</span><span>📅 Started Mar 15, 2026</span></div>
+          <div class="oc-health">
+            <div class="oc-health-top"><span class="oc-health-label">Pipeline health</span><span class="oc-health-score" style="color:var(--green);">Strong — 82%</span></div>
+            <div class="health-bar"><div class="health-fill" style="width:82%;background:var(--green);"></div></div>
+          </div>
+          <div class="oc-recruiter">
+            <div class="oc-rec-av">BG</div>
+            <div><div class="oc-rec-name">Byron Giraldo</div><div class="oc-rec-role">Lead Recruiter · Nearwork</div></div>
+          </div>
+          <div class="oc-bottom">
+            <div class="oc-cands"><strong>8</strong> candidates · <strong>2</strong> ready for review</div>
+            <div class="oc-target">Target: 1 hire</div>
+          </div>
+        </div>
+
+        <div class="oc" onclick="openDetail('sdr')">
+          <div class="oc-top">
+            <div><div class="oc-role">SDR / Sales Development Rep</div><div class="oc-code">NW-SDR-9K2M</div></div>
+            <span class="badge bg-purple">Nearwork working</span>
+          </div>
+          <div class="oc-meta"><span>🌍 Remote · Colombia</span><span>📅 Started Apr 1, 2026</span></div>
+          <div class="oc-health">
+            <div class="oc-health-top"><span class="oc-health-label">Pipeline health</span><span class="oc-health-score" style="color:var(--amber);">Building — 45%</span></div>
+            <div class="health-bar"><div class="health-fill" style="width:45%;background:var(--amber);"></div></div>
+          </div>
+          <div class="oc-recruiter">
+            <div class="oc-rec-av">BG</div>
+            <div><div class="oc-rec-name">Byron Giraldo</div><div class="oc-rec-role">Lead Recruiter · Nearwork</div></div>
+          </div>
+          <div class="oc-bottom">
+            <div class="oc-cands"><strong>5</strong> candidates · Background checks running</div>
+            <div class="oc-target">Target: 2 hires</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Hired tab -->
+    <div id="tab-hired" style="display:none;">
+      <div class="openings-grid">
+        <div class="oc hired-card" onclick="openDetail('hired-csm')">
+          <div class="oc-top">
+            <div><div class="oc-role">Customer Success Manager</div><div class="oc-code">NW-CSM-7R3P</div></div>
+            <span class="badge bg-green">✓ Hired</span>
+          </div>
+          <div class="oc-meta"><span>🌍 Remote · Colombia</span><span>📅 Completed Jan 12, 2026</span></div>
+          <div class="oc-recruiter" style="margin-bottom:0;">
+            <div class="oc-rec-av">BG</div>
+            <div><div class="oc-rec-name">Byron Giraldo</div><div class="oc-rec-role">Lead Recruiter · Nearwork</div></div>
+          </div>
+          <div class="guarantee-strip" style="margin-top:12px;">
+            <div class="gs-icon">🛡️</div>
+            <div class="gs-content">
+              <div class="gs-label">6-month guarantee — Valentina Ríos</div>
+              <div class="gs-bar"><div class="gs-fill" style="width:78%;"></div></div>
+              <div class="gs-days">Hired Jan 12 · Protected until Jul 12 · 134 days remaining</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       OPENING DETAIL PAGE
+  ══════════════════════════════════════ -->
+  <div class="page" id="page-detail">
+    <button class="detail-back" onclick="showPage('openings')">← Back to openings</button>
+    <div class="detail-top">
+      <div>
+        <div class="detail-role" id="det-role">Customer Success Manager</div>
+        <div class="detail-code" id="det-code">NW-CSM-4X8B</div>
+      </div>
+      <div id="det-badge"></div>
+    </div>
+
+    <!-- Stats row -->
+    <div class="detail-stats">
+      <div class="dstat health-card">
+        <div class="dstat-label">Pipeline health</div>
+        <div class="dstat-val" style="color:var(--gl);">82%</div>
+        <div class="health-items">
+          <div class="hi ok">✓ 8 candidates sourced (target: 6)</div>
+          <div class="hi ok">✓ 3 passed background check</div>
+          <div class="hi ok">✓ 2 ready for your review</div>
+          <div class="hi warn">⚡ Expected hire: ~Apr 22</div>
+        </div>
+      </div>
+      <div class="dstat"><div class="dstat-label">Candidates in pipeline</div><div class="dstat-val">8</div><div class="dstat-sub">2 ready for your review</div></div>
+      <div class="dstat"><div class="dstat-label">Target hires</div><div class="dstat-val">1</div><div class="dstat-sub">For this opening</div></div>
+      <div class="dstat"><div class="dstat-label">Started</div><div class="dstat-val" style="font-size:14px;letter-spacing:0;">Mar 15</div><div class="dstat-sub">28 days ago · On track</div></div>
+    </div>
+
+    <!-- Recruiter -->
+    <div class="slbl">Your Nearwork recruiter</div>
+    <div class="recruiter-row" style="margin-bottom:20px;">
+      <div class="rec-av">BG</div>
+      <div style="flex:1;">
+        <div class="rec-name">Byron Giraldo</div>
+        <div class="rec-title">Lead Recruiter · Nearwork</div>
+        <div class="rec-links">
+          <a class="rec-link" href="mailto:byron@nearwork.co">✉ byron@nearwork.co</a>
+          <a class="rec-link" href="https://linkedin.com/in/byrongiraldo" target="_blank">in LinkedIn</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Kick-off structured -->
+    <div class="slbl">Kick-off call summary</div>
+    <div class="kickoff-grid" style="margin-bottom:24px;">
+      <div class="kickoff-header">
+        <div>
+          <div class="kickoff-header-title">📋 Kick-off call · March 15, 2026 · Crestline SaaS + Byron Giraldo</div>
+          <div class="kickoff-header-sub">Everything we agreed on before the search began</div>
+        </div>
+      </div>
+      <div class="kf-item"><div class="kf-label">Role</div><div class="kf-value">Customer Success Manager</div></div>
+      <div class="kf-item"><div class="kf-label">Experience required</div><div class="kf-value">3–6 years · SaaS background</div></div>
+      <div class="kf-item"><div class="kf-label">Salary budget</div><div class="kf-value">$2,200 – $2,800 / mo USD</div></div>
+      <div class="kf-item"><div class="kf-label">Target start date</div><div class="kf-value">Within 45 days of hire</div></div>
+      <div class="kf-item"><div class="kf-label">Tools required</div><div class="kf-value">Salesforce, Gainsight</div></div>
+      <div class="kf-item"><div class="kf-label">Accounts to own</div><div class="kf-value">25–40 accounts · $10K–$50K ARR</div></div>
+      <div class="kf-item"><div class="kf-label">Team size</div><div class="kf-value">8 people · Remote-first</div></div>
+      <div class="kf-item"><div class="kf-label">Culture</div><div class="kf-value">Async-friendly · Results-driven</div></div>
+      <div class="kf-item"><div class="kf-label">English requirement</div><div class="kf-value">C1 Advanced minimum</div></div>
+      <div class="kf-item"><div class="kf-label">Target hires</div><div class="kf-value">1 hire for this opening</div></div>
+      <div class="kf-item kickoff-full"><div class="kf-label">Additional notes</div><div class="kf-value note">Preference for candidates with experience managing US-based SaaS accounts, not just LatAm. VP of Customer Success will be the hiring manager. Final decision expected within 1 week of candidate presentation.</div></div>
+    </div>
+
+    <!-- Candidate comparison -->
+    <div class="slbl">Candidate comparison — Stage 6 (ready for your review)</div>
+    <div class="compare-section" style="margin-bottom:24px;">
+      <div class="compare-hdr">
+        <div>
+          <div class="compare-hdr-title">🔍 Side-by-side comparison</div>
+          <div class="compare-hdr-sub">2 candidates are ready for your decision. Compare them here before deciding.</div>
+        </div>
+      </div>
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th class="cand-col"><div class="cand-av-sm" style="background:linear-gradient(135deg,#EC4899,#BE185D);">DH</div><div class="cand-name-sm">David Herrera</div><div class="cand-code-sm">NW-C-2N6Q8</div></th>
+            <th class="cand-col"><div class="cand-av-sm" style="background:linear-gradient(135deg,#F59E0B,#D97706);">ML</div><div class="cand-name-sm">María López</div><div class="cand-code-sm">NW-C-5B9W3</div></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="metric">Overall score</td><td class="cand-col"><span class="score-pill sp-green">91</span></td><td class="cand-col"><span class="score-pill sp-green">85</span></td></tr>
+          <tr><td class="metric">Match for your role</td><td class="cand-col best-val">96%</td><td class="cand-col">88%</td></tr>
+          <tr><td class="metric">Experience</td><td class="cand-col best-val">6 years</td><td class="cand-col">5 years</td></tr>
+          <tr><td class="metric">English</td><td class="cand-col">C1 Advanced</td><td class="cand-col">C1 Advanced</td></tr>
+          <tr><td class="metric">Salary ask</td><td class="cand-col">$2,400/mo</td><td class="cand-col best-val">$2,200/mo</td></tr>
+          <tr><td class="metric">Assessment score</td><td class="cand-col best-val">87/100</td><td class="cand-col">81/100</td></tr>
+          <tr><td class="metric">Background check</td><td class="cand-col best-val" style="color:var(--green);">✓ Clear</td><td class="cand-col" style="color:var(--green);">✓ Clear</td></tr>
+          <tr><td class="metric">Interview scheduled</td><td class="cand-col">Not yet</td><td class="cand-col" style="color:var(--blue);">Apr 14 · 10am EST</td></tr>
+          <tr>
+            <td class="metric"></td>
+            <td class="cand-col"><button class="btn btn-p btn-sm" onclick="openCandModal('david')">View profile</button></td>
+            <td class="cand-col"><button class="btn btn-ghost btn-sm" onclick="openCandModal('maria')">View profile</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Live activity timeline -->
+    <div class="slbl">Live activity — what's happening right now</div>
+    <div class="timeline-section" style="margin-bottom:24px;">
+      <div class="tl-title"><div class="tl-live"></div> Live timeline · everything Nearwork does, you see</div>
+      <div class="tl-group">
+        <div class="tl-date">Today — April 12, 2026</div>
+        <div class="tl-item"><div class="tl-dot-wrap"><div class="tl-dot" style="background:var(--green);"></div><div class="tl-line"></div></div><div class="tl-text"><strong>David Herrera</strong> presented to your team for review. Full scorecard, assessment results, and CV available.</div><div class="tl-time">10:42am</div></div>
+        <div class="tl-item"><div class="tl-dot-wrap"><div class="tl-dot" style="background:var(--purple);"></div><div class="tl-line"></div></div><div class="tl-text">Background check for <strong>David Herrera</strong> cleared — no issues found.</div><div class="tl-time">9:15am</div></div>
+      </div>
+      <div class="tl-group">
+        <div class="tl-date">Yesterday — April 11, 2026</div>
+        <div class="tl-item"><div class="tl-dot-wrap"><div class="tl-dot" style="background:var(--blue);"></div><div class="tl-line"></div></div><div class="tl-text">Interview scheduled with <strong>María López</strong> for April 14 at 10am EST via Google Meet.</div><div class="tl-time">3:30pm</div></div>
+        <div class="tl-item"><div class="tl-dot-wrap"><div class="tl-dot" style="background:var(--purple);"></div><div class="tl-line"></div></div><div class="tl-text">Assessment sent to <strong>María López</strong>. She completed it in 28 minutes. Score: 81/100.</div><div class="tl-time">2:00pm</div></div>
+        <div class="tl-item"><div class="tl-dot-wrap"><div class="tl-dot" style="background:var(--g4);"></div></div><div class="tl-text">Alex Chen (Crestline) left a note on <strong>David Herrera's</strong> profile.</div><div class="tl-time">10:20am</div></div>
+      </div>
+    </div>
+
+    <!-- Kanban -->
+    <div class="slbl">Candidate pipeline — Kanban</div>
+    <div class="kanban-legend">
+      <div class="kl-item"><div class="kl-dot" style="background:var(--purple);"></div>Managed by Nearwork (stages 1–5)</div>
+      <div class="kl-item"><div class="kl-dot" style="background:var(--green);"></div>Your decision (stages 6–7)</div>
+    </div>
+    <div class="kanban-scroll">
+      <div class="kanban">
+        <!-- Stage 1 -->
+        <div class="k-col nw">
+          <div class="k-header"><div><div class="k-title">Applied</div><span class="k-owner">Nearwork</span></div><div class="k-cnt">2</div></div>
+          <div class="k-body">
+            <div class="kc" onclick="openCandModal('isabella')">
+              <div class="kc-top"><div class="kc-av" style="background:linear-gradient(135deg,#6C3CE1,#8B5CF6);">IG</div><div class="kc-info"><div class="kc-name">Isabella Gómez</div><div class="kc-code">NW-C-8X4K2</div></div></div>
+              <div class="kc-score-row"><div class="kc-score-num">72</div><div class="kc-bar"><div class="kc-fill" style="width:72%;background:var(--amber);"></div></div></div>
+              <div class="kc-tags"><div class="kt">CSM</div><div class="kt">3 yrs</div><div class="kt">C1</div></div>
+              <div class="kc-updated">Applied 2 days ago</div>
+            </div>
+            <div class="kc" onclick="openCandModal('carlos')">
+              <div class="kc-top"><div class="kc-av" style="background:linear-gradient(135deg,#10B981,#059669);">CR</div><div class="kc-info"><div class="kc-name">Carlos Rueda</div><div class="kc-code">NW-C-3M7P1</div></div></div>
+              <div class="kc-score-row"><div class="kc-score-num">58</div><div class="kc-bar"><div class="kc-fill" style="width:58%;background:var(--red);"></div></div></div>
+              <div class="kc-tags"><div class="kt">CSM</div><div class="kt">2 yrs</div></div>
+              <div class="kc-updated">Applied 3 days ago</div>
+            </div>
+          </div>
+        </div>
+        <!-- Stage 2 -->
+        <div class="k-col nw">
+          <div class="k-header"><div><div class="k-title">Profile Review</div><span class="k-owner">Nearwork</span></div><div class="k-cnt">1</div></div>
+          <div class="k-body">
+            <div class="kc" onclick="openCandModal('sofia')">
+              <div class="kc-top"><div class="kc-av" style="background:linear-gradient(135deg,#8B5CF6,#6C3CE1);">SM</div><div class="kc-info"><div class="kc-name">Sofía Moreno</div><div class="kc-code">NW-C-7T2R5</div></div></div>
+              <div class="kc-score-row"><div class="kc-score-num">79</div><div class="kc-bar"><div class="kc-fill" style="width:79%;background:var(--amber);"></div></div></div>
+              <div class="kc-tags"><div class="kt">CSM</div><div class="kt">4 yrs</div><div class="kt">C1</div></div>
+              <div class="kc-updated">In review · 1 day</div>
+            </div>
+          </div>
+        </div>
+        <!-- Stage 3 -->
+        <div class="k-col nw">
+          <div class="k-header"><div><div class="k-title">Background Check</div><span class="k-owner">Nearwork</span></div><div class="k-cnt">1</div></div>
+          <div class="k-body">
+            <div class="kc" onclick="openCandModal('david')">
+              <div class="kc-top"><div class="kc-av" style="background:linear-gradient(135deg,#EC4899,#BE185D);">DH</div><div class="kc-info"><div class="kc-name">David Herrera</div><div class="kc-code">NW-C-2N6Q8</div></div></div>
+              <div class="kc-score-row"><div class="kc-score-num">91</div><div class="kc-bar"><div class="kc-fill" style="width:91%;background:var(--green);"></div></div></div>
+              <div class="kc-tags"><div class="kt top">Top score</div><div class="kt">C1</div></div>
+              <div class="kc-updated">Check running · 12h</div>
+            </div>
+          </div>
+        </div>
+        <!-- Stage 4 -->
+        <div class="k-col nw">
+          <div class="k-header"><div><div class="k-title">Assessment</div><span class="k-owner">Nearwork</span></div><div class="k-cnt" style="background:var(--g2);color:var(--g5);">0</div></div>
+          <div class="k-body"><div class="k-empty">No candidates here yet</div></div>
+        </div>
+        <!-- Stage 5 -->
+        <div class="k-col nw">
+          <div class="k-header"><div><div class="k-title">Presented</div><span class="k-owner">Nearwork</span></div><div class="k-cnt">2</div></div>
+          <div class="k-body">
+            <div class="kc" onclick="openCandModal('david')">
+              <div class="kc-top"><div class="kc-av" style="background:linear-gradient(135deg,#EC4899,#BE185D);">DH</div><div class="kc-info"><div class="kc-name">David Herrera</div><div class="kc-code">NW-C-2N6Q8</div></div></div>
+              <div class="kc-score-row"><div class="kc-score-num">91</div><div class="kc-bar"><div class="kc-fill" style="width:91%;background:var(--green);"></div></div></div>
+              <div class="kc-tags"><div class="kt top">96% match</div></div>
+              <div class="kc-updated">Presented Apr 8</div>
+            </div>
+            <div class="kc" onclick="openCandModal('maria')">
+              <div class="kc-top"><div class="kc-av" style="background:linear-gradient(135deg,#F59E0B,#D97706);">ML</div><div class="kc-info"><div class="kc-name">María López</div><div class="kc-code">NW-C-5B9W3</div></div></div>
+              <div class="kc-score-row"><div class="kc-score-num">85</div><div class="kc-bar"><div class="kc-fill" style="width:85%;background:var(--green);"></div></div></div>
+              <div class="kc-tags"><div class="kt match">88% match</div></div>
+              <div class="kc-updated">Presented Apr 8</div>
+            </div>
+          </div>
+        </div>
+        <!-- Stage 6 - client -->
+        <div class="k-col cl">
+          <div class="k-header"><div><div class="k-title">Your Review</div><span class="k-owner">Your decision</span></div><div class="k-cnt">2</div></div>
+          <div class="k-body">
+            <div class="kc cl-moveable" onclick="openCandModal('david')">
+              <div class="kc-top"><div class="kc-av" style="background:linear-gradient(135deg,#EC4899,#BE185D);">DH</div><div class="kc-info"><div class="kc-name">David Herrera</div><div class="kc-code">NW-C-2N6Q8</div></div></div>
+              <div class="kc-score-row"><div class="kc-score-num">91</div><div class="kc-bar"><div class="kc-fill" style="width:91%;background:var(--green);"></div></div></div>
+              <div class="kc-tags"><div class="kt top">Top candidate</div></div>
+              <div class="kc-updated">Awaiting your decision</div>
+            </div>
+            <div class="kc cl-moveable" onclick="openCandModal('maria')">
+              <div class="kc-top"><div class="kc-av" style="background:linear-gradient(135deg,#F59E0B,#D97706);">ML</div><div class="kc-info"><div class="kc-name">María López</div><div class="kc-code">NW-C-5B9W3</div></div></div>
+              <div class="kc-score-row"><div class="kc-score-num">85</div><div class="kc-bar"><div class="kc-fill" style="width:85%;background:var(--green);"></div></div></div>
+              <div class="kc-tags"><div class="kt" style="background:#EFF6FF;color:var(--blue);">📅 Interview Apr 14</div></div>
+              <div class="kc-interview">📅 Interview scheduled</div>
+            </div>
+          </div>
+        </div>
+        <!-- Stage 7 - client -->
+        <div class="k-col cl">
+          <div class="k-header"><div><div class="k-title">Hired 🎉</div><span class="k-owner">Your decision</span></div><div class="k-cnt" style="background:var(--g2);color:var(--g5);">0</div></div>
+          <div class="k-body"><div class="k-empty">Move a candidate here to confirm hire</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       SETTINGS PAGE
+  ══════════════════════════════════════ -->
+  <div class="page" id="page-settings">
+    <div style="margin-bottom:24px;"><h1 style="font-size:22px;font-weight:800;letter-spacing:-1px;margin-bottom:3px;">Settings</h1><p style="font-size:13px;color:var(--g5);">Manage your team, account, and preferences.</p></div>
+    <div class="settings-grid">
+
+      <div class="sc"><div class="sc-title">Current plan</div>
+        <div class="plan-dark"><div class="plan-name">Essential</div><div class="plan-seats">3 seats included · 1 seat available</div>
+          <div class="plan-feats"><div class="pf">Unlimited active searches</div><div class="pf">Full Kanban pipeline</div><div class="pf">Candidate scorecards & CVs</div><div class="pf">6-month replacement guarantee</div><div class="pf">3 team members</div><div class="pf">Interview scheduler</div></div>
+          <div class="plan-note">Need more seats or a higher plan? <a href="mailto:hola@nearwork.co">Contact Nearwork →</a></div>
+        </div>
+      </div>
+
+      <div class="sc"><div class="sc-title">Your Nearwork CSM</div>
+        <div class="csm-block"><div class="csm-av">BG</div><div><div class="csm-name">Byron Giraldo</div><div class="csm-title">Customer Success Manager · Nearwork</div><div class="csm-links"><a class="csm-link" href="mailto:byron@nearwork.co">✉ byron@nearwork.co</a><a class="csm-link" href="https://linkedin.com/in/byrongiraldo" target="_blank">in LinkedIn</a></div></div></div>
+        <div style="margin-top:12px;font-size:12px;color:var(--g5);line-height:1.65;">Byron is your primary contact at Nearwork for everything — openings, candidates, billing, and account questions.</div>
+      </div>
+
+      <div class="sc full"><div class="sc-title">Team members <button class="btn btn-ghost btn-sm" onclick="openInvite()">+ Invite member</button></div>
+        <table class="team-tbl">
+          <thead><tr><th>Member</th><th>Email</th><th>Role</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            <tr><td><div style="display:flex;align-items:center;gap:9px;"><div class="t-av" style="background:linear-gradient(135deg,#1a6fc4,#2d8fe8);">AC</div><div><div style="font-size:13px;font-weight:600;">Alex Chen</div><div style="font-size:10px;color:var(--g5);">You</div></div></div></td><td>alex@crestline.com</td><td><span class="badge bg-purple">Admin</span></td><td><span class="badge bg-green">Active</span></td><td></td></tr>
+            <tr><td><div style="display:flex;align-items:center;gap:9px;"><div class="t-av" style="background:linear-gradient(135deg,#10B981,#059669);">SK</div><div style="font-size:13px;font-weight:600;">Sarah Kim</div></div></td><td>sarah@crestline.com</td><td><span class="badge bg-blue">Hiring Manager</span></td><td><span class="badge bg-green">Active</span></td><td><button class="btn btn-ghost btn-sm" onclick="toast('Permission editor — coming soon.','')">Edit</button></td></tr>
+            <tr><td><div style="display:flex;align-items:center;gap:9px;"><div class="t-av" style="background:linear-gradient(135deg,#F59E0B,#D97706);">MR</div><div style="font-size:13px;font-weight:600;">Mike Ross</div></div></td><td>mike@crestline.com</td><td><span class="badge bg-gray">Viewer</span></td><td><span class="badge bg-amber">Invite pending</span></td><td><button class="btn btn-ghost btn-sm" onclick="toast('Invite resent to mike@crestline.com','ok')">Resend</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="sc"><div class="sc-title">Company information</div>
+        <div class="field"><label>Company name</label><input type="text" value="Crestline SaaS"></div>
+        <div class="field"><label>Website</label><input type="url" value="https://crestline.io"></div>
+        <div class="field"><label>Industry</label><input type="text" value="SaaS / B2B Software"></div>
+        <button class="btn btn-p btn-sm" onclick="toast('Company info saved.','ok')">Save changes</button>
+      </div>
+
+      <div class="sc"><div class="sc-title">Email notifications</div>
+        <div class="toggle-row"><div><div class="tl-lbl">Candidate presented</div><div class="tl-sub">When Nearwork presents a new candidate</div></div><button class="toggle on" onclick="this.classList.toggle('on')"></button></div>
+        <div class="toggle-row"><div><div class="tl-lbl">Stage updates</div><div class="tl-sub">When a candidate moves through stages</div></div><button class="toggle on" onclick="this.classList.toggle('on')"></button></div>
+        <div class="toggle-row"><div><div class="tl-lbl">Interview scheduled</div><div class="tl-sub">When an interview is confirmed</div></div><button class="toggle on" onclick="this.classList.toggle('on')"></button></div>
+        <div class="toggle-row"><div><div class="tl-lbl">Weekly pipeline digest</div><div class="tl-sub">Summary of all pipeline activity</div></div><button class="toggle" onclick="this.classList.toggle('on')"></button></div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- ══ CANDIDATE FULL MODAL ══ -->
+<div class="modal-bg" id="cand-modal" onclick="if(event.target===this)closeModal('cand-modal')">
+  <div class="modal">
+    <div class="modal-nav">
+      <div class="modal-nav-l">
+        <div class="mc-av" id="mc-av" style="background:linear-gradient(135deg,#EC4899,#BE185D);">DH</div>
+        <div><div class="mc-name" id="mc-name">David Herrera</div><div class="mc-code" id="mc-code">NW-C-2N6Q8</div></div>
+        <span class="badge bg-green" id="mc-stage" style="margin-left:8px;">Stage 6 — Your Review</span>
+      </div>
+      <button class="mc-close" onclick="closeModal('cand-modal')">✕</button>
+    </div>
+    <div class="modal-tabs-row">
+      <button class="mt on" onclick="switchMT('overview',this)">Overview</button>
+      <button class="mt" onclick="switchMT('experience',this)">Experience</button>
+      <button class="mt" onclick="switchMT('assessment',this)">Assessment</button>
+      <button class="mt" onclick="switchMT('checkins',this)">Post-hire check-ins</button>
+      <button class="mt" onclick="switchMT('notes',this)">Notes</button>
+      <button class="mt" onclick="switchMT('cv',this)">CV</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- OVERVIEW -->
+      <div class="mtc show" id="mt-overview">
+        <div class="match-highlight">
+          <div class="mh-score">96%</div>
+          <div><div class="mh-label">Match score for this opening</div><div class="mh-sub">Calculated against your kick-off brief — experience, skills, salary, English level</div></div>
+        </div>
+        <div class="score-section">
+          <div class="score-ring">
+            <svg viewBox="0 0 80 80" width="80" height="80">
+              <circle cx="40" cy="40" r="34" fill="none" stroke="#F3F4F6" stroke-width="8"/>
+              <circle cx="40" cy="40" r="34" fill="none" stroke="#10B981" stroke-width="8" stroke-dasharray="213.6" stroke-dashoffset="19" stroke-linecap="round"/>
+            </svg>
+            <div class="score-ring-num">91</div>
+          </div>
+          <div class="score-breakdown">
+            <div class="sbi"><div class="sbi-l">Profile</div><div class="sbi-v">20/20</div></div>
+            <div class="sbi"><div class="sbi-l">Experience</div><div class="sbi-v">18/20</div></div>
+            <div class="sbi"><div class="sbi-l">English</div><div class="sbi-v">20/20</div></div>
+            <div class="sbi"><div class="sbi-l">Skills match</div><div class="sbi-v">16/20</div></div>
+            <div class="sbi"><div class="sbi-l">Assessment</div><div class="sbi-v">17/20</div></div>
+          </div>
+        </div>
+        <div class="info-grid">
+          <div class="ii"><div class="ii-l">Location</div><div class="ii-v">Bogotá, Colombia</div></div>
+          <div class="ii"><div class="ii-l">Experience</div><div class="ii-v">6 years</div></div>
+          <div class="ii"><div class="ii-l">English</div><div class="ii-v">C1 Advanced</div></div>
+          <div class="ii"><div class="ii-l">Expected salary</div><div class="ii-v">$2,400/mo USD</div></div>
+          <div class="ii"><div class="ii-l">Background check</div><div class="ii-v" style="color:var(--green);">✓ Cleared</div></div>
+          <div class="ii"><div class="ii-l">Contact preference</div><div class="ii-v">WhatsApp & Email</div></div>
+        </div>
+        <div class="slbl">Skills</div>
+        <div class="skills-wrap"><div class="stag">Salesforce</div><div class="stag">Gainsight</div><div class="stag">HubSpot</div><div class="stag">Customer Success</div><div class="stag">QBR facilitation</div><div class="stag">Zendesk</div></div>
+        <div class="stage-mover">
+          <div class="sm-title">🟢 This candidate is in your review stage — your decision</div>
+          <div class="sm-desc">Review David's full profile, then schedule an interview or move him to hired when ready. Passing will notify Nearwork automatically.</div>
+          <div class="sm-btns">
+            <button class="btn-hire" onclick="hireCandidate()">✓ Move to Hired</button>
+            <button class="btn-schedule" onclick="openScheduler()">📅 Schedule interview</button>
+            <button class="btn-pass" onclick="passCandidate()">✕ Pass</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- EXPERIENCE -->
+      <div class="mtc" id="mt-experience">
+        <div class="slbl">Work experience</div>
+        <div class="exp-item"><div class="exp-title">Senior Customer Success Manager</div><div class="exp-co">TechFlow SaaS · Bogotá (Remote, US team)</div><div class="exp-dates">Jan 2022 – Present · 4 years 3 months</div><div class="exp-desc">Managed 35-account portfolio with $2.8M ARR. Ran QBRs, onboarded new clients, achieved 94% renewal rate. Led 2 junior CSMs.</div></div>
+        <div class="exp-item"><div class="exp-title">Customer Success Manager</div><div class="exp-co">Nexus Digital · Bogotá</div><div class="exp-dates">Mar 2019 – Dec 2021 · 2 years 9 months</div><div class="exp-desc">Owned 20 SMB accounts. Built onboarding process from scratch. Reduced time-to-value by 40% in first year.</div></div>
+        <div class="slbl" style="margin-top:20px;">Languages</div>
+        <div class="info-grid"><div class="ii"><div class="ii-l">Spanish</div><div class="ii-v">Native</div></div><div class="ii"><div class="ii-l">English</div><div class="ii-v">C1 Advanced</div></div></div>
+      </div>
+
+      <!-- ASSESSMENT -->
+      <div class="mtc" id="mt-assessment">
+        <div style="text-align:center;padding:12px 0 18px;">
+          <div style="font-size:52px;font-weight:900;color:var(--purple);letter-spacing:-3px;line-height:1;">87<span style="font-size:22px;color:var(--g4);">/100</span></div>
+          <div style="font-size:12px;color:var(--g5);margin-top:4px;">Assessment score · Customer Success Manager</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin-bottom:16px;">
+          <div class="sbi" style="text-align:center;"><div class="sbi-l">Technical</div><div class="sbi-v" style="font-size:17px;">43/50</div></div>
+          <div class="sbi" style="text-align:center;"><div class="sbi-l">English level</div><div class="sbi-v" style="font-size:14px;color:var(--green);">Advanced</div></div>
+          <div class="sbi" style="text-align:center;"><div class="sbi-l">Integrity</div><div class="sbi-v" style="font-size:14px;color:var(--green);">Clean</div></div>
+        </div>
+        <div style="background:rgba(16,185,129,0.05);border:1px solid rgba(16,185,129,0.2);border-radius:10px;padding:13px 15px;margin-bottom:12px;font-size:12px;color:var(--g6);line-height:1.65;"><strong style="color:var(--green);display:block;margin-bottom:3px;">✓ No integrity flags detected</strong>No tab switching, copy-paste attempts, or suspicious timing patterns during the assessment.</div>
+        <div style="background:var(--g1);border-radius:10px;padding:13px 15px;"><div style="font-size:11px;font-weight:700;color:var(--black);margin-bottom:5px;">Recruiter note</div><div style="font-size:12px;color:var(--g6);line-height:1.65;">David's assessment was outstanding — particularly in client communication scenarios. His written English is exceptional and his SaaS knowledge is well above average. Strongly recommended.</div></div>
+      </div>
+
+      <!-- POST-HIRE CHECK-INS -->
+      <div class="mtc" id="mt-checkins">
+        <div style="background:var(--pp);border-radius:10px;padding:13px 15px;margin-bottom:16px;font-size:12px;color:var(--g6);line-height:1.65;border-left:3px solid var(--purple);"><strong style="color:var(--purple);display:block;margin-bottom:3px;">🛡️ Post-hire monitoring</strong>Nearwork checks in monthly for the first 6 months after hire. This protects your guarantee and ensures the placement is working for both sides.</div>
+        <div class="checkin-list">
+          <div class="checkin-item"><div class="checkin-month">Month 1</div><div class="checkin-status"><div class="checkin-note">Strong start — client and candidate both happy</div><div class="checkin-date">Feb 12, 2026</div></div><span class="badge bg-green">✓ Complete</span></div>
+          <div class="checkin-item"><div class="checkin-month">Month 2</div><div class="checkin-status"><div class="checkin-note">Exceeding expectations — promoted to senior track</div><div class="checkin-date">Mar 12, 2026</div></div><span class="badge bg-green">✓ Complete</span></div>
+          <div class="checkin-item"><div class="checkin-month">Month 3</div><div class="checkin-status"><div class="checkin-note">Scheduled for June 12, 2026</div><div class="checkin-date">Jun 12, 2026</div></div><span class="badge bg-amber">Upcoming</span></div>
+          <div class="checkin-item" style="opacity:.4;"><div class="checkin-month">Month 4</div><div class="checkin-status"><div class="checkin-date">Jul 12, 2026</div></div><span class="badge bg-gray">Pending</span></div>
+          <div class="checkin-item" style="opacity:.4;"><div class="checkin-month">Month 5</div><div class="checkin-status"><div class="checkin-date">Aug 12, 2026</div></div><span class="badge bg-gray">Pending</span></div>
+          <div class="checkin-item" style="opacity:.4;"><div class="checkin-month">Month 6 🎉</div><div class="checkin-status"><div class="checkin-note">Guarantee complete — referral bonus eligible</div><div class="checkin-date">Sep 12, 2026</div></div><span class="badge bg-gray">Pending</span></div>
+        </div>
+      </div>
+
+      <!-- NOTES -->
+      <div class="mtc" id="mt-notes">
+        <div class="notes-list">
+          <div class="note-item"><div class="note-author">Byron Giraldo <span class="note-tag nw">Nearwork</span></div><div class="note-text">Strong candidate. His experience at TechFlow maps directly to what Crestline needs. Very confident in communication. Highly recommend moving forward.</div><div class="note-time">April 9, 2026 · 2:14 PM</div></div>
+          <div class="note-item"><div class="note-author">Alex Chen <span class="note-tag cl">Crestline</span></div><div class="note-text">Reviewed the scorecard — very impressed. His renewal rate numbers are exactly what we're looking for. Would like to schedule a call with VP before deciding.</div><div class="note-time">April 10, 2026 · 9:42 AM</div></div>
+        </div>
+        <textarea class="note-input" id="note-inp" placeholder="Leave a note or recommendation about this candidate..."></textarea>
+        <div style="display:flex;justify-content:flex-end;margin-top:8px;"><button class="btn btn-p btn-sm" onclick="addNote()">Add note</button></div>
+      </div>
+
+      <!-- CV -->
+      <div class="mtc" id="mt-cv">
+        <div class="cv-row"><div class="cv-info"><div style="font-size:24px;">📄</div><div><div style="font-size:13px;font-weight:600;">David_Herrera_CV_2026.pdf</div><div style="font-size:11px;color:var(--g5);">284 KB · Updated April 2, 2026</div></div></div><button class="btn btn-p btn-sm" onclick="toast('CV downloaded — David_Herrera_CV_2026.pdf','ok')">⬇ Download CV</button></div>
+        <div class="cv-preview"><div style="font-size:40px;">📄</div><div style="font-size:13px;font-weight:600;">CV preview</div><div style="font-size:11px;">Download the PDF to view the full document</div></div>
+      </div>
+
+    </div>
+    <div class="modal-footer"><div class="mf-stage">Stage: <strong id="mf-stage-txt">Stage 6 — Your Review</strong></div><div style="display:flex;gap:8px;"><button class="btn btn-ghost btn-sm" onclick="closeModal('cand-modal')">Close</button></div></div>
+  </div>
+</div>
+
+<!-- ══ INTERVIEW SCHEDULER MODAL ══ -->
+<div class="modal-bg" id="sched-modal" onclick="if(event.target===this)closeModal('sched-modal')">
+  <div class="modal scheduler-modal">
+    <div class="sched-body">
+      <button class="mc-close" style="margin-left:auto;display:flex;margin-bottom:16px;" onclick="closeModal('sched-modal')">✕</button>
+      <div class="sched-title">📅 Schedule an interview</div>
+      <div class="sched-sub">Book an interview with <strong id="sched-cand-name">David Herrera</strong>. A calendar invite (.ics) will be sent to the candidate, your team, and optionally your Nearwork recruiter.</div>
+
+      <div class="field-row-2">
+        <div class="field"><label>Interview date</label><input type="date" id="sched-date" min="2026-04-12"></div>
+        <div class="field"><label>Time (your timezone)</label><input type="time" id="sched-time" value="10:00"></div>
+      </div>
+      <div class="field"><label>Duration</label>
+        <div class="duration-btns">
+          <button class="dur-btn" onclick="selectDur(this,'30 min')">30 min</button>
+          <button class="dur-btn on" onclick="selectDur(this,'45 min')">45 min</button>
+          <button class="dur-btn" onclick="selectDur(this,'60 min')">60 min</button>
+        </div>
+      </div>
+      <div class="field"><label>Video platform</label>
+        <div class="platform-grid">
+          <button class="plat-btn on" onclick="selectPlat(this)"><span class="plat-icon">📹</span>Google Meet</button>
+          <button class="plat-btn" onclick="selectPlat(this)"><span class="plat-icon">💙</span>Zoom</button>
+          <button class="plat-btn" onclick="selectPlat(this)"><span class="plat-icon">🟣</span>Microsoft Teams</button>
+          <button class="plat-btn" onclick="selectPlat(this)"><span class="plat-icon">📞</span>Phone call</button>
+        </div>
+      </div>
+      <div class="field"><label>Meeting link <span style="font-size:10px;color:var(--g4);font-weight:400;">(paste your link or leave blank for phone)</span></label><input type="url" id="sched-link" placeholder="https://meet.google.com/abc-defg-hij"></div>
+      <div class="field"><label>Message to candidate <span style="font-size:10px;color:var(--g4);font-weight:400;">(optional)</span></label><textarea id="sched-note" placeholder="We'd love to chat about your experience and learn more about your background..."></textarea></div>
+
+      <div class="recruiter-toggle-row">
+        <div><div class="rt-label">Include Nearwork recruiter?</div><div class="rt-sub">Byron Giraldo will be CC'd on the invite and can join optionally</div></div>
+        <button class="toggle on" id="rec-toggle" onclick="this.classList.toggle('on')"></button>
+      </div>
+
+      <div class="sched-footer">
+        <button class="btn btn-ghost" onclick="closeModal('sched-modal')">Cancel</button>
+        <button class="btn btn-p" onclick="sendInvite()">Send calendar invite →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ INVITE MODAL ══ -->
+<div class="modal-bg" id="invite-modal" onclick="if(event.target===this)closeModal('invite-modal')">
+  <div class="modal invite-modal-inner">
+    <div class="im-body">
+      <button class="mc-close" style="margin-left:auto;display:flex;margin-bottom:14px;" onclick="closeModal('invite-modal')">✕</button>
+      <div class="im-title">Invite a team member</div>
+      <div class="im-sub">They'll get an email with a link to create their account. You can manage their permissions from Settings once they join.</div>
+      <div class="field"><label>Full name</label><input type="text" id="inv-name" placeholder="Sarah Kim"></div>
+      <div class="field"><label>Work email</label><input type="email" id="inv-email" placeholder="sarah@company.com"></div>
+      <div class="field"><label>Permission level</label><select><option>Hiring Manager — view pipeline, leave notes, download CVs</option><option>Viewer — read-only access to pipeline</option><option>Admin — full access, can invite members</option></select></div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;"><button class="btn btn-ghost" onclick="closeModal('invite-modal')">Cancel</button><button class="btn btn-p" onclick="sendTeamInvite()">Send invite →</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══ PAGES ══ */
+const PAGES=['openings','detail','settings'];
+function showPage(id){
+  PAGES.forEach(p=>{
+    document.getElementById('page-'+p).classList.toggle('show',p===id);
+    const t=document.getElementById('tab-'+p);
+    if(t) t.classList.toggle('active',p===id);
+  });
+  window.scrollTo(0,0);
+  closeAll();
+}
+
+/* ══ TABS ══ */
+function switchTab(which,el){
+  document.querySelectorAll('.tp').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('tab-active').style.display=which==='active'?'':'none';
+  document.getElementById('tab-hired').style.display=which==='hired'?'':'none';
+}
+
+/* ══ SAVINGS COUNTER ══ */
+function animateSavings(){
+  const target=228400; let current=0;
+  const step=Math.ceil(target/80);
+  const el=document.getElementById('savings-num');
+  const interval=setInterval(()=>{
+    current=Math.min(current+step,target);
+    el.textContent=current.toLocaleString();
+    if(current>=target) clearInterval(interval);
+  },16);
+}
+setTimeout(animateSavings,400);
+
+/* ══ OPENING DETAIL ══ */
+const detailData={
+  csm:{role:'Customer Success Manager',code:'NW-CSM-4X8B',badge:'<span class="badge bg-amber">Your review needed</span>'},
+  sdr:{role:'SDR / Sales Development Rep',code:'NW-SDR-9K2M',badge:'<span class="badge bg-purple">Nearwork working</span>'},
+  'hired-csm':{role:'Customer Success Manager (Hired)',code:'NW-CSM-7R3P',badge:'<span class="badge bg-green">✓ Hired</span>'},
+};
+function openDetail(id){
+  const d=detailData[id]||detailData.csm;
+  document.getElementById('det-role').textContent=d.role;
+  document.getElementById('det-code').textContent=d.code;
+  document.getElementById('det-badge').innerHTML=d.badge;
+  showPage('detail');
+}
+
+function searchCode(){
+  const code=document.getElementById('code-inp').value.trim().toUpperCase();
+  if(!code){toast('Enter a code to search.','bad');return;}
+  const found=Object.values(detailData).find(o=>o.code===code);
+  if(found){toast(`Found: ${found.role} · ${found.code}`,'ok');}
+  else{toast('No opening found with that code.','bad');}
+}
+
+/* ══ CANDIDATE MODAL ══ */
+const candData={
+  david:{name:'David Herrera',code:'NW-C-2N6Q8',av:'DH',bg:'linear-gradient(135deg,#EC4899,#BE185D)',stage:'Stage 6 — Your Review',showMover:true},
+  maria:{name:'María López',code:'NW-C-5B9W3',av:'ML',bg:'linear-gradient(135deg,#F59E0B,#D97706)',stage:'Stage 6 — Your Review',showMover:true},
+  isabella:{name:'Isabella Gómez',code:'NW-C-8X4K2',av:'IG',bg:'linear-gradient(135deg,#6C3CE1,#8B5CF6)',stage:'Stage 1 — Applied',showMover:false},
+  carlos:{name:'Carlos Rueda',code:'NW-C-3M7P1',av:'CR',bg:'linear-gradient(135deg,#10B981,#059669)',stage:'Stage 1 — Applied',showMover:false},
+  sofia:{name:'Sofía Moreno',code:'NW-C-7T2R5',av:'SM',bg:'linear-gradient(135deg,#8B5CF6,#6C3CE1)',stage:'Stage 2 — Profile Review',showMover:false},
+};
+
+function openCandModal(id){
+  const d=candData[id]||candData.david;
+  document.getElementById('mc-av').textContent=d.av;
+  document.getElementById('mc-av').style.background=d.bg;
+  document.getElementById('mc-name').textContent=d.name;
+  document.getElementById('mc-code').textContent=d.code;
+  document.getElementById('mc-stage').textContent=d.stage;
+  document.getElementById('mc-stage').className='badge '+(d.showMover?'bg-green':'bg-purple');
+  document.getElementById('mf-stage-txt').textContent=d.stage;
+  document.querySelector('.stage-mover').style.display=d.showMover?'':'none';
+  document.getElementById('sched-cand-name').textContent=d.name;
+  switchMT('overview',document.querySelector('.mt'));
+  openModal('cand-modal');
+}
+
+function switchMT(id,el){
+  document.querySelectorAll('.mtc').forEach(t=>t.classList.remove('show'));
+  document.querySelectorAll('.mt').forEach(t=>t.classList.remove('on'));
+  document.getElementById('mt-'+id).classList.add('show');
+  el.classList.add('on');
+}
+
+function hireCandidate(){closeModal('cand-modal');toast('🎉 Moved to Hired! Nearwork has been notified.','ok');}
+function passCandidate(){closeModal('cand-modal');toast('Candidate passed. Nearwork has been notified.','');}
+
+/* ══ SCHEDULER ══ */
+function openScheduler(){ closeModal('cand-modal'); setTimeout(()=>openModal('sched-modal'),200); }
+
+let selDur='45 min';
+function selectDur(el,dur){
+  document.querySelectorAll('.dur-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on'); selDur=dur;
+}
+
+let selPlat='Google Meet';
+function selectPlat(el){
+  document.querySelectorAll('.plat-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on'); selPlat=el.textContent.trim();
+}
+
+function sendInvite(){
+  const date=document.getElementById('sched-date').value;
+  const time=document.getElementById('sched-time').value;
+  if(!date){toast('Please select a date.','bad');return;}
+  closeModal('sched-modal');
+  toast(`📅 Interview scheduled for ${date} at ${time} via ${selPlat}. Calendar invite sent!`,'ok');
+}
+
+/* ══ NOTES ══ */
+function addNote(){
+  const text=document.getElementById('note-inp').value.trim();
+  if(!text){toast('Please write a note first.','bad');return;}
+  const list=document.querySelector('.notes-list');
+  const item=document.createElement('div');
+  item.className='note-item';
+  const now=new Date();
+  item.innerHTML=`<div class="note-author">Alex Chen <span class="note-tag cl">Crestline</span></div><div class="note-text">${text}</div><div class="note-time">${now.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})} · Just now</div>`;
+  list.appendChild(item);
+  document.getElementById('note-inp').value='';
+  toast('Note added.','ok');
+}
+
+/* ══ INVITE ══ */
+function openInvite(){ openModal('invite-modal'); }
+function sendTeamInvite(){
+  const email=document.getElementById('inv-email').value.trim();
+  const name=document.getElementById('inv-name').value.trim();
+  if(!email||!name){toast('Please fill in name and email.','bad');return;}
+  closeModal('invite-modal');
+  toast(`Invite sent to ${email}!`,'ok');
+}
+
+/* ══ NOTIFICATIONS ══ */
+function markRead(){
+  document.querySelectorAll('.ni.unread').forEach(i=>i.classList.remove('unread'));
+  document.querySelectorAll('.ndot').forEach(d=>d.classList.add('r'));
+  document.querySelector('.bell-badge').style.display='none';
+  toast('All notifications marked as read.','ok');
+}
+
+/* ══ MODALS ══ */
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+function toggleEl(id,cls){ document.getElementById(id).classList.toggle(cls); closeAllExcept(id); }
+function closeAllExcept(id){ ['notif-drop','av-menu'].forEach(el=>{if(el!==id) document.getElementById(el)?.classList.remove('open');}); }
+function closeAll(){ ['notif-drop','av-menu'].forEach(el=>document.getElementById(el)?.classList.remove('open')); }
+
+document.addEventListener('click',e=>{
+  if(!e.target.closest('#bell-wrap')) document.getElementById('notif-drop')?.classList.remove('open');
+  if(!e.target.closest('#avatar-wrap')) document.getElementById('av-menu')?.classList.remove('open');
+});
+
+/* ══ SIGN OUT ══ */
+function signOut(){ toast('Signing out...',''); setTimeout(()=>window.location.href='client-login.html',800); }
+
+/* ══ TOAST ══ */
+function toast(msg,t){ const el=document.getElementById('toast'); el.textContent=msg; el.className='toast show '+(t||''); setTimeout(()=>el.classList.remove('show'),3500); }
+</script>
+</body>
+</html>
