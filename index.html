@@ -3,152 +3,152 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nearwork | Welcome</title>
+<title>Welcome | Nearwork</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-:root{--purple:#6C3CE1;--pl:#8B5CF6;--pp:#F0EBFF;--black:#0D0D0D;--green:#10B981;--gl:#6EE7B7;}
-html,body{height:100%;font-family:'Poppins',sans-serif;overflow:hidden;}
-body{background:var(--black);display:flex;flex-direction:column;}
-
-/* TOP BAR */
-.topbar{position:absolute;top:0;left:0;right:0;padding:24px 40px;display:flex;align-items:center;justify-content:center;z-index:10;}
-.logo{font-size:22px;font-weight:900;color:#fff;letter-spacing:-1px;}
-.logo span{color:var(--pl);}
-
-/* SPLIT */
-.split{display:flex;height:100vh;width:100%;}
-.half{
-  flex:1;position:relative;overflow:hidden;
-  display:flex;align-items:center;justify-content:center;
-  cursor:pointer;transition:flex .55s cubic-bezier(.4,0,.2,1);
+:root{
+  --purple:#6C3CE1;--pd:#4F28B8;--pl:#8B5CF6;--pp:#F0EBFF;
+  --black:#0D0D0D;--white:#fff;
+  --g1:#F9FAFB;--g2:#F3F4F6;--g3:#D1D5DB;--g4:#9CA3AF;--g5:#6B7280;--g6:#374151;
+  --green:#10B981;
 }
-.half:hover{flex:1.12;}
+html,body{height:100%;font-family:'Poppins',sans-serif;background:var(--g1);color:var(--black);overflow:hidden;}
 
-/* CANDIDATE HALF */
-.half-cand{background:#0D0D0D;}
-.half-cand-bg{position:absolute;inset:0;
-  background:radial-gradient(ellipse at 20% 60%,rgba(16,185,129,0.22),transparent 52%),
-             radial-gradient(ellipse at 80% 20%,rgba(108,60,225,0.18),transparent 48%);
-  pointer-events:none;transition:opacity .4s;}
-.half-cand-grid{position:absolute;inset:0;
-  background-image:linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),
-                   linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px);
-  background-size:52px 52px;pointer-events:none;}
-.half-cand:hover .half-cand-bg{opacity:1.3;}
+.page{display:flex;flex-direction:column;height:100vh;}
 
-/* CLIENT HALF */
-.half-client{background:#fff;}
-.half-client-bg{position:absolute;inset:0;
-  background:radial-gradient(ellipse at 80% 50%,rgba(108,60,225,0.07),transparent 55%),
-             radial-gradient(ellipse at 20% 80%,rgba(108,60,225,0.04),transparent 45%);
-  pointer-events:none;}
+/* Top bar */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:20px 40px;flex-shrink:0;}
+.logo{font-size:20px;font-weight:900;letter-spacing:-1px;color:var(--black);}
+.logo em{font-style:normal;color:var(--purple);}
+.topbar-right{font-size:12px;color:var(--g5);}
+.topbar-right a{color:var(--purple);text-decoration:none;font-weight:600;}
+.topbar-right a:hover{text-decoration:underline;}
 
-/* DIVIDER */
-.vdiv{width:1px;background:rgba(255,255,255,0.1);flex-shrink:0;z-index:5;}
+/* Main */
+.main{flex:1;display:flex;align-items:center;justify-content:center;padding:0 24px;}
 
-/* CARD */
-.hcard{position:relative;z-index:1;max-width:380px;width:80%;text-align:center;padding:20px;}
+/* Card */
+.card{background:var(--white);border:1.5px solid var(--g3);border-radius:20px;padding:44px;width:100%;max-width:420px;box-shadow:0 4px 32px rgba(0,0,0,0.07);animation:fadeIn .4s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
 
-/* Candidate card */
-.hc-icon{font-size:52px;margin-bottom:20px;display:block;filter:drop-shadow(0 4px 20px rgba(16,185,129,0.3));}
-.hc-title{font-size:clamp(24px,3vw,36px);font-weight:900;color:#fff;letter-spacing:-2px;line-height:1.1;margin-bottom:12px;}
-.hc-title span{color:var(--gl);}
-.hc-sub{font-size:13px;color:rgba(255,255,255,0.45);line-height:1.7;font-weight:300;margin-bottom:28px;}
-.btn-cand{display:inline-flex;align-items:center;gap:8px;background:var(--green);color:#fff;font-size:14px;font-weight:700;padding:14px 32px;border-radius:10px;border:none;cursor:pointer;font-family:'Poppins',sans-serif;transition:background .2s,transform .15s,box-shadow .2s;box-shadow:0 4px 24px rgba(16,185,129,0.3);}
-.btn-cand:hover{background:#059669;transform:translateY(-2px);box-shadow:0 8px 32px rgba(16,185,129,0.4);}
+.card-header{text-align:center;margin-bottom:30px;}
+.card-logo{font-size:18px;font-weight:900;letter-spacing:-1px;margin-bottom:16px;display:inline-block;}
+.card-logo em{font-style:normal;color:var(--purple);}
+.card-title{font-size:24px;font-weight:800;letter-spacing:-1px;margin-bottom:6px;}
+.card-sub{font-size:13px;color:var(--g5);}
 
-/* Candidate pills */
-.c-pills{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:24px;}
-.cpill{font-size:10px;font-weight:600;color:rgba(255,255,255,0.45);background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);padding:4px 10px;border-radius:99px;}
-.cpill.hot{color:var(--gl);border-color:rgba(110,231,183,0.25);background:rgba(16,185,129,0.08);}
+/* Toggle */
+.toggle-wrap{background:var(--g1);border:1.5px solid var(--g3);border-radius:12px;padding:4px;display:flex;gap:4px;margin-bottom:26px;}
+.toggle-btn{flex:1;padding:11px;border-radius:9px;border:none;background:transparent;color:var(--g5);font-size:13px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;}
+.toggle-btn.active{background:var(--white);color:var(--black);box-shadow:0 1px 8px rgba(0,0,0,0.1);}
+.toggle-btn.active.cand{color:var(--purple);}
 
-/* Stat chips */
-.c-chips{display:flex;gap:8px;justify-content:center;margin-bottom:24px;flex-wrap:wrap;}
-.chip{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:99px;padding:6px 14px;font-size:11px;color:rgba(255,255,255,0.5);}
-.chip em{color:#fff;font-style:normal;font-weight:700;}
+/* Panels */
+.panel{display:none;}
+.panel.active{display:block;}
 
-/* Client card */
-.hc-title-dark{font-size:clamp(24px,3vw,36px);font-weight:900;color:var(--black);letter-spacing:-2px;line-height:1.1;margin-bottom:12px;}
-.hc-title-dark span{color:var(--purple);}
-.hc-sub-dark{font-size:13px;color:#6B7280;line-height:1.7;font-weight:300;margin-bottom:24px;}
-.hc-icon-dark{font-size:52px;margin-bottom:20px;display:block;}
-.btn-client{display:inline-flex;align-items:center;gap:8px;background:var(--purple);color:#fff;font-size:14px;font-weight:700;padding:14px 32px;border-radius:10px;border:none;cursor:pointer;font-family:'Poppins',sans-serif;transition:background .2s,transform .15s,box-shadow .2s;box-shadow:0 4px 24px rgba(108,60,225,0.3);}
-.btn-client:hover{background:#4F28B8;transform:translateY(-2px);box-shadow:0 8px 32px rgba(108,60,225,0.4);}
-.cl-perks{display:flex;flex-direction:column;gap:7px;margin-bottom:24px;text-align:left;}
-.cperk{display:flex;align-items:center;gap:9px;font-size:12px;color:#6B7280;}
-.cperk-dot{width:5px;height:5px;border-radius:50%;background:var(--purple);flex-shrink:0;}
-.cl-note{font-size:11px;color:#9CA3AF;margin-top:12px;}
-.cl-note a{color:var(--purple);text-decoration:none;font-weight:600;}
+/* Feature list */
+.feature-list{display:flex;flex-direction:column;gap:8px;margin-bottom:22px;}
+.fl-item{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--g6);}
+.fl-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.fl-dot.purple{background:var(--purple);}
+.fl-dot.green{background:var(--green);}
 
-/* BOTTOM HINT */
-.bottom-hint{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);font-size:11px;color:rgba(255,255,255,0.2);text-align:center;z-index:10;pointer-events:none;white-space:nowrap;}
+/* Divider */
+.divider-label{display:flex;align-items:center;gap:10px;margin:16px 0;font-size:11px;color:var(--g4);}
+.divider-label::before,.divider-label::after{content:'';flex:1;height:1px;background:var(--g3);}
 
-/* MOBILE */
-@media(max-width:700px){
-  body{overflow:auto;}
-  .split{flex-direction:column;height:auto;}
-  .half{flex:none;min-height:100vh;cursor:default;}
-  .half:hover{flex:none;}
-  .vdiv{width:100%;height:1px;}
-  .topbar{position:relative;padding:20px 24px;justify-content:flex-start;}
-  .bottom-hint{display:none;}
-  .hcard{width:90%;}
+/* Buttons */
+.btn-main{display:flex;align-items:center;justify-content:center;width:100%;padding:13px;border-radius:10px;font-size:14px;font-weight:700;font-family:'Poppins',sans-serif;cursor:pointer;text-decoration:none;transition:all .2s;border:none;}
+.btn-purple{background:var(--purple);color:#fff;box-shadow:0 3px 16px rgba(108,60,225,0.25);}
+.btn-purple:hover{background:var(--pd);transform:translateY(-1px);}
+.btn-outline{background:var(--white);color:var(--black);border:1.5px solid var(--g3);}
+.btn-outline:hover{border-color:var(--g5);background:var(--g1);}
+.btn-stack{display:flex;flex-direction:column;gap:8px;}
+.btn-note{text-align:center;margin-top:10px;font-size:12px;color:var(--g5);}
+.btn-note a{color:var(--purple);text-decoration:none;font-weight:600;}
+.btn-note a:hover{text-decoration:underline;}
+
+/* Footer */
+.footer{text-align:center;padding:16px;font-size:11px;color:var(--g4);flex-shrink:0;}
+.footer a{color:var(--g5);text-decoration:none;margin:0 8px;}
+.footer a:hover{color:var(--purple);}
+
+@media(max-width:520px){
+  .topbar{padding:16px 20px;}
+  .card{padding:28px 20px;border-radius:16px;}
 }
 </style>
 </head>
 <body>
+<div class="page">
 
-<div class="topbar"><div class="logo">Near<span>work</span></div></div>
-<div class="bottom-hint">Choose your path to get started</div>
+  <div class="topbar">
+    <div class="logo">Near<em>work</em></div>
+    <div class="topbar-right">Need help? <a href="mailto:support@nearwork.co">support@nearwork.co</a></div>
+  </div>
 
-<div class="split">
-
-  <!-- CANDIDATE HALF -->
-  <div class="half half-cand" onclick="window.location.href='candidate-login.html'">
-    <div class="half-cand-bg"></div>
-    <div class="half-cand-grid"></div>
-    <div class="hcard">
-      <span class="hc-icon">🇨🇴</span>
-      <h1 class="hc-title">I'm looking<br>for a <span>job.</span></h1>
-      <p class="hc-sub">Apply to top US SaaS companies from Colombia. Earn in USD. Work remotely. Grow your career with full transparency every step of the way.</p>
-      <div class="c-chips">
-        <div class="chip">Free to apply</div>
-        <div class="chip">C1 English required</div>
-        <div class="chip"><em>60%</em> avg. salary increase</div>
+  <div class="main">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-logo">Near<em>work</em></div>
+        <div class="card-title">Welcome back.</div>
+        <div class="card-sub">Select your account type to continue.</div>
       </div>
-      <div class="c-pills">
-        <div class="cpill hot">Customer Success</div>
-        <div class="cpill hot">SDR</div>
-        <div class="cpill hot">Technical Support</div>
-        <div class="cpill">Marketing Ops</div>
-        <div class="cpill">Developer</div>
-        <div class="cpill">Operations</div>
+
+      <div class="toggle-wrap">
+        <button class="toggle-btn cand active" onclick="switchPanel('candidate',this)">🇨🇴 &nbsp;I'm a candidate</button>
+        <button class="toggle-btn client" onclick="switchPanel('client',this)">🏢 &nbsp;I'm hiring</button>
       </div>
-      <button class="btn-cand">Get started — it's free →</button>
+
+      <!-- Candidate -->
+      <div class="panel active" id="panel-candidate">
+        <div class="feature-list">
+          <div class="fl-item"><div class="fl-dot purple"></div>Apply to top US SaaS companies — free</div>
+          <div class="fl-item"><div class="fl-dot purple"></div>C1 English · 100% remote from Colombia</div>
+          <div class="fl-item"><div class="fl-dot purple"></div>Earn in USD — full salary transparency</div>
+          <div class="fl-item"><div class="fl-dot purple"></div>Track your application in real time</div>
+        </div>
+        <div class="btn-stack">
+          <a href="/candidate-login" class="btn-main btn-purple">Sign in to my account →</a>
+          <a href="https://nearwork.co/jobs" class="btn-main btn-outline">Browse open roles</a>
+        </div>
+        <div class="btn-note">New here? <a href="/candidate-login?signup=true">Create a free account</a></div>
+      </div>
+
+      <!-- Client -->
+      <div class="panel" id="panel-client">
+        <div class="feature-list">
+          <div class="fl-item"><div class="fl-dot green"></div>Live Kanban pipeline — real-time updates</div>
+          <div class="fl-item"><div class="fl-dot green"></div>Full scorecards, assessments & CVs</div>
+          <div class="fl-item"><div class="fl-dot green"></div>Leave notes and candidate feedback</div>
+          <div class="fl-item"><div class="fl-dot green"></div>6-month guarantee tracked in-platform</div>
+        </div>
+        <div class="btn-stack">
+          <a href="/client-login" class="btn-main btn-purple">Sign in to my account →</a>
+        </div>
+        <div class="divider-label">not a client yet?</div>
+        <a href="https://nearwork.co/book" class="btn-main btn-outline">Schedule a free call →</a>
+      </div>
+
     </div>
   </div>
 
-  <div class="vdiv"></div>
-
-  <!-- CLIENT HALF -->
-  <div class="half half-client" onclick="window.location.href='client-login.html'">
-    <div class="half-client-bg"></div>
-    <div class="hcard">
-      <span class="hc-icon-dark">🏢</span>
-      <h1 class="hc-title-dark">I'm <span>hiring</span><br>Colombian talent.</h1>
-      <p class="hc-sub-dark">Access your pipeline, review vetted candidates, and manage your team — all in one place. Invite-only client accounts.</p>
-      <div class="cl-perks">
-        <div class="cperk"><div class="cperk-dot"></div>Live Kanban pipeline — real-time updates</div>
-        <div class="cperk"><div class="cperk-dot"></div>Full scorecards, test results & CVs</div>
-        <div class="cperk"><div class="cperk-dot"></div>Leave notes and recommendations</div>
-        <div class="cperk"><div class="cperk-dot"></div>6-month guarantee tracked in-platform</div>
-      </div>
-      <button class="btn-client">Sign in to your account →</button>
-      <div class="cl-note">Not a client yet? <a href="https://nearwork.co/book">Schedule a free call →</a></div>
-    </div>
+  <div class="footer">
+    <a href="https://nearwork.co/privacy-policy">Privacy Policy</a>
+    <a href="https://nearwork.co/terms-of-service">Terms of Service</a>
+    <a href="https://nearwork.co">nearwork.co</a>
   </div>
 
 </div>
+<script>
+function switchPanel(type, btn) {
+  document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + type).classList.add('active');
+}
+</script>
 </body>
 </html>
