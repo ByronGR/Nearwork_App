@@ -202,6 +202,56 @@ body{font-family:'Poppins',sans-serif;background:var(--g1);color:var(--black);mi
 .pl-scroll::-webkit-scrollbar{height:4px;}
 .pl-scroll::-webkit-scrollbar-track{background:var(--g2);border-radius:99px;}
 .pl-scroll::-webkit-scrollbar-thumb{background:var(--g3);border-radius:99px;}
+
+/* PIPELINE PANEL v2 */
+.pipeline-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;}
+.pipeline-toolbar-left{display:flex;align-items:center;gap:8px;}
+.pipeline-toolbar-right{display:flex;align-items:center;gap:8px;}
+
+/* Pipeline board card */
+.pl-board-card{background:#fff;border-radius:13px;border:1.5px solid var(--g3);overflow:hidden;margin-bottom:16px;transition:border-color .2s;}
+.pl-board-card.collapsed .pl-board-body{display:none;}
+.pl-board-card.status-paused{border-color:rgba(245,158,11,0.35);background:rgba(245,158,11,0.01);}
+.pl-board-card.status-completed{border-color:rgba(16,185,129,0.3);background:rgba(16,185,129,0.01);}
+.pl-board-card.status-cancelled{border-color:rgba(239,68,68,0.2);background:rgba(239,68,68,0.01);opacity:.65;}
+
+/* Board header */
+.pl-board-hdr{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--g2);cursor:pointer;user-select:none;}
+.pl-board-hdr:hover{background:var(--g1);}
+.pl-board-collapsed .pl-board-hdr{border-bottom:none;}
+.pl-collapse-icon{font-size:11px;color:var(--g4);transition:transform .2s;flex-shrink:0;}
+.pl-board-card.collapsed .pl-collapse-icon{transform:rotate(-90deg);}
+.pl-board-title{font-size:14px;font-weight:700;color:var(--black);flex:1;}
+.pl-board-meta{font-size:10px;color:var(--g5);}
+.pl-board-actions{display:flex;gap:6px;align-items:center;}
+
+/* Status select inside board header */
+.pl-status-sel{font-size:10px;font-weight:700;padding:3px 8px;border-radius:99px;border:1.5px solid;cursor:pointer;font-family:'Poppins',sans-serif;appearance:none;background:none;outline:none;}
+.pl-status-sel.s-active{color:var(--green);border-color:rgba(16,185,129,0.3);background:rgba(16,185,129,0.07);}
+.pl-status-sel.s-paused{color:var(--amber);border-color:rgba(245,158,11,0.3);background:rgba(245,158,11,0.07);}
+.pl-status-sel.s-completed{color:var(--green);border-color:rgba(16,185,129,0.4);background:rgba(16,185,129,0.1);}
+.pl-status-sel.s-cancelled{color:var(--red);border-color:rgba(239,68,68,0.25);background:rgba(239,68,68,0.06);}
+
+/* Board body */
+.pl-board-body{padding:14px 14px 10px;}
+
+/* Drag and drop */
+.pl-cand-card[draggable="true"]{cursor:grab;}
+.pl-cand-card[draggable="true"]:active{cursor:grabbing;}
+.pl-cand-card.dragging{opacity:.4;transform:rotate(1.5deg);}
+.pl-stage-col.drag-over{background:rgba(108,60,225,0.08);border:2px dashed var(--purple);}
+
+/* Drag confirm overlay */
+.drag-confirm{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:600;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .2s;}
+.drag-confirm.show{opacity:1;pointer-events:all;}
+.drag-confirm-box{background:#fff;border-radius:16px;padding:28px 32px;max-width:400px;width:90%;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,0.2);}
+.dcb-icon{font-size:36px;margin-bottom:12px;}
+.dcb-title{font-size:16px;font-weight:800;color:var(--black);margin-bottom:6px;letter-spacing:-.5px;}
+.dcb-sub{font-size:12px;color:var(--g5);line-height:1.65;margin-bottom:20px;}
+.dcb-sub strong{color:var(--black);}
+.dcb-btns{display:flex;gap:10px;justify-content:center;}
+.dcb-yes{padding:10px 28px;border-radius:9px;background:var(--purple);color:#fff;font-size:13px;font-weight:700;border:none;cursor:pointer;font-family:'Poppins',sans-serif;}
+.dcb-no{padding:10px 28px;border-radius:9px;background:var(--g1);color:var(--g6);font-size:13px;font-weight:600;border:1.5px solid var(--g3);cursor:pointer;font-family:'Poppins',sans-serif;}
 /* PIPELINE */
 .pipeline-col{background:var(--g1);border-radius:9px;padding:8px;min-width:110px;}
 .pc-hdr{font-size:10px;font-weight:700;color:var(--g5);margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;text-transform:uppercase;letter-spacing:.06em;}
@@ -806,124 +856,132 @@ onAuthStateChanged(auth, async user => {
     <!-- ── PANEL: Pipeline ── -->
     <div class="od-panel show" id="od-panel-pipeline">
 
-      <!-- Visibility note -->
-      <div style="padding:10px 14px;background:var(--pp);border-radius:9px;font-size:11px;color:var(--g6);border:1px solid rgba(108,60,225,0.1);margin-bottom:20px;">
-        💡 <strong>Client visibility:</strong> Stages <strong>Client Review</strong> and <strong>Hired</strong> are visible to the client. All earlier stages are internal to Nearwork only.
+      <!-- Toolbar: visibility note + Create pipeline button (always visible at top) -->
+      <div class="pipeline-toolbar">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <div style="padding:8px 14px;background:var(--pp);border-radius:9px;font-size:11px;color:var(--g6);border:1px solid rgba(108,60,225,0.12);">
+            💡 <strong>Client visibility:</strong> <strong>Client Review</strong> and <strong>Hired</strong> stages are visible to clients. All other stages are internal.
+          </div>
+        </div>
+        <button class="btn btn-p btn-sm" onclick="openModal('new-pipeline-modal')" style="flex-shrink:0;">+ New pipeline</button>
       </div>
 
-      <!-- Per-opening pipeline cards -->
-      <div style="display:flex;flex-direction:column;gap:20px;" id="od-pipelines-list">
+      <!-- Pipeline boards — one per opening -->
+      <div id="od-pipelines-list">
 
-        <!-- Pipeline 1: CSM -->
-        <div class="card" style="padding:0;overflow:hidden;">
-          <!-- Pipeline header -->
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--g2);">
-            <div>
-              <div style="font-size:14px;font-weight:700;color:var(--black);margin-bottom:2px;">Customer Success Manager</div>
-              <div style="font-size:10px;color:var(--g5);">NW-CSM-4X8B · Recruiter: Byron Giraldo · 8 candidates</div>
+        <!-- Board 1: CSM — Active -->
+        <div class="pl-board-card" id="pl-board-csm">
+          <div class="pl-board-hdr" onclick="toggleBoard('pl-board-csm')">
+            <span class="pl-collapse-icon">▼</span>
+            <div style="flex:1;">
+              <div class="pl-board-title">Customer Success Manager</div>
+              <div class="pl-board-meta">NW-CSM-4X8B · Byron Giraldo · 8 candidates</div>
             </div>
-            <div style="display:flex;gap:6px;align-items:center;">
-              <span class="badge b-green">Active</span>
+            <div class="pl-board-actions" onclick="event.stopPropagation()">
+              <select class="pl-status-sel s-active" onchange="updatePipelineStatus(this,'pl-board-csm')">
+                <option value="active" selected>● Active</option>
+                <option value="paused">⏸ Paused</option>
+                <option value="completed">✓ Completed</option>
+                <option value="cancelled">✕ Cancelled</option>
+              </select>
               <button class="btn btn-ghost btn-sm" onclick="openModal('add-candidate-modal')">+ Add candidate</button>
             </div>
           </div>
-          <!-- Kanban board — CSM only -->
-          <div style="padding:14px;">
+          <div class="pl-board-body">
             <div class="pl-scroll">
-              <div class="pl-stage-col" data-stage="applied">
+              <div class="pl-stage-col" data-stage="applied" ondragover="dragOver(event)" ondrop="dropCard(event,this,'CSM')">
                 <div class="pl-stage-hdr">Applied <span class="pl-stage-count">3</span></div>
-                <div class="pl-cand-card" onclick="openCandDetail('María López')"><div class="pl-cand-name">María López</div><div style="display:flex;justify-content:space-between;"><div class="pl-cand-role">C1 · Medellín</div><div class="pl-cand-score">72</div></div></div>
-                <div class="pl-cand-card" onclick="openCandDetail('Carlos Ruiz')"><div class="pl-cand-name">Carlos Ruiz</div><div style="display:flex;justify-content:space-between;"><div class="pl-cand-role">C1 · Bogotá</div><div class="pl-cand-score">68</div></div></div>
-                <div class="pl-cand-card" onclick="openCandDetail('Sofía Vargas')"><div class="pl-cand-name">Sofía Vargas</div><div style="display:flex;justify-content:space-between;"><div class="pl-cand-role">C1 · Medellín</div><div class="pl-cand-score">71</div></div></div>
+                <div class="pl-cand-card highlight" draggable="true" ondragstart="dragStart(event,this,'María López','Applied','CSM')"><div class="pl-cand-name">María López</div><div style="display:flex;justify-content:space-between;"><span class="pl-cand-role">C1 · Medellín</span><span class="pl-cand-score">72</span></div></div>
+                <div class="pl-cand-card" draggable="true" ondragstart="dragStart(event,this,'Carlos Ruiz','Applied','CSM')"><div class="pl-cand-name">Carlos Ruiz</div><div style="display:flex;justify-content:space-between;"><span class="pl-cand-role">C1 · Bogotá</span><span class="pl-cand-score">68</span></div></div>
+                <div class="pl-cand-card" draggable="true" ondragstart="dragStart(event,this,'Sofía Vargas','Applied','CSM')"><div class="pl-cand-name">Sofía Vargas</div><div style="display:flex;justify-content:space-between;"><span class="pl-cand-role">C1 · Medellín</span><span class="pl-cand-score">71</span></div></div>
                 <div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add</div>
               </div>
-              <div class="pl-stage-col">
+              <div class="pl-stage-col" data-stage="profile-review" ondragover="dragOver(event)" ondrop="dropCard(event,this,'CSM')">
                 <div class="pl-stage-hdr">Profile Review <span class="pl-stage-count">2</span></div>
-                <div class="pl-cand-card highlight" onclick="openCandDetail('Isabella Gómez')"><div class="pl-cand-name">Isabella Gómez</div><div style="display:flex;justify-content:space-between;"><div class="pl-cand-role">C1 · Medellín</div><div class="pl-cand-score">88</div></div></div>
-                <div class="pl-cand-card" onclick="openCandDetail('Jorge Pérez')"><div class="pl-cand-name">Jorge Pérez</div><div style="display:flex;justify-content:space-between;"><div class="pl-cand-role">C1 · Cali</div><div class="pl-cand-score">81</div></div></div>
+                <div class="pl-cand-card highlight" draggable="true" ondragstart="dragStart(event,this,'Isabella Gómez','Profile Review','CSM')"><div class="pl-cand-name">Isabella Gómez</div><div style="display:flex;justify-content:space-between;"><span class="pl-cand-role">C1 · Medellín</span><span class="pl-cand-score">88</span></div></div>
+                <div class="pl-cand-card" draggable="true" ondragstart="dragStart(event,this,'Jorge Pérez','Profile Review','CSM')"><div class="pl-cand-name">Jorge Pérez</div><div style="display:flex;justify-content:space-between;"><span class="pl-cand-role">C1 · Cali</span><span class="pl-cand-score">81</span></div></div>
                 <div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add</div>
               </div>
-              <div class="pl-stage-col">
+              <div class="pl-stage-col" data-stage="assessment" ondragover="dragOver(event)" ondrop="dropCard(event,this,'CSM')">
                 <div class="pl-stage-hdr">Assessment <span class="pl-stage-count">1</span></div>
-                <div class="pl-cand-card highlight" onclick="openCandDetail('David Herrera')"><div class="pl-cand-name">David Herrera</div><div style="display:flex;justify-content:space-between;"><div class="pl-cand-role">C1 · Bogotá</div><div class="pl-cand-score">87</div></div></div>
+                <div class="pl-cand-card highlight" draggable="true" ondragstart="dragStart(event,this,'David Herrera','Assessment','CSM')"><div class="pl-cand-name">David Herrera</div><div style="display:flex;justify-content:space-between;"><span class="pl-cand-role">C1 · Bogotá</span><span class="pl-cand-score">87</span></div></div>
                 <div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add</div>
               </div>
-              <div class="pl-stage-col">
+              <div class="pl-stage-col" data-stage="background" ondragover="dragOver(event)" ondrop="dropCard(event,this,'CSM')">
                 <div class="pl-stage-hdr">Background Check <span class="pl-stage-count">1</span></div>
-                <div class="pl-cand-card highlight" onclick="openCandDetail('Valentina Ríos')"><div class="pl-cand-name">Valentina Ríos</div><div style="display:flex;justify-content:space-between;"><div class="pl-cand-role">C1 · Medellín</div><div class="pl-cand-score">91</div></div></div>
+                <div class="pl-cand-card highlight" draggable="true" ondragstart="dragStart(event,this,'Valentina Ríos','Background Check','CSM')"><div class="pl-cand-name">Valentina Ríos</div><div style="display:flex;justify-content:space-between;"><span class="pl-cand-role">C1 · Medellín</span><span class="pl-cand-score">91</span></div></div>
                 <div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add</div>
               </div>
-              <div class="pl-stage-col">
+              <div class="pl-stage-col" data-stage="presented" ondragover="dragOver(event)" ondrop="dropCard(event,this,'CSM')">
                 <div class="pl-stage-hdr">Presented <span class="pl-stage-count">0</span></div>
                 <div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add</div>
               </div>
-              <div class="pl-stage-col" style="background:rgba(108,60,225,0.05);border:1px solid rgba(108,60,225,0.15);">
+              <div class="pl-stage-col" data-stage="client-review" style="background:rgba(108,60,225,0.05);border:1px solid rgba(108,60,225,0.15);" ondragover="dragOver(event)" ondrop="dropCard(event,this,'CSM')">
                 <div class="pl-stage-hdr" style="color:var(--purple);">Client Review <span class="pl-stage-count" style="background:rgba(108,60,225,0.1);color:var(--purple);">0</span></div>
-                <div style="font-size:9px;color:var(--purple);text-align:center;margin-bottom:6px;opacity:.6;">👁 Visible to client</div>
+                <div style="font-size:9px;color:var(--purple);text-align:center;margin-bottom:6px;opacity:.7;">👁 Client sees this</div>
                 <div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add</div>
               </div>
-              <div class="pl-stage-col" style="background:rgba(16,185,129,0.05);border:1px solid rgba(16,185,129,0.15);">
+              <div class="pl-stage-col" data-stage="hired" style="background:rgba(16,185,129,0.05);border:1px solid rgba(16,185,129,0.15);" ondragover="dragOver(event)" ondrop="dropCard(event,this,'CSM')">
                 <div class="pl-stage-hdr" style="color:var(--green);">Hired <span class="pl-stage-count" style="background:rgba(16,185,129,0.1);color:var(--green);">0</span></div>
-                <div style="font-size:9px;color:var(--green);text-align:center;margin-bottom:6px;opacity:.6;">👁 Visible to client</div>
+                <div style="font-size:9px;color:var(--green);text-align:center;margin-bottom:6px;opacity:.7;">👁 Client sees this</div>
                 <div class="pl-add-card">+ Move here</div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Pipeline 2: Technical Support -->
-        <div class="card" style="padding:0;overflow:hidden;">
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--g2);">
-            <div>
-              <div style="font-size:14px;font-weight:700;color:var(--black);margin-bottom:2px;">Technical Support Specialist</div>
-              <div style="font-size:10px;color:var(--g5);">NW-SUP-3B7R · Recruiter: Nany Salcedo · 3 candidates</div>
+        <!-- Board 2: Technical Support — Paused -->
+        <div class="pl-board-card status-paused" id="pl-board-sup">
+          <div class="pl-board-hdr" onclick="toggleBoard('pl-board-sup')">
+            <span class="pl-collapse-icon">▼</span>
+            <div style="flex:1;">
+              <div class="pl-board-title">Technical Support Specialist</div>
+              <div class="pl-board-meta">NW-SUP-3B7R · Nany Salcedo · 3 candidates</div>
             </div>
-            <div style="display:flex;gap:6px;align-items:center;">
-              <span class="badge b-amber">Paused</span>
+            <div class="pl-board-actions" onclick="event.stopPropagation()">
+              <select class="pl-status-sel s-paused" onchange="updatePipelineStatus(this,'pl-board-sup')">
+                <option value="active">● Active</option>
+                <option value="paused" selected>⏸ Paused</option>
+                <option value="completed">✓ Completed</option>
+                <option value="cancelled">✕ Cancelled</option>
+              </select>
               <button class="btn btn-ghost btn-sm" onclick="openModal('add-candidate-modal')">+ Add candidate</button>
             </div>
           </div>
-          <div style="padding:14px;">
+          <div class="pl-board-body">
             <div class="pl-scroll">
-              <div class="pl-stage-col">
+              <div class="pl-stage-col" data-stage="applied" ondragover="dragOver(event)" ondrop="dropCard(event,this,'SUP')">
                 <div class="pl-stage-hdr">Applied <span class="pl-stage-count">2</span></div>
-                <div class="pl-cand-card" onclick="openCandDetail('Luis Herrera')"><div class="pl-cand-name">Luis Herrera</div><div style="display:flex;justify-content:space-between;"><div class="pl-cand-role">C1 · Medellín</div><div class="pl-cand-score">66</div></div></div>
-                <div class="pl-cand-card" onclick="openCandDetail('Camila Torres')"><div class="pl-cand-name">Camila Torres</div><div style="display:flex;justify-content:space-between;"><div class="pl-cand-role">C1 · Bogotá</div><div class="pl-cand-score">70</div></div></div>
+                <div class="pl-cand-card" draggable="true" ondragstart="dragStart(event,this,'Luis Herrera','Applied','SUP')"><div class="pl-cand-name">Luis Herrera</div><div style="display:flex;justify-content:space-between;"><span class="pl-cand-role">C1 · Medellín</span><span class="pl-cand-score">66</span></div></div>
+                <div class="pl-cand-card" draggable="true" ondragstart="dragStart(event,this,'Camila Torres','Applied','SUP')"><div class="pl-cand-name">Camila Torres</div><div style="display:flex;justify-content:space-between;"><span class="pl-cand-role">C1 · Bogotá</span><span class="pl-cand-score">70</span></div></div>
                 <div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add</div>
               </div>
-              <div class="pl-stage-col">
+              <div class="pl-stage-col" data-stage="profile-review" ondragover="dragOver(event)" ondrop="dropCard(event,this,'SUP')">
                 <div class="pl-stage-hdr">Profile Review <span class="pl-stage-count">1</span></div>
-                <div class="pl-cand-card highlight" onclick="openCandDetail('Alejandro Ríos')"><div class="pl-cand-name">Alejandro Ríos</div><div style="display:flex;justify-content:space-between;"><div class="pl-cand-role">C1 · Medellín</div><div class="pl-cand-score">79</div></div></div>
+                <div class="pl-cand-card highlight" draggable="true" ondragstart="dragStart(event,this,'Alejandro Ríos','Profile Review','SUP')"><div class="pl-cand-name">Alejandro Ríos</div><div style="display:flex;justify-content:space-between;"><span class="pl-cand-role">C1 · Medellín</span><span class="pl-cand-score">79</span></div></div>
                 <div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add</div>
               </div>
-              <div class="pl-stage-col"><div class="pl-stage-hdr">Assessment <span class="pl-stage-count">0</span></div><div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add</div></div>
-              <div class="pl-stage-col"><div class="pl-stage-hdr">Background Check <span class="pl-stage-count">0</span></div><div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add</div></div>
-              <div class="pl-stage-col"><div class="pl-stage-hdr">Presented <span class="pl-stage-count">0</span></div><div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add</div></div>
-              <div class="pl-stage-col" style="background:rgba(108,60,225,0.05);border:1px solid rgba(108,60,225,0.15);">
+              <div class="pl-stage-col" ondragover="dragOver(event)" ondrop="dropCard(event,this,'SUP')"><div class="pl-stage-hdr">Assessment <span class="pl-stage-count">0</span></div><div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add</div></div>
+              <div class="pl-stage-col" ondragover="dragOver(event)" ondrop="dropCard(event,this,'SUP')"><div class="pl-stage-hdr">Background Check <span class="pl-stage-count">0</span></div><div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add</div></div>
+              <div class="pl-stage-col" ondragover="dragOver(event)" ondrop="dropCard(event,this,'SUP')"><div class="pl-stage-hdr">Presented <span class="pl-stage-count">0</span></div><div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add</div></div>
+              <div class="pl-stage-col" style="background:rgba(108,60,225,0.05);border:1px solid rgba(108,60,225,0.15);" ondragover="dragOver(event)" ondrop="dropCard(event,this,'SUP')">
                 <div class="pl-stage-hdr" style="color:var(--purple);">Client Review <span class="pl-stage-count" style="background:rgba(108,60,225,0.1);color:var(--purple);">0</span></div>
-                <div style="font-size:9px;color:var(--purple);text-align:center;margin-bottom:6px;opacity:.6;">👁 Visible to client</div>
+                <div style="font-size:9px;color:var(--purple);text-align:center;margin-bottom:6px;opacity:.7;">👁 Client sees this</div>
                 <div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add</div>
               </div>
-              <div class="pl-stage-col" style="background:rgba(16,185,129,0.05);border:1px solid rgba(16,185,129,0.15);">
+              <div class="pl-stage-col" style="background:rgba(16,185,129,0.05);border:1px solid rgba(16,185,129,0.15);" ondragover="dragOver(event)" ondrop="dropCard(event,this,'SUP')">
                 <div class="pl-stage-hdr" style="color:var(--green);">Hired <span class="pl-stage-count" style="background:rgba(16,185,129,0.1);color:var(--green);">0</span></div>
-                <div style="font-size:9px;color:var(--green);text-align:center;margin-bottom:6px;opacity:.6;">👁 Visible to client</div>
+                <div style="font-size:9px;color:var(--green);text-align:center;margin-bottom:6px;opacity:.7;">👁 Client sees this</div>
                 <div class="pl-add-card">+ Move here</div>
               </div>
             </div>
           </div>
-        </div>
-
-        <!-- Empty state: create new pipeline -->
-        <div style="border:2px dashed var(--g3);border-radius:13px;padding:28px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;" onclick="openModal('new-pipeline-modal')" onmouseover="this.style.borderColor='var(--purple)';this.style.background='var(--pp)'" onmouseout="this.style.borderColor='var(--g3)';this.style.background=''">
-          <div style="font-size:24px;margin-bottom:8px;">➕</div>
-          <div style="font-size:13px;font-weight:700;color:var(--black);margin-bottom:4px;">Create a new pipeline</div>
-          <div style="font-size:11px;color:var(--g5);">Each opening gets its own separate pipeline with its own candidates and hiring manager.</div>
         </div>
 
       </div>
     </div>
 
-    <!-- ── PANEL: Users ── -->
+        <!-- ── PANEL: Users ── -->
     <div class="od-panel" id="od-panel-users">
       <div class="od-section-title">
         Portal users
@@ -2373,5 +2431,106 @@ window.inviteTeamMember = async function() {
     </div>
   </div>
 </div>
+</script>
+
+<!-- Drag & Drop confirmation overlay -->
+<div class="drag-confirm" id="drag-confirm">
+  <div class="drag-confirm-box">
+    <div class="dcb-icon">🔄</div>
+    <div class="dcb-title" id="dcb-title">Move candidate?</div>
+    <div class="dcb-sub" id="dcb-sub">Move <strong id="dcb-cand">—</strong> from <strong id="dcb-from">—</strong> to <strong id="dcb-to">—</strong>?<br>This will be reflected in the client's view if moving to Client Review or Hired.</div>
+    <div class="dcb-btns">
+      <button class="dcb-yes" onclick="confirmDrop(true)">Yes, move →</button>
+      <button class="dcb-no" onclick="confirmDrop(false)">Cancel</button>
+    </div>
+  </div>
+</div>
+
+</body
+/* ── Pipeline: collapse / expand ── */
+window.toggleBoard = function(id) {
+  const card = document.getElementById(id);
+  if (card) card.classList.toggle('collapsed');
+};
+
+/* ── Pipeline: status change ── */
+window.updatePipelineStatus = function(sel, boardId) {
+  const val = sel.value;
+  const card = document.getElementById(boardId);
+  sel.className = 'pl-status-sel s-' + val;
+  card.className = card.className.replace(/status-\w+/g, '').trim();
+  if (val !== 'active') card.classList.add('status-' + val);
+  const labels = { active:'Active', paused:'Paused', completed:'Completed', cancelled:'Cancelled' };
+  toast('Pipeline marked as ' + labels[val] + '.', 'ok');
+};
+
+/* ── Drag and drop ── */
+let _dragCard = null, _dragFrom = null, _dragCand = null, _dragPipeline = null, _dropTarget = null;
+
+window.dragStart = function(e, el, name, fromStage, pipeline) {
+  _dragCard = el;
+  _dragFrom = fromStage;
+  _dragCand = name;
+  _dragPipeline = pipeline;
+  el.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+};
+
+window.dragOver = function(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  document.querySelectorAll('.pl-stage-col').forEach(c => c.classList.remove('drag-over'));
+  const col = e.currentTarget;
+  col.classList.add('drag-over');
+};
+
+window.dropCard = function(e, col, pipeline) {
+  e.preventDefault();
+  document.querySelectorAll('.pl-stage-col').forEach(c => c.classList.remove('drag-over'));
+  if (!_dragCard) return;
+  const toStage = col.querySelector('.pl-stage-hdr').textContent.trim().replace(/\d+$/, '').trim();
+  if (toStage === _dragFrom) { _dragCard.classList.remove('dragging'); _dragCard = null; return; }
+  _dropTarget = col;
+  // Show confirmation
+  document.getElementById('dcb-cand').textContent = _dragCand;
+  document.getElementById('dcb-from').textContent = _dragFrom;
+  document.getElementById('dcb-to').textContent = toStage;
+  // Warn if moving to client-visible stage
+  const clientVisible = ['Client Review','Hired'].some(s => toStage.includes(s));
+  document.getElementById('dcb-sub').innerHTML =
+    'Move <strong>' + _dragCand + '</strong> from <strong>' + _dragFrom + '</strong> to <strong>' + toStage + '</strong>?' +
+    (clientVisible ? '<br><span style="color:var(--purple);font-size:11px;margin-top:6px;display:block;">⚠️ This stage is visible to the client.</span>' : '');
+  document.getElementById('drag-confirm').classList.add('show');
+};
+
+window.confirmDrop = function(yes) {
+  document.getElementById('drag-confirm').classList.remove('show');
+  if (yes && _dragCard && _dropTarget) {
+    // Move the card DOM element to the new column (before the + Add card)
+    const addCard = _dropTarget.querySelector('.pl-add-card');
+    if (addCard) _dropTarget.insertBefore(_dragCard, addCard);
+    else _dropTarget.appendChild(_dragCard);
+    // Update stage counts (simple)
+    updateStageCounts();
+    toast(_dragCand + ' moved to ' + _dropTarget.querySelector('.pl-stage-hdr').textContent.trim().replace(/\d+/,'').trim(), 'ok');
+  }
+  if (_dragCard) _dragCard.classList.remove('dragging');
+  _dragCard = null; _dragFrom = null; _dragCand = null; _dropTarget = null;
+};
+
+function updateStageCounts() {
+  document.querySelectorAll('.pl-stage-col').forEach(col => {
+    const count = col.querySelectorAll('.pl-cand-card').length;
+    const badge = col.querySelector('.pl-stage-count');
+    if (badge) badge.textContent = count;
+  });
+}
+
+// Clear drag state if dropped outside
+document.addEventListener('dragend', function() {
+  document.querySelectorAll('.pl-stage-col').forEach(c => c.classList.remove('drag-over'));
+  document.querySelectorAll('.pl-cand-card').forEach(c => c.classList.remove('dragging'));
+});
+
 </script>
 </body>
