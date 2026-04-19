@@ -161,6 +161,47 @@ body{font-family:'Poppins',sans-serif;background:var(--g1);color:var(--black);mi
 .user-row-remove:hover{background:rgba(239,68,68,0.08);color:var(--red);}
 
 
+
+/* ORG DETAIL */
+.od-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:16px;flex-wrap:wrap;}
+.od-logo{width:52px;height:52px;border-radius:12px;background:var(--pp);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:var(--purple);flex-shrink:0;}
+.od-name{font-size:22px;font-weight:800;color:var(--black);letter-spacing:-1px;margin-bottom:3px;}
+.od-meta{font-size:12px;color:var(--g5);display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.od-tabs{display:flex;gap:2px;border-bottom:2px solid var(--g2);margin-bottom:24px;}
+.od-tab{padding:9px 16px;font-size:13px;font-weight:500;color:var(--g5);background:none;border:none;cursor:pointer;font-family:'Poppins',sans-serif;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap;}
+.od-tab:hover{color:var(--black);}
+.od-tab.on{color:var(--purple);font-weight:700;border-bottom-color:var(--purple);}
+.od-panel{display:none;}
+.od-panel.show{display:block;}
+.od-section-title{font-size:13px;font-weight:700;color:var(--black);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;}
+
+/* Users table in org detail */
+.ud-table{background:#fff;border-radius:11px;border:1px solid var(--g3);overflow:hidden;margin-bottom:20px;}
+.ud-hdr{display:grid;grid-template-columns:2fr 1fr 1fr 100px;padding:10px 16px;background:var(--g1);border-bottom:1px solid var(--g2);font-size:10px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.08em;gap:12px;}
+.ud-row{display:grid;grid-template-columns:2fr 1fr 1fr 100px;padding:12px 16px;border-bottom:1px solid var(--g2);font-size:12px;color:var(--g6);align-items:center;gap:12px;transition:background .15s;}
+.ud-row:last-child{border-bottom:none;}
+.ud-row:hover{background:var(--g1);}
+.ud-user{display:flex;align-items:center;gap:9px;}
+.ud-av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff;flex-shrink:0;}
+.ud-name{font-size:12px;font-weight:700;color:var(--black);}
+.ud-email{font-size:10px;color:var(--g4);}
+
+/* Pipeline in org detail */
+.pl-stage-col{background:var(--g1);border-radius:10px;padding:10px;min-width:140px;flex-shrink:0;}
+.pl-stage-hdr{font-size:10px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;}
+.pl-stage-count{background:var(--g3);color:var(--g5);font-size:9px;padding:1px 6px;border-radius:99px;}
+.pl-cand-card{background:#fff;border:1px solid var(--g3);border-radius:8px;padding:9px 11px;margin-bottom:6px;cursor:pointer;transition:all .15s;}
+.pl-cand-card:hover{border-color:var(--purple);box-shadow:0 2px 8px rgba(108,60,225,0.1);}
+.pl-cand-card.highlight{border-color:rgba(108,60,225,0.3);background:var(--pp);}
+.pl-cand-name{font-size:12px;font-weight:700;color:var(--black);margin-bottom:2px;}
+.pl-cand-role{font-size:10px;color:var(--g5);}
+.pl-cand-score{font-size:10px;font-weight:700;color:var(--green);}
+.pl-add-card{border:1.5px dashed var(--g3);border-radius:8px;padding:8px;text-align:center;font-size:11px;color:var(--g4);cursor:pointer;transition:all .15s;}
+.pl-add-card:hover{border-color:var(--purple);color:var(--purple);background:var(--pp);}
+.pl-scroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;}
+.pl-scroll::-webkit-scrollbar{height:4px;}
+.pl-scroll::-webkit-scrollbar-track{background:var(--g2);border-radius:99px;}
+.pl-scroll::-webkit-scrollbar-thumb{background:var(--g3);border-radius:99px;}
 /* PIPELINE */
 .pipeline-col{background:var(--g1);border-radius:9px;padding:8px;min-width:110px;}
 .pc-hdr{font-size:10px;font-weight:700;color:var(--g5);margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;text-transform:uppercase;letter-spacing:.06em;}
@@ -409,16 +450,16 @@ onAuthStateChanged(auth, async user => {
 
 <!-- NAV -->
 <nav class="nav">
-  <a class="nav-logo" onclick="showPage('dashboard')">Near<span>work</span></a>
-  <div class="nav-admin-chip">Admin HQ</div>
-  <!-- Current page label -->
-  <div class="nav-current" id="nav-current-label">Dashboard</div>
-  <!-- Hamburger -->
-  <div class="ham-btn" onclick="toggleDrawer()" id="ham-btn">
+  <!-- Hamburger LEFT of logo -->
+  <div class="ham-btn" onclick="toggleDrawer()" id="ham-btn" style="margin-right:10px;">
     <div class="ham-line"></div>
     <div class="ham-line"></div>
     <div class="ham-line"></div>
   </div>
+  <a class="nav-logo" onclick="showPage('dashboard')">Near<span>work</span></a>
+  <div class="nav-admin-chip">Admin HQ</div>
+  <!-- Current page label -->
+  <div class="nav-current" id="nav-current-label">Dashboard</div>
   <div class="nav-right">
     <div class="bell-wrap" id="bell-wrap">
       <div class="bell-btn" onclick="toggleDrop('notif-drop')">
@@ -611,7 +652,7 @@ onAuthStateChanged(auth, async user => {
     </div>
     <div class="org-grid">
       <!-- Org 1 -->
-      <div class="org-card" id="org-crestline">
+      <div class="org-card" id="org-crestline" style="cursor:pointer;" onclick="openOrgDetail('ORG-CS01','Crestline SaaS','crestline.io','CS','Essential','active')">
         <div class="org-top">
           <div style="display:flex;align-items:center;gap:10px;">
             <div class="org-logo">CS</div>
@@ -635,13 +676,13 @@ onAuthStateChanged(auth, async user => {
           <div class="pl-item"><span class="pl-icon">🛡️</span><div class="pl-label">Guarantee</div><span class="pl-val">6 mo</span></div>
         </div>
         <div class="org-actions">
-          <button class="btn btn-p btn-sm" onclick="impersonate('Crestline SaaS')">👁 View as client</button>
-          <button class="btn btn-ghost btn-sm" onclick="openModal('edit-org-modal')">Edit</button>
-          <button class="btn btn-danger btn-sm" id="suspend-btn-crestline" onclick="suspendOrg('ORG-CS01','crestline','Crestline SaaS')">Suspend</button>
+          <button class="btn btn-p btn-sm" onclick="event.stopPropagation();impersonate('Crestline SaaS')">👁 View as client</button>
+          <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openModal('edit-org-modal')">Edit</button>
+          <button class="btn btn-danger btn-sm" id="suspend-btn-crestline" onclick="event.stopPropagation();suspendOrg('ORG-CS01','crestline','Crestline SaaS')">Suspend</button>
         </div>
       </div>
       <!-- Org 2 -->
-      <div class="org-card" id="org-axiom">
+      <div class="org-card" id="org-axiom" style="cursor:pointer;" onclick="openOrgDetail('ORG-AT02','Axiom Tech','axiomtech.io','AT','Lite','active')">
         <div class="org-top">
           <div style="display:flex;align-items:center;gap:10px;">
             <div class="org-logo" style="background:rgba(16,185,129,0.1);color:var(--green);">AT</div>
@@ -665,13 +706,13 @@ onAuthStateChanged(auth, async user => {
           <div class="pl-item"><span class="pl-icon">🛡️</span><div class="pl-label">Guarantee</div><span class="pl-val">6 mo</span></div>
         </div>
         <div class="org-actions">
-          <button class="btn btn-p btn-sm" onclick="impersonate('Axiom Tech')">👁 View as client</button>
-          <button class="btn btn-ghost btn-sm" onclick="openModal('edit-org-modal')">Edit</button>
-          <button class="btn btn-danger btn-sm" id="suspend-btn-axiom" onclick="suspendOrg('ORG-AT02','axiom','Axiom Tech')">Suspend</button>
+          <button class="btn btn-p btn-sm" onclick="event.stopPropagation();impersonate('Axiom Tech')">👁 View as client</button>
+          <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openModal('edit-org-modal')">Edit</button>
+          <button class="btn btn-danger btn-sm" id="suspend-btn-axiom" onclick="event.stopPropagation();suspendOrg('ORG-AT02','axiom','Axiom Tech')">Suspend</button>
         </div>
       </div>
       <!-- Org 3 -->
-      <div class="org-card" id="org-novadash" style="opacity:.75;">
+      <div class="org-card" id="org-novadash" style="cursor:pointer;opacity:.75;" onclick="openOrgDetail('ORG-ND03','NovaDash','novadash.com','ND','Essential','hold')">
         <div class="org-top">
           <div style="display:flex;align-items:center;gap:10px;">
             <div class="org-logo" style="background:rgba(239,68,68,0.08);color:var(--red);">ND</div>
@@ -695,12 +736,298 @@ onAuthStateChanged(auth, async user => {
           <div class="pl-item"><span class="pl-icon">🛡️</span><div class="pl-label">Guarantee</div><span class="pl-val">Paused</span></div>
         </div>
         <div class="org-actions">
-          <button class="btn btn-p btn-sm" onclick="impersonate('NovaDash')">👁 View as client</button>
-          <button class="btn btn-ghost btn-sm" onclick="openModal('edit-org-modal')">Edit</button>
-          <button class="btn btn-g btn-sm" id="suspend-btn-novadash" onclick="reactivateOrg('ORG-ND03','novadash','NovaDash')">Reactivate</button>
+          <button class="btn btn-p btn-sm" onclick="event.stopPropagation();impersonate('NovaDash')">👁 View as client</button>
+          <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openModal('edit-org-modal')">Edit</button>
+          <button class="btn btn-g btn-sm" id="suspend-btn-novadash" onclick="event.stopPropagation();reactivateOrg('ORG-ND03','novadash','NovaDash')">Reactivate</button>
         </div>
       </div>
     </div>
+  </div>
+
+
+  <!-- ══════════════════════════════
+       ORG DETAIL
+  ══════════════════════════════ -->
+  <div class="page" id="page-org-detail">
+
+    <!-- Back button + header -->
+    <div style="margin-bottom:20px;">
+      <button class="btn btn-ghost btn-sm" onclick="navTo('orgs','Organizations')" style="margin-bottom:16px;">← Back to organizations</button>
+      <div class="od-header">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div class="od-logo" id="od-logo">CS</div>
+          <div>
+            <div class="od-name" id="od-name">Crestline SaaS</div>
+            <div class="od-meta">
+              <span id="od-domain" style="font-family:monospace;">crestline.io</span>
+              <span>·</span>
+              <span id="od-orgid" style="font-family:monospace;color:var(--purple);">ORG-CS01</span>
+              <span>·</span>
+              <span class="badge" id="od-status-badge">Active</span>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-ghost btn-sm" onclick="openModal('edit-org-modal')">Edit org</button>
+          <button class="btn btn-p btn-sm" id="od-view-btn" onclick="impersonate('Crestline SaaS')">👁 View as client</button>
+          <button class="btn btn-danger btn-sm" id="od-suspend-btn" onclick="suspendOrg('ORG-CS01','crestline','Crestline SaaS')">Suspend</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stat strip -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;" id="od-stats-strip">
+      <div class="card" style="padding:16px;text-align:center;">
+        <div style="font-size:24px;font-weight:900;color:var(--purple);letter-spacing:-1px;" id="od-stat-users">3</div>
+        <div style="font-size:11px;color:var(--g5);">Portal users</div>
+      </div>
+      <div class="card" style="padding:16px;text-align:center;">
+        <div style="font-size:24px;font-weight:900;color:var(--black);letter-spacing:-1px;" id="od-stat-openings">2</div>
+        <div style="font-size:11px;color:var(--g5);">Active openings</div>
+      </div>
+      <div class="card" style="padding:16px;text-align:center;">
+        <div style="font-size:24px;font-weight:900;color:var(--black);letter-spacing:-1px;" id="od-stat-candidates">8</div>
+        <div style="font-size:11px;color:var(--g5);">Candidates in pipeline</div>
+      </div>
+      <div class="card" style="padding:16px;text-align:center;">
+        <div style="font-size:24px;font-weight:900;color:var(--green);letter-spacing:-1px;" id="od-stat-plan">Essential</div>
+        <div style="font-size:11px;color:var(--g5);">Current plan</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="od-tabs">
+      <button class="od-tab on" onclick="odTab(this,'od-panel-pipeline')">🔄 Pipeline</button>
+      <button class="od-tab" onclick="odTab(this,'od-panel-users')">👥 Users</button>
+      <button class="od-tab" onclick="odTab(this,'od-panel-openings')">📋 Openings</button>
+      <button class="od-tab" onclick="odTab(this,'od-panel-info')">⚙️ Org info</button>
+    </div>
+
+    <!-- ── PANEL: Pipeline ── -->
+    <div class="od-panel show" id="od-panel-pipeline">
+      <div class="od-section-title">
+        <span>Candidate pipeline — <span id="od-pipeline-opening-label">All openings</span></span>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <select class="fsel" id="od-opening-filter" onchange="filterPipeline(this.value)" style="font-size:12px;">
+            <option value="all">All openings</option>
+            <option value="csm">Customer Success Manager</option>
+            <option value="sdr">SDR / Sales Dev Rep</option>
+          </select>
+          <button class="btn btn-p btn-sm" onclick="openModal('add-candidate-modal')">+ Add candidate</button>
+        </div>
+      </div>
+
+      <!-- Kanban board scoped to this org -->
+      <div class="pl-scroll" id="od-kanban">
+
+        <div class="pl-stage-col" data-stage="applied">
+          <div class="pl-stage-hdr">Applied <span class="pl-stage-count">4</span></div>
+          <div class="pl-cand-card" onclick="openCandDetail('María López')">
+            <div class="pl-cand-name">María López</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div class="pl-cand-role">CSM Opening</div>
+              <div class="pl-cand-score">72</div>
+            </div>
+          </div>
+          <div class="pl-cand-card" onclick="openCandDetail('Carlos Ruiz')">
+            <div class="pl-cand-name">Carlos Ruiz</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div class="pl-cand-role">CSM Opening</div>
+              <div class="pl-cand-score">68</div>
+            </div>
+          </div>
+          <div class="pl-cand-card" onclick="openCandDetail('Ana Gómez')">
+            <div class="pl-cand-name">Ana Gómez</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div class="pl-cand-role">SDR Opening</div>
+              <div class="pl-cand-score">75</div>
+            </div>
+          </div>
+          <div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add candidate</div>
+        </div>
+
+        <div class="pl-stage-col" data-stage="profile-review">
+          <div class="pl-stage-hdr">Profile Review <span class="pl-stage-count">2</span></div>
+          <div class="pl-cand-card highlight" onclick="openCandDetail('Isabella Gómez')">
+            <div class="pl-cand-name">Isabella Gómez</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div class="pl-cand-role">CSM Opening</div>
+              <div class="pl-cand-score">88</div>
+            </div>
+          </div>
+          <div class="pl-cand-card" onclick="openCandDetail('Jorge Pérez')">
+            <div class="pl-cand-name">Jorge Pérez</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div class="pl-cand-role">CSM Opening</div>
+              <div class="pl-cand-score">81</div>
+            </div>
+          </div>
+          <div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add candidate</div>
+        </div>
+
+        <div class="pl-stage-col" data-stage="assessment">
+          <div class="pl-stage-hdr">Assessment <span class="pl-stage-count">1</span></div>
+          <div class="pl-cand-card highlight" onclick="openCandDetail('David Herrera')">
+            <div class="pl-cand-name">David Herrera</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div class="pl-cand-role">CSM Opening</div>
+              <div class="pl-cand-score">87</div>
+            </div>
+          </div>
+          <div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add candidate</div>
+        </div>
+
+        <div class="pl-stage-col" data-stage="background">
+          <div class="pl-stage-hdr">Background Check <span class="pl-stage-count">1</span></div>
+          <div class="pl-cand-card highlight" onclick="openCandDetail('Valentina Ríos')">
+            <div class="pl-cand-name">Valentina Ríos</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div class="pl-cand-role">CSM Opening</div>
+              <div class="pl-cand-score">91</div>
+            </div>
+          </div>
+          <div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add candidate</div>
+        </div>
+
+        <div class="pl-stage-col" data-stage="presented">
+          <div class="pl-stage-hdr">Presented <span class="pl-stage-count">0</span></div>
+          <div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add candidate</div>
+        </div>
+
+        <div class="pl-stage-col" data-stage="client-review" style="background:rgba(108,60,225,0.06);border:1px solid rgba(108,60,225,0.15);">
+          <div class="pl-stage-hdr" style="color:var(--purple);">Client Review <span class="pl-stage-count" style="background:rgba(108,60,225,0.1);color:var(--purple);">0</span></div>
+          <div style="font-size:10px;color:var(--g4);text-align:center;padding:8px 0;">Visible to client</div>
+          <div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add candidate</div>
+        </div>
+
+        <div class="pl-stage-col" data-stage="hired" style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.15);">
+          <div class="pl-stage-hdr" style="color:var(--green);">Hired <span class="pl-stage-count" style="background:rgba(16,185,129,0.1);color:var(--green);">0</span></div>
+          <div style="font-size:10px;color:var(--g4);text-align:center;padding:8px 0;">Visible to client</div>
+          <div class="pl-add-card">+ Move candidate here</div>
+        </div>
+
+      </div>
+
+      <div style="margin-top:12px;padding:10px 14px;background:var(--pp);border-radius:9px;font-size:11px;color:var(--g6);border:1px solid rgba(108,60,225,0.1);">
+        💡 <strong>Client visibility:</strong> Stages <strong>Client Review</strong> and <strong>Hired</strong> are visible to the client. All other stages are internal to Nearwork only.
+      </div>
+    </div>
+
+    <!-- ── PANEL: Users ── -->
+    <div class="od-panel" id="od-panel-users">
+      <div class="od-section-title">
+        Portal users
+        <button class="btn btn-p btn-sm" onclick="openModal('add-org-user-modal')">+ Add user</button>
+      </div>
+      <div class="ud-table">
+        <div class="ud-hdr"><div>User</div><div>Role</div><div>Status</div><div>Actions</div></div>
+        <div class="ud-row">
+          <div class="ud-user">
+            <div class="ud-av" style="background:linear-gradient(135deg,#6C3CE1,#8B5CF6);">SR</div>
+            <div><div class="ud-name">Sarah Reynolds</div><div class="ud-email">sarah@crestline.io</div></div>
+          </div>
+          <div><span class="badge b-purple">Admin</span></div>
+          <div><span class="badge b-green">Active</span></div>
+          <div style="display:flex;gap:5px;">
+            <button class="btn btn-ghost btn-sm">Edit</button>
+            <button class="btn btn-danger btn-sm" onclick="toast('User deactivated.','ok')">Remove</button>
+          </div>
+        </div>
+        <div class="ud-row">
+          <div class="ud-user">
+            <div class="ud-av" style="background:linear-gradient(135deg,#10B981,#059669);">JR</div>
+            <div><div class="ud-name">James Reynolds</div><div class="ud-email">james@crestline.io</div></div>
+          </div>
+          <div><span class="badge b-gray">Viewer</span></div>
+          <div><span class="badge b-green">Active</span></div>
+          <div style="display:flex;gap:5px;">
+            <button class="btn btn-ghost btn-sm">Edit</button>
+            <button class="btn btn-danger btn-sm" onclick="toast('User deactivated.','ok')">Remove</button>
+          </div>
+        </div>
+        <div class="ud-row">
+          <div class="ud-user">
+            <div class="ud-av" style="background:linear-gradient(135deg,#F59E0B,#D97706);">MK</div>
+            <div><div class="ud-name">Marcus Kim</div><div class="ud-email">mkim@crestline.io</div></div>
+          </div>
+          <div><span class="badge b-gray">Viewer</span></div>
+          <div><span class="badge b-amber">Invite pending</span></div>
+          <div style="display:flex;gap:5px;">
+            <button class="btn btn-ghost btn-sm" onclick="toast('Invite resent.','ok')">Resend invite</button>
+            <button class="btn btn-danger btn-sm" onclick="toast('User removed.','ok')">Remove</button>
+          </div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--g5);padding:8px 0;">3 of 5 seats used · <a style="color:var(--purple);cursor:pointer;" onclick="openModal('edit-org-modal')">Manage seats</a></div>
+    </div>
+
+    <!-- ── PANEL: Openings ── -->
+    <div class="od-panel" id="od-panel-openings">
+      <div class="od-section-title">
+        Active openings
+        <button class="btn btn-p btn-sm" onclick="openModal('new-opening-modal')">+ New opening</button>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;" id="od-openings-list">
+        <div class="card" style="padding:16px;cursor:pointer;" onclick="openModal('edit-opening-modal')">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <div>
+              <div style="font-size:14px;font-weight:700;color:var(--black);">Customer Success Manager</div>
+              <div style="font-size:10px;color:var(--g4);font-family:monospace;">NW-CSM-4X8B · Byron Giraldo</div>
+            </div>
+            <span class="badge b-green">Active</span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+            <div style="background:var(--g1);border-radius:7px;padding:8px;text-align:center;"><div style="font-size:16px;font-weight:800;color:var(--black);">8</div><div style="font-size:9px;color:var(--g5);">Candidates</div></div>
+            <div style="background:var(--g1);border-radius:7px;padding:8px;text-align:center;"><div style="font-size:16px;font-weight:800;color:var(--purple);">Stage 4</div><div style="font-size:9px;color:var(--g5);">Furthest stage</div></div>
+            <div style="background:var(--g1);border-radius:7px;padding:8px;text-align:center;"><div style="font-size:16px;font-weight:800;color:var(--black);">$2,400</div><div style="font-size:9px;color:var(--g5);">Salary target</div></div>
+            <div style="background:var(--g1);border-radius:7px;padding:8px;text-align:center;"><div style="font-size:16px;font-weight:800;color:var(--green);">✓</div><div style="font-size:9px;color:var(--g5);">Published</div></div>
+          </div>
+        </div>
+        <div class="card" style="padding:16px;cursor:pointer;" onclick="openModal('edit-opening-modal')">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <div>
+              <div style="font-size:14px;font-weight:700;color:var(--black);">Technical Support Specialist</div>
+              <div style="font-size:10px;color:var(--g4);font-family:monospace;">NW-SUP-3B7R · Nany Salcedo</div>
+            </div>
+            <span class="badge b-amber">Paused</span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+            <div style="background:var(--g1);border-radius:7px;padding:8px;text-align:center;"><div style="font-size:16px;font-weight:800;color:var(--black);">3</div><div style="font-size:9px;color:var(--g5);">Candidates</div></div>
+            <div style="background:var(--g1);border-radius:7px;padding:8px;text-align:center;"><div style="font-size:16px;font-weight:800;color:var(--purple);">Stage 2</div><div style="font-size:9px;color:var(--g5);">Furthest stage</div></div>
+            <div style="background:var(--g1);border-radius:7px;padding:8px;text-align:center;"><div style="font-size:16px;font-weight:800;color:var(--black);">$1,800</div><div style="font-size:9px;color:var(--g5);">Salary target</div></div>
+            <div style="background:var(--g1);border-radius:7px;padding:8px;text-align:center;"><div style="font-size:16px;font-weight:800;color:var(--g4);">—</div><div style="font-size:9px;color:var(--g5);">Not published</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PANEL: Org Info ── -->
+    <div class="od-panel" id="od-panel-info">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="card">
+          <div class="od-section-title">Organization details</div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:1px solid var(--g2);"><span style="color:var(--g5);">Company name</span><strong id="oi-name">Crestline SaaS</strong></div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:1px solid var(--g2);"><span style="color:var(--g5);">Domain</span><span style="font-family:monospace;" id="oi-domain">crestline.io</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:1px solid var(--g2);"><span style="color:var(--g5);">Org ID</span><span style="font-family:monospace;color:var(--purple);" id="oi-orgid">ORG-CS01</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:1px solid var(--g2);"><span style="color:var(--g5);">Status</span><span id="oi-status">Active</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;"><span style="color:var(--g5);">Joined</span><span>Jan 2026</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="od-section-title">Package &amp; limits</div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:1px solid var(--g2);"><span style="color:var(--g5);">Plan</span><span class="badge b-purple" id="oi-plan">Essential</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:1px solid var(--g2);"><span style="color:var(--g5);">Portal seats</span><strong>3 / 5</strong></div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:1px solid var(--g2);"><span style="color:var(--g5);">Max candidates/opening</span><strong>5</strong></div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:1px solid var(--g2);"><span style="color:var(--g5);">Active openings</span><strong>2 / 3</strong></div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;"><span style="color:var(--g5);">Guarantee</span><strong>6 months</strong></div>
+          </div>
+          <button class="btn btn-ghost btn-sm" style="margin-top:14px;width:100%;justify-content:center;" onclick="openModal('edit-org-modal')">Edit plan &amp; seats</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 
 
@@ -1494,9 +1821,9 @@ onAuthStateChanged(auth, async user => {
 
 <script>
 /* ══ PAGES ══ */
-const PAGES=['dashboard','orgs','pipeline','candidates','openings','assessments','hired','blog','team','audit'];
+const PAGES=['dashboard','orgs','org-detail','pipeline','candidates','openings','assessments','hired','blog','team','audit'];
 const PAGE_LABELS={
-  dashboard:'Dashboard',orgs:'Organizations',pipeline:'Pipelines',candidates:'Candidates',
+  dashboard:'Dashboard',orgs:'Organizations','org-detail':'Organization','pipeline':'Pipelines',candidates:'Candidates',
   openings:'Openings',assessments:'Assessments',hired:'Hired',
   blog:'Blog',team:'Team settings',audit:'Audit Log'
 };
@@ -1679,6 +2006,52 @@ window.goOrgStep = function(step) {
   document.querySelectorAll('.org-step-tab').forEach((t,i) => t.classList.toggle('on', i+1 === step));
   document.getElementById('org-step-label').textContent = step;
   orgStepCurrent = step;
+};
+
+
+/* ── Open org detail page ── */
+window.openOrgDetail = function(orgId, name, domain, initials, plan, status) {
+  // Populate header
+  document.getElementById('od-logo').textContent = initials;
+  document.getElementById('od-name').textContent = name;
+  document.getElementById('od-domain').textContent = domain;
+  document.getElementById('od-orgid').textContent = orgId;
+  const statusBadge = document.getElementById('od-status-badge');
+  statusBadge.textContent = status === 'active' ? 'Active' : status === 'hold' ? 'On hold' : 'Suspended';
+  statusBadge.className = 'badge ' + (status === 'active' ? 'b-green' : status === 'hold' ? 'b-amber' : 'b-red');
+  // Populate info panel
+  document.getElementById('oi-name').textContent = name;
+  document.getElementById('oi-domain').textContent = domain;
+  document.getElementById('oi-orgid').textContent = orgId;
+  document.getElementById('oi-plan').textContent = plan;
+  document.getElementById('oi-status').textContent = status === 'active' ? 'Active' : 'On hold / Suspended';
+  // Stat strip plan
+  document.getElementById('od-stat-plan').textContent = plan;
+  // Reset to pipeline tab
+  odTab(document.querySelector('.od-tab'), 'od-panel-pipeline');
+  // Navigate to org-detail page
+  navTo('org-detail', name);
+  // Update the nav label to show org name
+  document.getElementById('nav-current-label').textContent = name;
+};
+
+/* ── Org detail tab switcher ── */
+window.odTab = function(btn, panelId) {
+  document.querySelectorAll('.od-tab').forEach(t => t.classList.remove('on'));
+  document.querySelectorAll('.od-panel').forEach(p => p.classList.remove('show'));
+  if (btn) btn.classList.add('on');
+  const panel = document.getElementById(panelId);
+  if (panel) panel.classList.add('show');
+};
+
+window.openCandDetail = function(name) {
+  openModal('cand-detail-modal');
+};
+
+window.filterPipeline = function(val) {
+  document.getElementById('od-pipeline-opening-label').textContent =
+    val === 'all' ? 'All openings' :
+    val === 'csm' ? 'Customer Success Manager' : 'SDR / Sales Dev Rep';
 };
 
 window.addUserRow = function() {
@@ -1877,7 +2250,7 @@ window.openModal = function(id) {
     </div>
   </div>
 </div>
-
+<script type="module">
 /* ── Org suspend / reactivate (writes to Firestore) ── */
 window.suspendOrg = async function(orgId, slug, name) {
   if (!confirm(\`Suspend \${name}? Their client users will be blocked from logging in.\`)) return;
@@ -1945,5 +2318,32 @@ window.inviteTeamMember = async function() {
   }
 };
 
+
+<!-- Add user to org modal -->
+<div class="modal-bg" id="add-org-user-modal" onclick="if(event.target===this)closeModal('add-org-user-modal')">
+  <div class="modal sm">
+    <div class="modal-hdr"><div class="modal-title">Add portal user</div><button class="modal-close" onclick="closeModal('add-org-user-modal')">✕</button></div>
+    <div class="modal-body">
+      <div style="background:var(--pp);border:1px solid rgba(108,60,225,0.15);border-radius:9px;padding:11px 14px;margin-bottom:16px;font-size:11px;color:var(--g6);line-height:1.65;">
+        📧 A Firebase account will be created and a password-set invitation email sent automatically.
+      </div>
+      <div class="field-row">
+        <div class="field"><label>First name</label><input type="text" placeholder="Sarah"></div>
+        <div class="field"><label>Last name</label><input type="text" placeholder="Reynolds"></div>
+      </div>
+      <div class="field"><label>Work email *</label><input type="email" placeholder="sarah@company.io"></div>
+      <div class="field"><label>Portal role</label>
+        <select>
+          <option value="admin_client">Admin — full access</option>
+          <option value="viewer_client">Viewer — read only</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('add-org-user-modal')">Cancel</button>
+      <button class="btn btn-p" onclick="closeModal('add-org-user-modal');toast('User created & invite sent.','ok')">Create & send invite →</button>
+    </div>
+  </div>
+</div>
+</script>
 </body>
-</html>
