@@ -159,6 +159,22 @@ body{font-family:'Poppins',sans-serif;background:var(--g1);color:var(--black);mi
 .user-row{background:var(--g1);border-radius:10px;border:1.5px solid var(--g3);padding:14px;position:relative;}
 .user-row-remove{position:absolute;top:10px;right:10px;background:none;border:none;font-size:12px;color:var(--g4);cursor:pointer;padding:2px 6px;border-radius:5px;}
 .user-row-remove:hover{background:rgba(239,68,68,0.08);color:var(--red);}
+
+
+/* PIPELINE */
+.pipeline-col{background:var(--g1);border-radius:9px;padding:8px;min-width:110px;}
+.pc-hdr{font-size:10px;font-weight:700;color:var(--g5);margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;text-transform:uppercase;letter-spacing:.06em;}
+.pc-count{background:var(--g3);color:var(--g5);font-size:9px;padding:1px 5px;border-radius:99px;}
+.pc-card{background:#fff;border-radius:7px;padding:7px 9px;font-size:11px;color:var(--g6);margin-bottom:5px;border:1px solid var(--g3);cursor:pointer;transition:border-color .15s;}
+.pc-card:hover{border-color:var(--purple);color:var(--black);}
+.pc-card.active{border-color:rgba(108,60,225,0.25);background:var(--pp);color:var(--purple);font-weight:600;}
+/* PACKAGE PERKS */
+.plan-limits{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:10px 0 12px;}
+.pl-item{background:var(--g1);border-radius:7px;padding:7px 10px;display:flex;align-items:center;gap:7px;}
+.pl-icon{font-size:12px;}
+.pl-label{font-size:10px;color:var(--g5);line-height:1.3;}
+.pl-val{font-size:12px;font-weight:700;color:var(--black);margin-left:auto;}
+.plan-badge-row{display:flex;align-items:center;gap:6px;margin-bottom:10px;}
 /* TOAST */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--black);color:#fff;font-size:12px;font-weight:500;padding:11px 20px;border-radius:9px;box-shadow:0 8px 32px rgba(0,0,0,0.2);transition:transform .35s cubic-bezier(.4,0,.2,1);z-index:999;white-space:nowrap;}
 .toast.show{transform:translateX(-50%) translateY(0);}
@@ -456,6 +472,9 @@ onAuthStateChanged(auth, async user => {
     </button>
 
     <div class="dnav-section">Talent</div>
+    <button class="dtab" id="dtab-pipeline" onclick="navTo('pipeline','Pipelines')">
+      <span class="dtab-icon">🔄</span>Pipelines
+    </button>
     <button class="dtab" id="dtab-candidates" onclick="navTo('candidates','Candidates')">
       <span class="dtab-icon">👥</span>Candidates
     </button>
@@ -592,77 +611,180 @@ onAuthStateChanged(auth, async user => {
     </div>
     <div class="org-grid">
       <!-- Org 1 -->
-      <div class="org-card">
+      <div class="org-card" id="org-crestline">
         <div class="org-top">
           <div style="display:flex;align-items:center;gap:10px;">
             <div class="org-logo">CS</div>
             <div><div class="org-name">Crestline SaaS</div><div class="org-domain">crestline.io</div></div>
           </div>
-          <span class="badge b-green">Active</span>
+          <span class="badge b-green" id="status-crestline">Active</span>
         </div>
         <div class="org-stats">
           <div class="os"><div class="os-n">2</div><div class="os-l">Active openings</div></div>
           <div class="os"><div class="os-n">8</div><div class="os-l">Candidates</div></div>
-          <div class="os"><div class="os-n">3</div><div class="os-l">Team members</div></div>
+          <div class="os"><div class="os-n">3</div><div class="os-l">Seats used</div></div>
         </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div class="plan-badge-row">
           <span class="badge b-purple">Essential Plan</span>
           <span style="font-size:10px;color:var(--g4);">Joined Jan 2026</span>
+        </div>
+        <div class="plan-limits">
+          <div class="pl-item"><span class="pl-icon">👥</span><div class="pl-label">Max candidates<br>per opening</div><span class="pl-val">5</span></div>
+          <div class="pl-item"><span class="pl-icon">💺</span><div class="pl-label">Portal seats</div><span class="pl-val">3/5</span></div>
+          <div class="pl-item"><span class="pl-icon">📋</span><div class="pl-label">Active openings</div><span class="pl-val">2/3</span></div>
+          <div class="pl-item"><span class="pl-icon">🛡️</span><div class="pl-label">Guarantee</div><span class="pl-val">6 mo</span></div>
         </div>
         <div class="org-actions">
           <button class="btn btn-p btn-sm" onclick="impersonate('Crestline SaaS')">👁 View as client</button>
           <button class="btn btn-ghost btn-sm" onclick="openModal('edit-org-modal')">Edit</button>
-          <button class="btn btn-danger btn-sm" onclick="toast('Organization suspended.','ok')">Suspend</button>
+          <button class="btn btn-danger btn-sm" id="suspend-btn-crestline" onclick="suspendOrg('ORG-CS01','crestline','Crestline SaaS')">Suspend</button>
         </div>
       </div>
       <!-- Org 2 -->
-      <div class="org-card">
+      <div class="org-card" id="org-axiom">
         <div class="org-top">
           <div style="display:flex;align-items:center;gap:10px;">
             <div class="org-logo" style="background:rgba(16,185,129,0.1);color:var(--green);">AT</div>
             <div><div class="org-name">Axiom Tech</div><div class="org-domain">axiomtech.io</div></div>
           </div>
-          <span class="badge b-green">Active</span>
+          <span class="badge b-green" id="status-axiom">Active</span>
         </div>
         <div class="org-stats">
           <div class="os"><div class="os-n">2</div><div class="os-l">Active openings</div></div>
           <div class="os"><div class="os-n">9</div><div class="os-l">Candidates</div></div>
-          <div class="os"><div class="os-n">2</div><div class="os-l">Team members</div></div>
+          <div class="os"><div class="os-n">2</div><div class="os-l">Seats used</div></div>
         </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div class="plan-badge-row">
           <span class="badge b-blue">Lite Plan</span>
           <span style="font-size:10px;color:var(--g4);">Joined Mar 2026</span>
+        </div>
+        <div class="plan-limits">
+          <div class="pl-item"><span class="pl-icon">👥</span><div class="pl-label">Max candidates<br>per opening</div><span class="pl-val">3</span></div>
+          <div class="pl-item"><span class="pl-icon">💺</span><div class="pl-label">Portal seats</div><span class="pl-val">2/2</span></div>
+          <div class="pl-item"><span class="pl-icon">📋</span><div class="pl-label">Active openings</div><span class="pl-val">2/2</span></div>
+          <div class="pl-item"><span class="pl-icon">🛡️</span><div class="pl-label">Guarantee</div><span class="pl-val">6 mo</span></div>
         </div>
         <div class="org-actions">
           <button class="btn btn-p btn-sm" onclick="impersonate('Axiom Tech')">👁 View as client</button>
           <button class="btn btn-ghost btn-sm" onclick="openModal('edit-org-modal')">Edit</button>
-          <button class="btn btn-danger btn-sm" onclick="toast('Organization suspended.','ok')">Suspend</button>
+          <button class="btn btn-danger btn-sm" id="suspend-btn-axiom" onclick="suspendOrg('ORG-AT02','axiom','Axiom Tech')">Suspend</button>
         </div>
       </div>
       <!-- Org 3 -->
-      <div class="org-card">
+      <div class="org-card" id="org-novadash" style="opacity:.75;">
         <div class="org-top">
           <div style="display:flex;align-items:center;gap:10px;">
             <div class="org-logo" style="background:rgba(239,68,68,0.08);color:var(--red);">ND</div>
             <div><div class="org-name">NovaDash</div><div class="org-domain">novadash.com</div></div>
           </div>
-          <span class="badge b-amber">On hold</span>
+          <span class="badge b-amber" id="status-novadash">On hold</span>
         </div>
         <div class="org-stats">
           <div class="os"><div class="os-n">1</div><div class="os-l">Active openings</div></div>
           <div class="os"><div class="os-n">7</div><div class="os-l">Candidates</div></div>
-          <div class="os"><div class="os-n">2</div><div class="os-l">Team members</div></div>
+          <div class="os"><div class="os-n">2</div><div class="os-l">Seats used</div></div>
         </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-          <span class="badge b-purple">Essential Plan</span>
+        <div class="plan-badge-row">
+          <span class="badge b-amber">On hold — Essential Plan</span>
           <span style="font-size:10px;color:var(--g4);">Joined Feb 2026</span>
+        </div>
+        <div class="plan-limits">
+          <div class="pl-item"><span class="pl-icon">👥</span><div class="pl-label">Max candidates<br>per opening</div><span class="pl-val">5</span></div>
+          <div class="pl-item"><span class="pl-icon">💺</span><div class="pl-label">Portal seats</div><span class="pl-val">2/5</span></div>
+          <div class="pl-item"><span class="pl-icon">📋</span><div class="pl-label">Active openings</div><span class="pl-val">1/3</span></div>
+          <div class="pl-item"><span class="pl-icon">🛡️</span><div class="pl-label">Guarantee</div><span class="pl-val">Paused</span></div>
         </div>
         <div class="org-actions">
           <button class="btn btn-p btn-sm" onclick="impersonate('NovaDash')">👁 View as client</button>
           <button class="btn btn-ghost btn-sm" onclick="openModal('edit-org-modal')">Edit</button>
-          <button class="btn btn-g btn-sm" onclick="toast('Organization reactivated.','ok')">Reactivate</button>
+          <button class="btn btn-g btn-sm" id="suspend-btn-novadash" onclick="reactivateOrg('ORG-ND03','novadash','NovaDash')">Reactivate</button>
         </div>
       </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════
+       PIPELINES
+  ══════════════════════════════ -->
+  <div class="page" id="page-pipeline">
+    <div class="ph">
+      <div><div class="ph-title">Pipelines</div><div class="ph-sub">Create and manage candidate pipelines per opening.</div></div>
+      <button class="btn btn-p btn-sm" onclick="openModal('new-pipeline-modal')">+ New pipeline</button>
+    </div>
+
+    <!-- Pipeline cards -->
+    <div style="display:flex;flex-direction:column;gap:14px;">
+
+      <!-- Pipeline 1 -->
+      <div class="card">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;">
+          <div>
+            <div style="font-size:15px;font-weight:700;color:var(--black);margin-bottom:2px;">Customer Success Manager</div>
+            <div style="font-size:11px;color:var(--g5);">Crestline SaaS · NW-CSM-4X8B · Recruiter: Byron Giraldo</div>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <span class="badge b-green">Active</span>
+            <button class="btn btn-ghost btn-sm" onclick="openModal('edit-pipeline-modal')">Edit stages</button>
+          </div>
+        </div>
+        <!-- Kanban stage columns -->
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;overflow-x:auto;">
+          <div class="pipeline-col">
+            <div class="pc-hdr">Applied <span class="pc-count">4</span></div>
+            <div class="pc-card">María López</div>
+            <div class="pc-card">Carlos Ruiz</div>
+            <div class="pc-card">Ana Gómez</div>
+            <div class="pc-card">Diego Mora</div>
+          </div>
+          <div class="pipeline-col">
+            <div class="pc-hdr">Profile Review <span class="pc-count">2</span></div>
+            <div class="pc-card active">Isabella Gómez</div>
+            <div class="pc-card">Jorge Pérez</div>
+          </div>
+          <div class="pipeline-col">
+            <div class="pc-hdr">Assessment <span class="pc-count">1</span></div>
+            <div class="pc-card active">David Herrera</div>
+          </div>
+          <div class="pipeline-col">
+            <div class="pc-hdr">Background <span class="pc-count">1</span></div>
+            <div class="pc-card active">Valentina Ríos</div>
+          </div>
+          <div class="pipeline-col">
+            <div class="pc-hdr">Presented <span class="pc-count">0</span></div>
+          </div>
+          <div class="pipeline-col">
+            <div class="pc-hdr" style="color:var(--purple);">Client Review <span class="pc-count">0</span></div>
+          </div>
+          <div class="pipeline-col">
+            <div class="pc-hdr" style="color:var(--green);">Hired <span class="pc-count">0</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pipeline 2 -->
+      <div class="card">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;">
+          <div>
+            <div style="font-size:15px;font-weight:700;color:var(--black);margin-bottom:2px;">SDR / Sales Development Rep</div>
+            <div style="font-size:11px;color:var(--g5);">Axiom Tech · NW-SDR-9K2M · Recruiter: Nany Salcedo</div>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <span class="badge b-green">Active</span>
+            <button class="btn btn-ghost btn-sm" onclick="openModal('edit-pipeline-modal')">Edit stages</button>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;overflow-x:auto;">
+          <div class="pipeline-col"><div class="pc-hdr">Applied <span class="pc-count">3</span></div><div class="pc-card">Luis Herrera</div><div class="pc-card">Sofia Vargas</div><div class="pc-card">Mateo Castro</div></div>
+          <div class="pipeline-col"><div class="pc-hdr">Profile Review <span class="pc-count">1</span></div><div class="pc-card active">Alejandro Ríos</div></div>
+          <div class="pipeline-col"><div class="pc-hdr">Assessment <span class="pc-count">0</span></div></div>
+          <div class="pipeline-col"><div class="pc-hdr">Background <span class="pc-count">0</span></div></div>
+          <div class="pipeline-col"><div class="pc-hdr">Presented <span class="pc-count">0</span></div></div>
+          <div class="pipeline-col"><div class="pc-hdr" style="color:var(--purple);">Client Review <span class="pc-count">0</span></div></div>
+          <div class="pipeline-col"><div class="pc-hdr" style="color:var(--green);">Hired <span class="pc-count">0</span></div></div>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -1294,15 +1416,29 @@ onAuthStateChanged(auth, async user => {
 <!-- New Team Member -->
 <div class="modal-bg" id="new-team-modal" onclick="if(event.target===this)closeModal('new-team-modal')">
   <div class="modal sm">
-    <div class="modal-hdr"><div class="modal-title">Add team member</div><button class="modal-close" onclick="closeModal('new-team-modal')">✕</button></div>
+    <div class="modal-hdr"><div class="modal-title">Invite team member</div><button class="modal-close" onclick="closeModal('new-team-modal')">✕</button></div>
     <div class="modal-body">
-      <div class="field"><label>Full name</label><input type="text" placeholder="Jane Doe"></div>
-      <div class="field"><label>Work email (@nearwork.co)</label><input type="email" placeholder="jane@nearwork.co"></div>
-      <div class="field"><label>Role / title</label><input type="text" placeholder="Recruiter"></div>
-      <div class="field"><label>Access level</label><select><option>Recruiter — manage assigned openings only</option><option>Senior Recruiter — manage all openings</option><option>Admin — full access except super admin</option></select></div>
-      <div class="field"><label>Assign to organizations</label><select multiple style="height:90px;"><option>Crestline SaaS</option><option>Axiom Tech</option><option>NovaDash</option></select><div style="font-size:10px;color:var(--g4);margin-top:3px;">Hold Cmd/Ctrl to select multiple</div></div>
+      <div style="background:var(--pp);border:1px solid rgba(108,60,225,0.15);border-radius:9px;padding:11px 14px;margin-bottom:16px;font-size:11px;color:var(--g6);line-height:1.65;">
+        🔒 <strong style="color:var(--black);">@nearwork.co only.</strong> A Firebase account will be created and a password-reset email sent as the invitation. They set their own password on first login.
+      </div>
+      <div class="field-row">
+        <div class="field"><label>First name</label><input type="text" id="tm-fname" placeholder="Jane"></div>
+        <div class="field"><label>Last name</label><input type="text" id="tm-lname" placeholder="Doe"></div>
+      </div>
+      <div class="field"><label>Work email (@nearwork.co only) *</label><input type="email" id="tm-email" placeholder="jane@nearwork.co"></div>
+      <div class="field"><label>Access level</label>
+        <select id="tm-access">
+          <option value="recruiter">Recruiter — manage assigned openings only</option>
+          <option value="senior_recruiter">Senior Recruiter — manage all openings</option>
+          <option value="admin">Admin — full access except super admin</option>
+        </select>
+      </div>
+      <div id="tm-err" style="display:none;font-size:11px;color:var(--red);margin-top:8px;"></div>
     </div>
-    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('new-team-modal')">Cancel</button><button class="btn btn-p" onclick="closeModal('new-team-modal');toast('Team member invited. Email sent.','ok')">Send invite →</button></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('new-team-modal')">Cancel</button>
+      <button class="btn btn-p" id="tm-invite-btn" data-label="Send invite →" onclick="inviteTeamMember()">Send invite →</button>
+    </div>
   </div>
 </div>
 
@@ -1358,9 +1494,9 @@ onAuthStateChanged(auth, async user => {
 
 <script>
 /* ══ PAGES ══ */
-const PAGES=['dashboard','orgs','candidates','openings','assessments','hired','blog','team','audit'];
+const PAGES=['dashboard','orgs','pipeline','candidates','openings','assessments','hired','blog','team','audit'];
 const PAGE_LABELS={
-  dashboard:'Dashboard',orgs:'Organizations',candidates:'Candidates',
+  dashboard:'Dashboard',orgs:'Organizations',pipeline:'Pipelines',candidates:'Candidates',
   openings:'Openings',assessments:'Assessments',hired:'Hired',
   blog:'Blog',team:'Team settings',audit:'Audit Log'
 };
@@ -1453,6 +1589,15 @@ function insertLink(){
 }
 
 /* ══ SIGN OUT ══ */
+function addStage(){
+  const list = document.getElementById('stage-list');
+  if (!list) return;
+  const div = document.createElement('div');
+  div.style.cssText = 'display:flex;gap:6px;align-items:center;';
+  div.innerHTML = '<input type="text" placeholder="Stage name" style="flex:1;padding:8px 10px;border:1.5px solid var(--g3);border-radius:7px;font-size:12px;font-family:Poppins,sans-serif;"><button onclick="this.parentElement.remove()" style="background:none;border:none;color:var(--g4);cursor:pointer;font-size:13px;">✕</button>';
+  list.appendChild(div);
+  div.querySelector('input').focus();
+}
 function signOut(){
   toast('Signing out...','');
   import('./firebase-config.js').then(({auth}) => {
@@ -1706,5 +1851,99 @@ window.openModal = function(id) {
   origOpen(id);
 };
 </script>
+
+<!-- New Pipeline Modal -->
+<div class="modal-bg" id="new-pipeline-modal" onclick="if(event.target===this)closeModal('new-pipeline-modal')">
+  <div class="modal">
+    <div class="modal-hdr"><div class="modal-title">New pipeline</div><button class="modal-close" onclick="closeModal('new-pipeline-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="field"><label>Opening</label><select><option>Customer Success Manager — Crestline SaaS</option><option>SDR — Axiom Tech</option><option>Technical Support — NovaDash</option></select></div>
+      <div class="field"><label>Pipeline stages</label>
+        <div style="display:flex;flex-direction:column;gap:6px;" id="stage-list">
+          <div style="display:flex;gap:6px;align-items:center;"><input type="text" value="Applied" style="flex:1;padding:8px 10px;border:1.5px solid var(--g3);border-radius:7px;font-size:12px;font-family:Poppins,sans-serif;"><button onclick="this.parentElement.remove()" style="background:none;border:none;color:var(--g4);cursor:pointer;font-size:13px;">✕</button></div>
+          <div style="display:flex;gap:6px;align-items:center;"><input type="text" value="Profile Review" style="flex:1;padding:8px 10px;border:1.5px solid var(--g3);border-radius:7px;font-size:12px;font-family:Poppins,sans-serif;"><button onclick="this.parentElement.remove()" style="background:none;border:none;color:var(--g4);cursor:pointer;font-size:13px;">✕</button></div>
+          <div style="display:flex;gap:6px;align-items:center;"><input type="text" value="Assessment" style="flex:1;padding:8px 10px;border:1.5px solid var(--g3);border-radius:7px;font-size:12px;font-family:Poppins,sans-serif;"><button onclick="this.parentElement.remove()" style="background:none;border:none;color:var(--g4);cursor:pointer;font-size:13px;">✕</button></div>
+          <div style="display:flex;gap:6px;align-items:center;"><input type="text" value="Background Check" style="flex:1;padding:8px 10px;border:1.5px solid var(--g3);border-radius:7px;font-size:12px;font-family:Poppins,sans-serif;"><button onclick="this.parentElement.remove()" style="background:none;border:none;color:var(--g4);cursor:pointer;font-size:13px;">✕</button></div>
+          <div style="display:flex;gap:6px;align-items:center;"><input type="text" value="Presented" style="flex:1;padding:8px 10px;border:1.5px solid var(--g3);border-radius:7px;font-size:12px;font-family:Poppins,sans-serif;"><button onclick="this.parentElement.remove()" style="background:none;border:none;color:var(--g4);cursor:pointer;font-size:13px;">✕</button></div>
+          <div style="display:flex;gap:6px;align-items:center;"><input type="text" value="Client Review" style="flex:1;padding:8px 10px;border:1.5px solid var(--g3);border-radius:7px;font-size:12px;font-family:Poppins,sans-serif;"><button onclick="this.parentElement.remove()" style="background:none;border:none;color:var(--g4);cursor:pointer;font-size:13px;">✕</button></div>
+          <div style="display:flex;gap:6px;align-items:center;"><input type="text" value="Hired" style="flex:1;padding:8px 10px;border:1.5px solid var(--g3);border-radius:7px;font-size:12px;font-family:Poppins,sans-serif;"><button onclick="this.parentElement.remove()" style="background:none;border:none;color:var(--g4);cursor:pointer;font-size:13px;">✕</button></div>
+        </div>
+        <button class="btn btn-ghost btn-sm" style="margin-top:8px;width:100%;justify-content:center;" onclick="addStage()">+ Add stage</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('new-pipeline-modal')">Cancel</button>
+      <button class="btn btn-p" onclick="closeModal('new-pipeline-modal');toast('Pipeline created.','ok')">Create pipeline →</button>
+    </div>
+  </div>
+</div>
+
+/* ── Org suspend / reactivate (writes to Firestore) ── */
+window.suspendOrg = async function(orgId, slug, name) {
+  if (!confirm(\`Suspend \${name}? Their client users will be blocked from logging in.\`)) return;
+  try {
+    const { db, doc, setDoc, serverTimestamp } = await import('./firebase-config.js');
+    await setDoc(doc(db, 'organizations', orgId), { status: 'suspended', suspendedAt: serverTimestamp() }, { merge: true });
+    const badge = document.getElementById('status-' + slug);
+    if (badge) { badge.textContent = 'Suspended'; badge.className = 'badge b-red'; }
+    const card = document.getElementById('org-' + slug);
+    if (card) card.style.opacity = '0.6';
+    const btn = document.getElementById('suspend-btn-' + slug);
+    if (btn) { btn.textContent = 'Reactivate'; btn.className = 'btn btn-g btn-sm'; btn.onclick = () => reactivateOrg(orgId, slug, name); }
+    toast(\`\${name} suspended. Client logins blocked.\`, 'ok');
+  } catch(e) { toast('Failed to suspend org: ' + e.message, 'bad'); }
+};
+
+window.reactivateOrg = async function(orgId, slug, name) {
+  try {
+    const { db, doc, setDoc } = await import('./firebase-config.js');
+    await setDoc(doc(db, 'organizations', orgId), { status: 'active', suspendedAt: null }, { merge: true });
+    const badge = document.getElementById('status-' + slug);
+    if (badge) { badge.textContent = 'Active'; badge.className = 'badge b-green'; }
+    const card = document.getElementById('org-' + slug);
+    if (card) card.style.opacity = '1';
+    const btn = document.getElementById('suspend-btn-' + slug);
+    if (btn) { btn.textContent = 'Suspend'; btn.className = 'btn btn-danger btn-sm'; btn.onclick = () => suspendOrg(orgId, slug, name); }
+    toast(\`\${name} reactivated.\`, 'ok');
+  } catch(e) { toast('Failed to reactivate: ' + e.message, 'bad'); }
+};
+
+/* ── Invite team member (writes to Firestore + sends invite) ── */
+window.inviteTeamMember = async function() {
+  const email  = document.getElementById('tm-email').value.trim();
+  const fname  = document.getElementById('tm-fname').value.trim();
+  const lname  = document.getElementById('tm-lname').value.trim();
+  const access = document.getElementById('tm-access').value;
+  const errEl  = document.getElementById('tm-err');
+  errEl.style.display = 'none';
+
+  if (!email) { errEl.textContent = 'Email is required.'; errEl.style.display = 'block'; return; }
+  if (!email.endsWith('@nearwork.co')) { errEl.textContent = 'Only @nearwork.co email addresses are allowed.'; errEl.style.display = 'block'; return; }
+
+  const btn = document.getElementById('tm-invite-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin" style="border-top-color:#fff;"></span>Sending...';
+
+  try {
+    const { auth, db, createUserWithEmailAndPassword, sendPasswordResetEmail, saveUserProfile, serverTimestamp } = await import('./firebase-config.js');
+    const tempPw = 'Nw!' + Math.random().toString(36).slice(2, 10);
+    const cred = await createUserWithEmailAndPassword(auth, email, tempPw);
+    await saveUserProfile(cred.user.uid, {
+      email, name: (fname + ' ' + lname).trim(),
+      role: 'admin', accessLevel: access,
+      createdAt: serverTimestamp(), onboarded: false
+    });
+    await sendPasswordResetEmail(auth, email);
+    closeModal('new-team-modal');
+    toast(\`Invite sent to \${email}.\`, 'ok');
+  } catch(e) {
+    const msg = e.code === 'auth/email-already-in-use' ? 'This email already has an account.' : e.message;
+    errEl.textContent = msg;
+    errEl.style.display = 'block';
+    btn.disabled = false;
+    btn.innerHTML = 'Send invite →';
+  }
+};
+
 </body>
 </html>
