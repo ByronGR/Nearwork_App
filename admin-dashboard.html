@@ -121,6 +121,16 @@ body{font-family:'Poppins',sans-serif;background:var(--g1);color:var(--black);mi
 .modal-body{padding:22px 24px;}
 .modal-footer{padding:16px 24px;border-top:1px solid var(--g2);display:flex;justify-content:flex-end;gap:10px;}
 
+
+/* ORG CREATE WIZARD */
+.org-step-tab{font-size:11px;font-weight:600;color:var(--g4);padding:4px 10px;border-radius:6px;cursor:pointer;transition:all .15s;}
+.org-step-tab.on{color:var(--purple);font-weight:700;}
+.org-step-sep{font-size:12px;color:var(--g3);padding:0 4px;display:flex;align-items:center;}
+.org-step{display:none;}
+.org-step.show{display:block;}
+.user-row{background:var(--g1);border-radius:10px;border:1.5px solid var(--g3);padding:14px;position:relative;}
+.user-row-remove{position:absolute;top:10px;right:10px;background:none;border:none;font-size:12px;color:var(--g4);cursor:pointer;padding:2px 6px;border-radius:5px;}
+.user-row-remove:hover{background:rgba(239,68,68,0.08);color:var(--red);}
 /* TOAST */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--black);color:#fff;font-size:12px;font-weight:500;padding:11px 20px;border-radius:9px;box-shadow:0 8px 32px rgba(0,0,0,0.2);transition:transform .35s cubic-bezier(.4,0,.2,1);z-index:999;white-space:nowrap;}
 .toast.show{transform:translateX(-50%) translateY(0);}
@@ -303,6 +313,49 @@ body{font-family:'Poppins',sans-serif;background:var(--g1);color:var(--black);mi
 </style>
 </head>
 <body>
+<!-- ══ AUTH GUARD — blocks non-admins before page renders ══ -->
+<script type="module">
+import { auth, onAuthStateChanged, getUserProfile } from './firebase-config.js';
+
+// Show a loading overlay instantly — hides the dashboard until auth is confirmed
+document.body.insertAdjacentHTML('afterbegin', `
+  <div id="auth-guard" style="position:fixed;inset:0;background:#0D0D0D;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;">
+    <div style="font-size:20px;font-weight:900;color:#fff;letter-spacing:-1px;">Near<span style="color:#8B5CF6;">work</span></div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.3);">Verifying access...</div>
+    <div style="width:24px;height:24px;border:2px solid rgba(255,255,255,0.1);border-top-color:#6C3CE1;border-radius:50%;animation:gspin .7s linear infinite;margin-top:8px;"></div>
+    <style>@keyframes gspin{to{transform:rotate(360deg);}}</style>
+  </div>`);
+
+onAuthStateChanged(auth, async user => {
+  if (!user) {
+    window.location.href = 'admin-login.html';
+    return;
+  }
+  const profile = await getUserProfile(user.uid);
+  if (profile?.role !== 'admin') {
+    // Signed in but not admin — redirect to appropriate place
+    window.location.href = profile?.role === 'client' ? 'client-dashboard.html' : 'admin-login.html';
+    return;
+  }
+  // Confirmed admin — remove the guard and show the page
+  document.getElementById('auth-guard').remove();
+  // Update the nav avatar with their name
+  if (profile.name) {
+    const initials = profile.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2);
+    const av = document.querySelector('.av');
+    if (av) av.textContent = initials;
+  }
+  // Update greeting
+  const greet = document.querySelector('.ph-title');
+  if (greet && profile.name) {
+    const firstName = profile.name.split(' ')[0];
+    const hour = new Date().getHours();
+    const time = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening';
+    greet.textContent = `Good ${time}, ${firstName} 👋`;
+  }
+});
+</script>
+
 
 <!-- IMPERSONATE BANNER -->
 <div class="imp-banner" id="imp-banner">
@@ -921,18 +974,162 @@ body{font-family:'Poppins',sans-serif;background:var(--g1);color:var(--black);mi
 <!-- ══ MODALS ══ -->
 
 <!-- New Org -->
+<!-- ══ NEW ORGANIZATION MODAL ══ -->
 <div class="modal-bg" id="new-org-modal" onclick="if(event.target===this)closeModal('new-org-modal')">
-  <div class="modal sm">
-    <div class="modal-hdr"><div class="modal-title">New organization</div><button class="modal-close" onclick="closeModal('new-org-modal')">✕</button></div>
-    <div class="modal-body">
-      <div class="field"><label>Company name</label><input type="text" placeholder="Crestline SaaS"></div>
-      <div class="field"><label>Domain</label><input type="text" placeholder="crestline.io"></div>
-      <div class="field"><label>Plan</label><select><option>Standard</option><option>Lite</option><option>Essential</option><option>Elite</option></select></div>
-      <div class="field"><label>Seats</label><input type="number" value="3" min="1"></div>
-      <div class="field"><label>Primary contact email</label><input type="email" placeholder="ceo@company.com"></div>
-      <div class="field"><label>Primary color (branding)</label><input type="color" value="#6C3CE1" style="height:40px;cursor:pointer;"></div>
+  <div class="modal" style="max-width:640px;">
+    <div class="modal-hdr">
+      <div>
+        <div class="modal-title">New organization</div>
+        <div style="font-size:11px;color:var(--g5);margin-top:2px;">Step <span id="org-step-label">1</span> of 3</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('new-org-modal')">✕</button>
     </div>
-    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('new-org-modal')">Cancel</button><button class="btn btn-p" onclick="closeModal('new-org-modal');toast('Organization created successfully!','ok')">Create organization →</button></div>
+
+    <!-- Step progress bar -->
+    <div style="padding:0 24px;background:var(--g1);border-bottom:1px solid var(--g2);">
+      <div style="display:flex;gap:0;padding:12px 0;">
+        <div class="org-step-tab on" id="ostab-1" onclick="goOrgStep(1)">1 · Organization</div>
+        <div class="org-step-sep">›</div>
+        <div class="org-step-tab" id="ostab-2">2 · Add users</div>
+        <div class="org-step-sep">›</div>
+        <div class="org-step-tab" id="ostab-3">3 · Review & create</div>
+      </div>
+    </div>
+
+    <!-- ── STEP 1: Organization details ── -->
+    <div class="org-step show" id="org-s1">
+      <div class="modal-body">
+        <div style="margin-bottom:18px;">
+          <div style="font-size:13px;font-weight:700;color:var(--black);margin-bottom:4px;">Organization details</div>
+          <div style="font-size:11px;color:var(--g5);">This creates the organization record in Firestore. Each org gets a unique ID used to link all users, openings, and candidates.</div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Company name *</label><input type="text" id="org-name" placeholder="Crestline SaaS"></div>
+          <div class="field"><label>Domain *</label><input type="text" id="org-domain" placeholder="crestline.io"></div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Organization ID</label>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <input type="text" id="org-id" placeholder="Auto-generated" style="font-family:monospace;font-size:12px;">
+              <button class="btn btn-ghost btn-sm" onclick="genOrgId()" type="button">Generate</button>
+            </div>
+            <div style="font-size:10px;color:var(--g4);margin-top:4px;">e.g. ORG-1234 · Used internally to link all records</div>
+          </div>
+          <div class="field"><label>Plan</label>
+            <select id="org-plan">
+              <option value="standard">Standard</option>
+              <option value="lite">Lite</option>
+              <option value="essential">Essential</option>
+              <option value="elite">Elite</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Max seats</label><input type="number" id="org-seats" value="3" min="1"></div>
+          <div class="field"><label>Status</label>
+            <select id="org-status"><option value="active">Active</option><option value="hold">On hold</option></select>
+          </div>
+        </div>
+        <div class="field"><label>Internal notes (admin only)</label><textarea id="org-notes" placeholder="Kick-off date, special requirements, context..." style="min-height:64px;"></textarea></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('new-org-modal')">Cancel</button>
+        <button class="btn btn-p" onclick="goOrgStep(2)">Next: Add users →</button>
+      </div>
+    </div>
+
+    <!-- ── STEP 2: Add users ── -->
+    <div class="org-step" id="org-s2">
+      <div class="modal-body">
+        <div style="margin-bottom:16px;">
+          <div style="font-size:13px;font-weight:700;color:var(--black);margin-bottom:4px;">Add client users</div>
+          <div style="font-size:11px;color:var(--g5);line-height:1.6;">Each user gets a Firebase account with the role <strong style="color:var(--black);">client</strong> and is linked to this organization. They'll receive an email with a password-reset link — that's how they set their own password and activate their account.</div>
+        </div>
+
+        <!-- User rows -->
+        <div id="user-rows" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;">
+          <div class="user-row" id="urow-0">
+            <div class="field-row">
+              <div class="field" style="margin-bottom:0;"><label>First name</label><input type="text" class="u-fname" placeholder="Sarah"></div>
+              <div class="field" style="margin-bottom:0;"><label>Last name</label><input type="text" class="u-lname" placeholder="Reynolds"></div>
+            </div>
+            <div class="field-row" style="margin-top:8px;">
+              <div class="field" style="margin-bottom:0;"><label>Work email *</label><input type="email" class="u-email" placeholder="sarah@crestline.io"></div>
+              <div class="field" style="margin-bottom:0;"><label>Role in portal</label>
+                <select class="u-role">
+                  <option value="admin_client">Admin (full access)</option>
+                  <option value="viewer_client">Viewer (read only)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn btn-ghost btn-sm" onclick="addUserRow()" type="button" style="width:100%;justify-content:center;">+ Add another user</button>
+
+        <!-- What happens notice -->
+        <div style="background:var(--pp);border:1px solid rgba(108,60,225,0.15);border-radius:10px;padding:14px 16px;margin-top:16px;display:flex;gap:10px;align-items:flex-start;">
+          <span style="font-size:16px;flex-shrink:0;">📧</span>
+          <div style="font-size:11px;color:var(--g6);line-height:1.65;">
+            <strong style="color:var(--black);">What happens when you click Create:</strong><br>
+            Firebase creates each user account with a secure temporary password. We immediately call <code style="background:rgba(108,60,225,0.1);padding:1px 5px;border-radius:4px;font-size:10px;">sendPasswordResetEmail()</code> — Firebase sends them an email with a link to set their own password. Their account is inactive until they click that link.
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="goOrgStep(1)">← Back</button>
+        <button class="btn btn-p" onclick="goOrgStep(3)">Next: Review →</button>
+      </div>
+    </div>
+
+    <!-- ── STEP 3: Review & create ── -->
+    <div class="org-step" id="org-s3">
+      <div class="modal-body">
+        <div style="font-size:13px;font-weight:700;color:var(--black);margin-bottom:16px;">Review before creating</div>
+
+        <!-- Org summary -->
+        <div style="background:var(--g1);border-radius:10px;border:1.5px solid var(--g3);padding:16px;margin-bottom:12px;">
+          <div style="font-size:10px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.12em;margin-bottom:10px;">Organization</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <div><div style="font-size:10px;color:var(--g4);">Name</div><div style="font-size:13px;font-weight:700;" id="rev-name">—</div></div>
+            <div><div style="font-size:10px;color:var(--g4);">Domain</div><div style="font-size:13px;font-weight:600;font-family:monospace;" id="rev-domain">—</div></div>
+            <div><div style="font-size:10px;color:var(--g4);">Org ID</div><div style="font-size:13px;font-weight:700;font-family:monospace;color:var(--purple);" id="rev-id">—</div></div>
+            <div><div style="font-size:10px;color:var(--g4);">Plan · Seats</div><div style="font-size:13px;font-weight:600;" id="rev-plan">—</div></div>
+          </div>
+        </div>
+
+        <!-- Users summary -->
+        <div style="background:var(--g1);border-radius:10px;border:1.5px solid var(--g3);padding:16px;margin-bottom:12px;">
+          <div style="font-size:10px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.12em;margin-bottom:10px;">Users to be created</div>
+          <div id="rev-users" style="display:flex;flex-direction:column;gap:6px;"></div>
+        </div>
+
+        <!-- Firestore preview -->
+        <div style="background:#0D0D0D;border-radius:10px;padding:14px 16px;">
+          <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:.12em;margin-bottom:8px;">What gets written to Firestore</div>
+          <div style="font-family:monospace;font-size:11px;color:rgba(255,255,255,0.7);line-height:1.8;" id="rev-json">—</div>
+        </div>
+
+        <div id="create-err" style="display:none;margin-top:12px;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--red);"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="goOrgStep(2)">← Back</button>
+        <button class="btn btn-p" id="create-org-btn" onclick="doCreateOrg()">🚀 Create organization & send invites →</button>
+      </div>
+    </div>
+
+    <!-- ── STEP 4: Success ── -->
+    <div class="org-step" id="org-s4">
+      <div class="modal-body" style="text-align:center;padding:40px 24px;">
+        <span style="font-size:52px;display:block;margin-bottom:16px;">🎉</span>
+        <div style="font-size:20px;font-weight:800;color:var(--black);letter-spacing:-1px;margin-bottom:8px;">Organization created.</div>
+        <div style="font-size:13px;color:var(--g5);line-height:1.7;margin-bottom:24px;" id="success-msg">Users have been created and invitation emails sent.</div>
+        <div id="invite-results" style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px;text-align:left;"></div>
+        <button class="btn btn-p" onclick="closeModal('new-org-modal');location.reload()">Done ✓</button>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -1157,7 +1354,12 @@ function insertLink(){
 }
 
 /* ══ SIGN OUT ══ */
-function signOut(){ toast('Signing out...',''); setTimeout(()=>window.location.href='login.html',800); }
+function signOut(){
+  toast('Signing out...','');
+  import('./firebase-config.js').then(({auth}) => {
+    auth.signOut().then(() => { window.location.href = 'admin-login.html'; });
+  });
+}
 
 /* ══ TOAST ══ */
 function toast(msg,t){
@@ -1165,6 +1367,257 @@ function toast(msg,t){
   el.textContent=msg; el.className='toast show '+(t||'');
   setTimeout(()=>el.classList.remove('show'),3500);
 }
+</script>
+
+<script type="module">
+import {
+  auth, db,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
+  serverTimestamp,
+  doc, setDoc, collection
+} from './firebase-config.js';
+
+import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+/* ── Org creation wizard ── */
+let orgStepCurrent = 1;
+let userRowCount = 1;
+
+window.genOrgId = function() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const rand = Array.from({length:4}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
+  document.getElementById('org-id').value = 'ORG-' + rand;
+};
+
+window.goOrgStep = function(step) {
+  // Validate before advancing
+  if (step === 2) {
+    const name = document.getElementById('org-name').value.trim();
+    const id   = document.getElementById('org-id').value.trim();
+    if (!name) { alert('Please enter a company name.'); return; }
+    if (!id)   { genOrgId(); }
+  }
+  if (step === 3) {
+    // Build review panel
+    const name   = document.getElementById('org-name').value.trim();
+    const domain = document.getElementById('org-domain').value.trim();
+    const orgId  = document.getElementById('org-id').value.trim();
+    const plan   = document.getElementById('org-plan').value;
+    const seats  = document.getElementById('org-seats').value;
+    document.getElementById('rev-name').textContent   = name || '—';
+    document.getElementById('rev-domain').textContent = domain || '—';
+    document.getElementById('rev-id').textContent     = orgId || '—';
+    document.getElementById('rev-plan').textContent   = plan + ' · ' + seats + ' seats';
+
+    // Collect users
+    const rows = document.querySelectorAll('.user-row');
+    const usersHtml = [];
+    const userPreview = [];
+    rows.forEach((row, i) => {
+      const email = row.querySelector('.u-email').value.trim();
+      const fname = row.querySelector('.u-fname').value.trim();
+      const lname = row.querySelector('.u-lname').value.trim();
+      const role  = row.querySelector('.u-role').value;
+      if (!email) return;
+      usersHtml.push(`<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:#fff;border-radius:8px;border:1px solid var(--g3);">
+        <div style="width:28px;height:28px;border-radius:50%;background:var(--pp);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--purple);">${(fname[0]||'?').toUpperCase()}</div>
+        <div style="flex:1;"><div style="font-size:12px;font-weight:700;">${fname} ${lname}</div><div style="font-size:10px;color:var(--g5);">${email} · ${role === 'admin_client' ? 'Admin' : 'Viewer'}</div></div>
+        <span style="font-size:9px;font-weight:700;background:var(--pp);color:var(--purple);padding:2px 7px;border-radius:99px;">Invite pending</span>
+      </div>`);
+      userPreview.push(`  users/${email}: { role: "client", orgId: "${orgId}", access: "${role}" }`);
+    });
+    document.getElementById('rev-users').innerHTML = usersHtml.join('') || '<div style="font-size:12px;color:var(--g4);">No users added yet.</div>';
+
+    // Firestore preview
+    document.getElementById('rev-json').innerHTML = `<span style="color:#6EE7B7;">organizations/${orgId}</span> {<br>
+&nbsp;&nbsp;name: <span style="color:#FDE68A;">"${name}"</span>,<br>
+&nbsp;&nbsp;domain: <span style="color:#FDE68A;">"${domain}"</span>,<br>
+&nbsp;&nbsp;plan: <span style="color:#FDE68A;">"${plan}"</span>,<br>
+&nbsp;&nbsp;seats: <span style="color:#93C5FD;">${seats}</span>,<br>
+&nbsp;&nbsp;status: <span style="color:#FDE68A;">"active"</span>,<br>
+&nbsp;&nbsp;createdAt: <span style="color:#9CA3AF;">serverTimestamp()</span><br>
+}<br><br>
+${userPreview.map(u => `<span style="color:#6EE7B7;">${u.split(':')[0].trim()}</span>: {${u.split(':').slice(1).join(':')}}`).join('<br>')}`;
+  }
+
+  // Switch steps
+  document.querySelectorAll('.org-step').forEach(s => s.classList.remove('show'));
+  document.getElementById('org-s' + step).classList.add('show');
+  document.querySelectorAll('.org-step-tab').forEach((t,i) => t.classList.toggle('on', i+1 === step));
+  document.getElementById('org-step-label').textContent = step;
+  orgStepCurrent = step;
+};
+
+window.addUserRow = function() {
+  const idx = userRowCount++;
+  const wrap = document.getElementById('user-rows');
+  const div = document.createElement('div');
+  div.className = 'user-row';
+  div.id = 'urow-' + idx;
+  div.innerHTML = `
+    <button class="user-row-remove" onclick="this.closest('.user-row').remove()" type="button">✕</button>
+    <div class="field-row">
+      <div class="field" style="margin-bottom:0;"><label>First name</label><input type="text" class="u-fname" placeholder="James"></div>
+      <div class="field" style="margin-bottom:0;"><label>Last name</label><input type="text" class="u-lname" placeholder="Reynolds"></div>
+    </div>
+    <div class="field-row" style="margin-top:8px;">
+      <div class="field" style="margin-bottom:0;"><label>Work email *</label><input type="email" class="u-email" placeholder="james@company.io"></div>
+      <div class="field" style="margin-bottom:0;"><label>Role in portal</label>
+        <select class="u-role">
+          <option value="admin_client">Admin (full access)</option>
+          <option value="viewer_client">Viewer (read only)</option>
+        </select>
+      </div>
+    </div>`;
+  wrap.appendChild(div);
+};
+
+/* ── The actual Firebase creation ── */
+window.doCreateOrg = async function() {
+  const btn = document.getElementById('create-org-btn');
+  const errEl = document.getElementById('create-err');
+  errEl.style.display = 'none';
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin" style="border-top-color:#fff;"></span> Creating...';
+
+  const orgId   = document.getElementById('org-id').value.trim();
+  const orgName = document.getElementById('org-name').value.trim();
+  const domain  = document.getElementById('org-domain').value.trim();
+  const plan    = document.getElementById('org-plan').value;
+  const seats   = parseInt(document.getElementById('org-seats').value) || 3;
+  const status  = document.getElementById('org-status').value;
+  const notes   = document.getElementById('org-notes').value.trim();
+
+  // Collect users
+  const rows = document.querySelectorAll('.user-row');
+  const users = [];
+  rows.forEach(row => {
+    const email = row.querySelector('.u-email').value.trim();
+    const fname = row.querySelector('.u-fname').value.trim();
+    const lname = row.querySelector('.u-lname').value.trim();
+    const role  = row.querySelector('.u-role').value;
+    if (email) users.push({ email, fname, lname, role });
+  });
+
+  if (!orgId || !orgName) {
+    showErr('Organization name and ID are required.');
+    btn.disabled = false; btn.innerHTML = '🚀 Create organization & send invites →';
+    return;
+  }
+  if (users.length === 0) {
+    showErr('Please add at least one user.');
+    btn.disabled = false; btn.innerHTML = '🚀 Create organization & send invites →';
+    return;
+  }
+
+  try {
+    // 1. Write org to Firestore
+    await setDoc(doc(db, 'organizations', orgId), {
+      name: orgName,
+      domain: domain,
+      plan: plan,
+      seats: seats,
+      status: status,
+      notes: notes,
+      createdAt: serverTimestamp(),
+      createdBy: auth.currentUser?.uid || 'admin'
+    });
+
+    // 2. Create each user in Firebase Auth + Firestore, then send invite
+    const results = [];
+    for (const u of users) {
+      try {
+        // Temp password — they'll reset it immediately via the invite email
+        const tempPw = 'Nearwork!' + Math.random().toString(36).slice(2,8);
+        const cred = await createUserWithEmailAndPassword(auth, u.email, tempPw);
+        
+        // Save user profile in Firestore
+        await setDoc(doc(db, 'users', cred.user.uid), {
+          email: u.email,
+          name: (u.fname + ' ' + u.lname).trim(),
+          role: 'client',
+          orgId: orgId,
+          orgName: orgName,
+          portalRole: u.role,
+          createdAt: serverTimestamp(),
+          createdBy: 'admin',
+          onboarded: false
+        });
+
+        // Send password reset (= invitation) email
+        await sendPasswordResetEmail(auth, u.email);
+        results.push({ email: u.email, status: 'ok' });
+      } catch(userErr) {
+        const msg = userErr.code === 'auth/email-already-in-use'
+          ? 'already has an account'
+          : userErr.message;
+        results.push({ email: u.email, status: 'err', msg });
+      }
+    }
+
+    // 3. Show success screen
+    document.querySelectorAll('.org-step').forEach(s => s.classList.remove('show'));
+    document.getElementById('org-s4').classList.add('show');
+    document.getElementById('success-msg').textContent = 
+      `Organization "${orgName}" created with ID ${orgId}. ${results.filter(r=>r.status==='ok').length} invitation email(s) sent.`;
+    document.getElementById('invite-results').innerHTML = results.map(r =>
+      r.status === 'ok'
+        ? `<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(16,185,129,0.06);border-radius:8px;border:1px solid rgba(16,185,129,0.15);font-size:12px;"><span style="color:var(--green);">✓</span><strong>${r.email}</strong><span style="color:var(--g5);">— invite sent</span></div>`
+        : `<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(239,68,68,0.05);border-radius:8px;border:1px solid rgba(239,68,68,0.15);font-size:12px;"><span style="color:var(--red);">✕</span><strong>${r.email}</strong><span style="color:var(--g5);">${r.msg}</span></div>`
+    ).join('');
+
+  } catch(e) {
+    showErr('Failed to create organization: ' + e.message);
+    btn.disabled = false;
+    btn.innerHTML = '🚀 Create organization & send invites →';
+  }
+
+  function showErr(msg) {
+    errEl.textContent = msg;
+    errEl.style.display = 'block';
+  }
+};
+
+// Reset wizard when modal opens
+const origOpen = window.openModal;
+window.openModal = function(id) {
+  if (id === 'new-org-modal') {
+    // Reset all steps
+    document.querySelectorAll('.org-step').forEach(s => s.classList.remove('show'));
+    document.getElementById('org-s1').classList.add('show');
+    document.querySelectorAll('.org-step-tab').forEach((t,i) => t.classList.toggle('on', i===0));
+    document.getElementById('org-step-label').textContent = '1';
+    // Reset fields
+    ['org-name','org-domain','org-id','org-notes'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    document.getElementById('org-plan').value = 'standard';
+    document.getElementById('org-seats').value = '3';
+    document.getElementById('org-status').value = 'active';
+    document.getElementById('create-err').style.display = 'none';
+    // Reset to 1 user row
+    document.getElementById('user-rows').innerHTML = `<div class="user-row" id="urow-0">
+      <div class="field-row">
+        <div class="field" style="margin-bottom:0;"><label>First name</label><input type="text" class="u-fname" placeholder="Sarah"></div>
+        <div class="field" style="margin-bottom:0;"><label>Last name</label><input type="text" class="u-lname" placeholder="Reynolds"></div>
+      </div>
+      <div class="field-row" style="margin-top:8px;">
+        <div class="field" style="margin-bottom:0;"><label>Work email *</label><input type="email" class="u-email" placeholder="sarah@crestline.io"></div>
+        <div class="field" style="margin-bottom:0;"><label>Role in portal</label>
+          <select class="u-role">
+            <option value="admin_client">Admin (full access)</option>
+            <option value="viewer_client">Viewer (read only)</option>
+          </select>
+        </div>
+      </div>
+    </div>`;
+    genOrgId();
+    userRowCount = 1;
+  }
+  origOpen(id);
+};
 </script>
 </body>
 </html>
