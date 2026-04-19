@@ -300,47 +300,29 @@ body{background:var(--black);display:flex;}
 
 <script type="module">
 import {
-  auth, gProvider,
-  signInWithPopup,
+  auth, db, gProvider,
+  signInWithGoogle,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
   onAuthStateChanged,
-  fetchSignInMethodsForEmail
+  getUserProfile,
+  saveUserProfile,
+  redirectByRole,
+  guessRole,
+  isAdminDomain,
+  serverTimestamp,
+  doc, setDoc
 } from './firebase-config.js';
 
-import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { fetchSignInMethodsForEmail } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 
-const db = getFirestore();
-
-/* ── helpers ── */
-async function getUserProfile(uid) {
-  const snap = await getDoc(doc(db, 'users', uid));
-  return snap.exists() ? snap.data() : null;
-}
-async function saveProfile(uid, data) {
-  await setDoc(doc(db, 'users', uid), data, { merge: true });
-}
-function redirectByRole(role) {
-  const map = { admin: 'admin-dashboard', client: 'client-dashboard', candidate: 'candidate-dashboard' };
-  const page = map[role] || 'candidate-dashboard';
-  window.location.href = page + '.html';
-}
-function isAdmin(email) {
-  return ['nearwork.co','ByronGR'].some(d => email.includes(d));
-}
-
-/* ── URL extension flexibility ── */
-// Remove .html from address bar if present (clean URLs)
+/* ── Remove .html from URL if present ── */
 if (location.pathname.endsWith('.html')) {
-  const clean = location.pathname.slice(0, -5);
-  history.replaceState(null, '', clean + location.search + location.hash);
+  history.replaceState(null, '', location.pathname.slice(0, -5) + location.search + location.hash);
 }
 
-/* ── Auth state ── */
-const params = new URLSearchParams(location.search);
-const redirect = params.get('redirect') || null;
-
+/* ── Already logged in → redirect ── */
 onAuthStateChanged(auth, async user => {
   if (!user) return;
   const profile = await getUserProfile(user.uid);
@@ -348,17 +330,16 @@ onAuthStateChanged(auth, async user => {
   window.location.href = 'candidate-dashboard.html';
 });
 
-/* ── Google ── */
+/* ── Google sign-in ── */
 window.handleGoogle = async function() {
   try {
-    const result = await signInWithPopup(auth, gProvider);
-    const user = result.user;
+    const user = await signInWithGoogle();
     const profile = await getUserProfile(user.uid);
     if (profile?.role) { redirectByRole(profile.role); return; }
-    await saveProfile(user.uid, {
+    await saveUserProfile(user.uid, {
       email: user.email,
       name: user.displayName || '',
-      role: isAdmin(user.email) ? 'admin' : 'candidate',
+      role: isAdminDomain(user.email) ? 'admin' : 'candidate',
       createdAt: serverTimestamp(),
       onboarded: false
     });
@@ -366,11 +347,12 @@ window.handleGoogle = async function() {
   } catch(e) {
     if (e.code !== 'auth/popup-closed-by-user') {
       showToast('Google sign-in failed. Please try again.', 'bad');
+      console.error(e);
     }
   }
 };
 
-/* ── Email continue — check if account exists ── */
+/* ── Email continue — detect new vs existing ── */
 window.nextStep = async function() {
   const email = document.getElementById('email').value.trim();
   if (!email || !email.includes('@')) { showToast('Please enter a valid email address.', 'bad'); return; }
@@ -379,18 +361,13 @@ window.nextStep = async function() {
   document.getElementById('forgot-email').value = email;
   try {
     const methods = await fetchSignInMethodsForEmail(auth, email);
-    if (methods.length > 0) {
-      showStep('s-signin');
-    } else {
-      showStep('s-create');
-    }
+    showStep(methods.length > 0 ? 's-signin' : 's-create');
   } catch(e) {
-    // fallback — show sign in
     showStep('s-signin');
   }
 };
 
-/* ── Sign in ── */
+/* ── Sign in with email ── */
 window.doSignIn = async function() {
   const email = document.getElementById('email').value.trim();
   const pw    = document.getElementById('pw-si').value;
@@ -421,10 +398,10 @@ window.doCreate = async function() {
   setLoading('create-btn', true);
   try {
     const cred = await createUserWithEmailAndPassword(auth, email, pw);
-    await saveProfile(cred.user.uid, {
+    await saveUserProfile(cred.user.uid, {
       email,
       name: (fname + ' ' + lname).trim(),
-      role: isAdmin(email) ? 'admin' : 'candidate',
+      role: isAdminDomain(email) ? 'admin' : guessRole(email),
       createdAt: serverTimestamp(),
       onboarded: false
     });
@@ -438,7 +415,7 @@ window.doCreate = async function() {
   }
 };
 
-/* ── Forgot / reset ── */
+/* ── Password reset ── */
 window.resetSend = async function() {
   const email = document.getElementById('forgot-email').value.trim();
   if (!email) { showToast('Please enter your email address.', 'bad'); return; }
@@ -453,21 +430,12 @@ window.resetSend = async function() {
   }
 };
 
-/* ── Utils ── */
+/* ── Utilities ── */
 function setLoading(btnId, loading) {
   const btn = document.getElementById(btnId);
   if (!btn) return;
   btn.disabled = loading;
-  btn.innerHTML = loading
-    ? '<span class="spin"></span>Please wait...'
-    : (btn.dataset.label || btn.textContent);
-}
-
-function showToast(msg, type='') {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast' + (type ? ' ' + type : '') + ' show';
-  setTimeout(() => t.classList.remove('show'), 3500);
+  btn.innerHTML = loading ? '<span class="spin"></span>Please wait...' : (btn.dataset.label || btn.textContent);
 }
 
 window.showStep = function(id) {
@@ -483,14 +451,21 @@ window.tpw = function(id, btn) {
 
 window.checkStrength = function() {
   const pw = document.getElementById('pw-cr').value;
-  const bars = [document.getElementById('b1'), document.getElementById('b2'), document.getElementById('b3')];
+  const bars = ['b1','b2','b3'].map(id => document.getElementById(id));
   const lbl  = document.getElementById('pws-lbl');
   bars.forEach(b => b.className = 'pws-b');
-  if (pw.length === 0) { lbl.textContent = 'Enter a password'; return; }
-  if (pw.length < 6)   { bars[0].classList.add('weak'); lbl.textContent = 'Too short'; return; }
-  if (pw.length < 10)  { bars[0].classList.add('fair'); bars[1].classList.add('fair'); lbl.textContent = 'Fair'; return; }
+  if (!pw.length)  { lbl.textContent = 'Enter a password'; return; }
+  if (pw.length < 6)  { bars[0].classList.add('weak'); lbl.textContent = 'Too short'; return; }
+  if (pw.length < 10) { bars[0].classList.add('fair'); bars[1].classList.add('fair'); lbl.textContent = 'Fair'; return; }
   bars.forEach(b => b.classList.add('strong')); lbl.textContent = 'Strong';
 };
+
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (type ? ' ' + type : '') + ' show';
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
 </script>
 </body>
 </html>
