@@ -36,37 +36,29 @@ body{background:var(--black);display:flex;}
 
 .left-content{position:relative;z-index:1;max-width:480px;}
 
-.brand{display:flex;align-items:center;justify-content:space-between;margin-bottom:40px;}
+.brand{display:flex;align-items:center;margin-bottom:28px;}
 .logo{font-size:21px;font-weight:900;color:#fff;letter-spacing:-1px;}
 .logo span{color:var(--pl);}
-.back-home{font-size:11px;color:rgba(255,255,255,0.4);text-decoration:none;display:flex;align-items:center;gap:4px;transition:color .2s;}
-.back-home:hover{color:#fff;}
+.back-home{position:absolute;top:24px;left:28px;z-index:10;font-size:12px;font-weight:700;color:rgba(255,255,255,0.85);text-decoration:none;display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:99px;padding:7px 14px;backdrop-filter:blur(4px);transition:all .2s;}
+.back-home:hover{background:rgba(255,255,255,0.2);color:#fff;}
 
 .l-headline{font-size:clamp(30px,3.5vw,46px);font-weight:900;color:#fff;letter-spacing:-2.5px;line-height:1.05;margin-bottom:14px;}
 .l-headline span{color:var(--gl);}
 .l-sub{font-size:14px;color:rgba(255,255,255,0.6);line-height:1.8;font-weight:300;margin-bottom:36px;max-width:400px;}
 
-/* Pill benefits row */
-.benefits{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:36px;}
-.benefit{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:99px;padding:6px 14px;font-size:11px;font-weight:600;color:#fff;backdrop-filter:blur(4px);}
-.benefit .dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
-.benefit.g .dot{background:var(--gl);}
-.benefit.p .dot{background:var(--pl);}
-.benefit.y .dot{background:#FDE68A;}
 
 /* Stat cards */
-.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:36px;}
+.left-points{display:flex;flex-direction:column;gap:12px;}
+.lp-item{display:flex;align-items:flex-start;gap:10px;}
+.lp-icon{width:20px;height:20px;border-radius:50%;background:rgba(110,231,183,0.2);border:1px solid rgba(110,231,183,0.3);color:var(--gl);font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.lp-text{font-size:13px;color:rgba(255,255,255,0.65);line-height:1.55;}
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px;}
 .stat-card{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:16px 12px;text-align:center;backdrop-filter:blur(4px);}
 .stat-n{font-size:22px;font-weight:900;color:#fff;letter-spacing:-1px;line-height:1;margin-bottom:4px;}
 .stat-n em{color:var(--gl);font-style:normal;}
 .stat-l{font-size:10px;color:rgba(255,255,255,0.4);line-height:1.4;}
 
 /* Role tags */
-.roles-lbl{font-size:9px;font-weight:700;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:.14em;margin-bottom:10px;}
-.roles{display:flex;flex-wrap:wrap;gap:6px;}
-.rtag{font-size:10px;font-weight:600;padding:4px 11px;border-radius:99px;border:1px solid;}
-.rtag.hot{color:var(--gl);border-color:rgba(110,231,183,0.3);background:rgba(16,185,129,0.1);}
-.rtag.norm{color:rgba(255,255,255,0.5);border-color:rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);}
 
 /* ── RIGHT ── */
 .right{width:460px;flex-shrink:0;background:#fff;display:flex;flex-direction:column;justify-content:center;padding:52px 44px;overflow-y:auto;}
@@ -170,38 +162,48 @@ body{background:var(--black);display:flex;}
   <div class="blob blob1"></div>
   <div class="blob blob2"></div>
   <div class="blob blob3"></div>
+
+  <!-- Back button pinned top-left -->
+  <a class="back-home" href="https://app.nearwork.co/login">← Back</a>
+
   <div class="left-content">
-    <div class="brand">
-      <div class="logo">Near<span>work</span></div>
-      <a class="back-home" href="login.html">← Back</a>
-    </div>
+    <!-- Logo -->
+    <div class="logo" style="font-size:22px;font-weight:900;color:#fff;letter-spacing:-1px;margin-bottom:36px;">Near<span style="color:var(--pl);">work</span></div>
 
+    <!-- Headline -->
     <div class="l-headline">Your next great job<br>is <span>waiting for you.</span></div>
-    <p class="l-sub">Join Colombian professionals working with top US SaaS companies — earning in USD, working remotely, with full transparency at every step.</p>
+    <p class="l-sub">Join Colombian professionals working with top US SaaS companies — with full transparency at every stage of the process.</p>
 
-    <div class="benefits">
-      <div class="benefit g"><div class="dot"></div>Free to apply</div>
-      <div class="benefit p"><div class="dot"></div>C1 English</div>
-      <div class="benefit g"><div class="dot"></div>USD salaries</div>
-      <div class="benefit y"><div class="dot"></div>100% remote</div>
-      <div class="benefit p"><div class="dot"></div>🇨🇴 Colombia only</div>
-    </div>
-
+    <!-- Stats -->
     <div class="stat-row">
-      <div class="stat-card"><div class="stat-n"><em>60%</em></div><div class="stat-l">Avg. salary<br>increase</div></div>
-      <div class="stat-card"><div class="stat-n"><em>&lt;21d</em></div><div class="stat-l">Days to first<br>interview</div></div>
-      <div class="stat-card"><div class="stat-n"><em>94%</em></div><div class="stat-l">12-month<br>retention</div></div>
+      <div class="stat-card">
+        <div class="stat-n"><em>60%</em></div>
+        <div class="stat-l">Avg. salary<br>increase</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-n"><em>&lt;21d</em></div>
+        <div class="stat-l">Days to first<br>interview</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-n"><em>94%</em></div>
+        <div class="stat-l">12-month<br>retention</div>
+      </div>
     </div>
 
-    <div class="roles-lbl">Roles we place</div>
-    <div class="roles">
-      <div class="rtag hot">Customer Success</div>
-      <div class="rtag hot">SDR</div>
-      <div class="rtag hot">Technical Support</div>
-      <div class="rtag norm">Marketing Ops</div>
-      <div class="rtag norm">Developer</div>
-      <div class="rtag norm">Operations</div>
-      <div class="rtag norm">Content & SEO</div>
+    <!-- Three honest points -->
+    <div class="left-points">
+      <div class="lp-item">
+        <div class="lp-icon">✓</div>
+        <div class="lp-text">C1 English required — real evaluation, not a test score</div>
+      </div>
+      <div class="lp-item">
+        <div class="lp-icon">✓</div>
+        <div class="lp-text">Work with US SaaS teams — fully structured hiring process</div>
+      </div>
+      <div class="lp-item">
+        <div class="lp-icon">✓</div>
+        <div class="lp-text">Track your application in real time — no black boxes</div>
+      </div>
     </div>
   </div>
 </div>
@@ -224,7 +226,7 @@ body{background:var(--black);display:flex;}
     </div>
 
     <div class="or"><div class="or-l"></div><div class="or-t">or use email</div><div class="or-l"></div></div>
-    <div class="f"><label>Email address</label><input type="email" id="email" placeholder="you@gmail.com" onkeydown="if(event.key==='Enter')nextStep()"></div>
+    <div class="f"><label>Email address</label><input type="email" id="email" placeholder="your@email.com" onkeydown="if(event.key==='Enter')nextStep()"></div>
     <button class="btn-p" onclick="nextStep()">Continue →</button>
     <div class="terms">By continuing you agree to our <a href="https://nearwork.co/terms-of-service" target="_blank" rel="noopener">Terms</a> and <a href="https://nearwork.co/privacy-policy" target="_blank" rel="noopener">Privacy Policy</a>.</div>
   </div>
@@ -277,7 +279,7 @@ body{background:var(--black);display:flex;}
     <button class="back" onclick="showStep('s-signin')">← Back to sign in</button>
     <div class="s-title">Reset your password.</div>
     <p class="s-sub" style="margin-bottom:18px;">Enter your email and we'll send you a reset link. Check your spam folder if you don't see it within a few minutes.</p>
-    <div class="f"><label>Email address</label><input type="email" id="forgot-email" placeholder="you@gmail.com" onkeydown="if(event.key==='Enter')resetSend()"></div>
+    <div class="f"><label>Email address</label><input type="email" id="forgot-email" placeholder="your@email.com" onkeydown="if(event.key==='Enter')resetSend()"></div>
     <button class="btn-p" id="reset-btn" data-label="Send reset link →" onclick="resetSend()">Send reset link →</button>
     <button class="btn-sec" onclick="showStep('s-signin')">Back to sign in</button>
   </div>
