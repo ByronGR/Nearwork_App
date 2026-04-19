@@ -111,10 +111,10 @@ html,body{height:100%;font-family:'Poppins',sans-serif;background:var(--g1);colo
           <div class="fl-item"><div class="fl-dot purple"></div>Track your application in real time</div>
         </div>
         <div class="btn-stack">
-          <a href="https://app.nearwork.co/candidate-login.html" class="btn-main btn-purple">Sign in to my account →</a>
+          <a href="javascript:go('candidate-login')"  class="btn-main btn-purple">Sign in to my account →</a>
           <a href="https://nearwork.co/jobs" class="btn-main btn-outline">Browse open roles</a>
         </div>
-        <div class="btn-note">New here? <a href="https://app.nearwork.co/candidate-login.html?signup=true">Create a free account</a></div>
+        
       </div>
 
       <!-- Client -->
@@ -126,7 +126,7 @@ html,body{height:100%;font-family:'Poppins',sans-serif;background:var(--g1);colo
           <div class="fl-item"><div class="fl-dot green"></div>6-month guarantee tracked in-platform</div>
         </div>
         <div class="btn-stack">
-          <a href="https://app.nearwork.co/client-login.html" class="btn-main btn-purple">Sign in to my account →</a>
+          <a href="javascript:go('client-login')"  class="btn-main btn-purple">Sign in to my account →</a>
         </div>
         <div class="divider-label">not a client yet?</div>
         <a href="https://nearwork.co/book" class="btn-main btn-outline">Schedule a free call →</a>
@@ -143,6 +143,20 @@ html,body{height:100%;font-family:'Poppins',sans-serif;background:var(--g1);colo
 
 </div>
 <script>
+function go(page) {
+  var base = "https://app.nearwork.co/";
+  var withHtml = base + page + ".html";
+  var img = new Image();
+  img.onload = function(){ window.location.href = withHtml; };
+  img.onerror = function(){
+    var noHtml = base + page;
+    var img2 = new Image();
+    img2.onload = function(){ window.location.href = noHtml; };
+    img2.onerror = function(){ window.location.href = withHtml; };
+    img2.src = noHtml + "?_=" + Date.now();
+  };
+  img.src = withHtml + "?_=" + Date.now();
+}
 function switchPanel(type, btn) {
   document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
