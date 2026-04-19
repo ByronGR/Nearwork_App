@@ -384,8 +384,10 @@ body{font-family:'Poppins',sans-serif;background:var(--g1);color:var(--black);mi
 .org-row{display:grid;grid-template-columns:44px 2.5fr 1fr 1fr 1fr 190px;gap:14px;padding:13px 20px;border-bottom:1px solid var(--g2);align-items:center;cursor:pointer;transition:background .15s;}
 .org-row:last-child{border-bottom:none;}
 .org-row:hover{background:var(--g1);}
-.org-logo-wrap{width:36px;height:36px;border-radius:8px;background:var(--g1);border:1px solid var(--g2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:var(--purple);flex-shrink:0;overflow:hidden;}
-.org-logo-wrap img{width:100%;height:100%;object-fit:contain;}
+.org-logo-wrap{width:36px;height:36px;border-radius:8px;background:var(--g1);border:1px solid var(--g2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:var(--purple);flex-shrink:0;overflow:hidden;cursor:pointer;position:relative;transition:border-color .15s;}
+.org-logo-wrap:hover{border-color:var(--purple);}
+.org-logo-wrap:hover::after{content:'↑';position:absolute;inset:0;background:rgba(108,60,225,0.75);color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;border-radius:7px;}
+.org-logo-wrap img{width:100%;height:100%;object-fit:contain;display:block;}
 .org-name{font-size:13px;font-weight:700;color:var(--black);margin-bottom:1px;}
 .org-domain{font-size:10px;color:var(--g5);font-family:monospace;}
 .org-code-mono{font-size:10px;font-family:monospace;color:var(--purple);font-weight:700;}
@@ -766,9 +768,9 @@ onAuthStateChanged(auth, async user => {
       <button class="btn btn-p btn-sm" onclick="openModal('new-org-modal')">+ New organization</button>
     </div>
     <div class="toolbar">
-      <div class="sbox"><span class="si">🔍</span><input type="text" placeholder="Search organizations..."></div>
-      <select class="fsel"><option>All plans</option><option>Standard</option><option>Lite</option><option>Essential</option><option>Elite</option></select>
-      <select class="fsel"><option>All statuses</option><option>Active</option><option>On hold</option><option>Suspended</option></select>
+      <div class="sbox"><span class="si">🔍</span><input type="text" id="org-search" placeholder="Search organizations..." oninput="filterOrgs()"></div>
+      <select class="fsel" id="org-filter-plan" onchange="filterOrgs()"><option value="">All plans</option><option>Standard</option><option>Lite</option><option>Essential</option><option>Elite</option></select>
+      <select class="fsel" id="org-filter-status" onchange="filterOrgs()"><option value="">All statuses</option><option>Active</option><option>On hold</option><option>Suspended</option></select>
     </div>
     <div class="org-list">
       <div class="org-list-hdr">
@@ -781,7 +783,7 @@ onAuthStateChanged(auth, async user => {
       </div>
 
       <!-- Crestline SaaS -->
-      <div class="org-row" id="org-crestline" onclick="openOrgDetail('ORG-CS01','Crestline SaaS','crestline.io','CS','Essential','active')">
+      <div class="org-row" id="org-crestline" data-name="crestline saas" data-domain="crestline.io" data-plan="essential" data-status="active" onclick="openOrgDetail('ORG-CS01','Crestline SaaS','crestline.io','CS','Essential','active')">
         <div class="org-logo-wrap" id="logo-wrap-crestline" title="Click to upload logo" onclick="event.stopPropagation();triggerLogoUpload('crestline')">
           <span id="logo-fb-crestline">CS</span>
         </div>
@@ -800,7 +802,7 @@ onAuthStateChanged(auth, async user => {
       </div>
 
       <!-- Axiom Tech -->
-      <div class="org-row" id="org-axiom" onclick="openOrgDetail('ORG-AT02','Axiom Tech','axiomtech.io','AT','Lite','active')">
+      <div class="org-row" id="org-axiom" data-name="axiom tech" data-domain="axiomtech.io" data-plan="lite" data-status="active" onclick="openOrgDetail('ORG-AT02','Axiom Tech','axiomtech.io','AT','Lite','active')">
         <div class="org-logo-wrap" id="logo-wrap-axiom" title="Click to upload logo" onclick="event.stopPropagation();triggerLogoUpload('axiom')">
           <span id="logo-fb-axiom">AT</span>
         </div>
@@ -819,7 +821,7 @@ onAuthStateChanged(auth, async user => {
       </div>
 
       <!-- NovaDash -->
-      <div class="org-row" id="org-novadash" style="opacity:.8;" onclick="openOrgDetail('ORG-ND03','NovaDash','novadash.com','ND','Essential','hold')">
+      <div class="org-row" id="org-novadash" data-name="novadash" data-domain="novadash.com" data-plan="essential" data-status="on hold" style="opacity:.8;" onclick="openOrgDetail('ORG-ND03','NovaDash','novadash.com','ND','Essential','hold')">
         <div class="org-logo-wrap" id="logo-wrap-novadash" title="Click to upload logo" onclick="event.stopPropagation();triggerLogoUpload('novadash')">
           <span id="logo-fb-novadash">ND</span>
         </div>
@@ -909,7 +911,7 @@ onAuthStateChanged(auth, async user => {
           </div>
         </div>
         <div style="display:flex;gap:8px;">
-          <button class="btn btn-ghost btn-sm" onclick="window.open('pipeline-full.html','_blank')">↗ Open full pipeline</button>
+          <button class="btn btn-ghost btn-sm" onclick="openPipelineLink()">↗ Open full pipeline</button>
           <button class="btn btn-p btn-sm" onclick="openModal('new-pipeline-modal')">+ New pipeline</button>
         </div>
       </div>
@@ -2204,6 +2206,40 @@ window.openCandDetail = function(name) {
   openCandBrief(name, 'Medellín · C1 English', 87);
 };
 
+/* ══ ORG FILTER ══ */
+function filterOrgs() {
+  const q      = (document.getElementById('org-search')?.value || '').toLowerCase();
+  const plan   = (document.getElementById('org-filter-plan')?.value || '').toLowerCase();
+  const status = (document.getElementById('org-filter-status')?.value || '').toLowerCase();
+  let visibleCount = 0;
+
+  document.querySelectorAll('.org-row').forEach(row => {
+    const name   = (row.dataset.name   || '').toLowerCase();
+    const domain = (row.dataset.domain || '').toLowerCase();
+    const rPlan  = (row.dataset.plan   || '').toLowerCase();
+    const rStat  = (row.dataset.status || '').toLowerCase();
+
+    const matchSearch = !q      || name.includes(q) || domain.includes(q);
+    const matchPlan   = !plan   || rPlan === plan;
+    const matchStatus = !status || rStat.includes(status.replace(' ','').toLowerCase()) || rStat === status;
+
+    const visible = matchSearch && matchPlan && matchStatus;
+    row.style.display = visible ? '' : 'none';
+    if (visible) visibleCount++;
+  });
+
+  // Show empty state if nothing matches
+  let empty = document.getElementById('org-empty-state');
+  if (!empty) {
+    empty = document.createElement('div');
+    empty.id = 'org-empty-state';
+    empty.style.cssText = 'padding:32px;text-align:center;font-size:13px;color:var(--g4);';
+    empty.textContent = 'No organizations match your filters.';
+    document.querySelector('.org-list').appendChild(empty);
+  }
+  empty.style.display = visibleCount === 0 ? 'block' : 'none';
+}
+
 function signOut(){
   toast('Signing out...','');
   import('./firebase-config.js').then(({auth}) => {
@@ -2898,29 +2934,49 @@ document.addEventListener('dragend', function() {
 </div>
 
 <script>
-/* ── Logo upload ── */
+/* ── Logo upload (persisted to localStorage) ── */
+const LOGO_ORGS = ['crestline','axiom','novadash'];
+
+function restoreLogos() {
+  LOGO_ORGS.forEach(key => {
+    const stored = localStorage.getItem('nw_logo_' + key);
+    if (stored) applyLogo(key, stored);
+  });
+}
+
+function applyLogo(orgKey, dataUrl) {
+  const wrap = document.getElementById('logo-wrap-' + orgKey);
+  const fb   = document.getElementById('logo-fb-' + orgKey);
+  if (!wrap) return;
+  if (fb) fb.style.display = 'none';
+  let img = wrap.querySelector('img');
+  if (!img) { img = document.createElement('img'); wrap.appendChild(img); }
+  img.src = dataUrl;
+  img.alt = orgKey;
+}
+
 window.triggerLogoUpload = function(orgKey) {
   const input = document.createElement('input');
-  input.type = 'file'; input.accept = 'image/*';
+  input.type = 'file';
+  input.accept = 'image/png,image/jpeg,image/svg+xml,image/webp';
   input.onchange = function(e) {
-    const file = e.target.files[0]; if (!file) return;
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 500 * 1024) { toast('Image too large — max 500 KB', 'bad'); return; }
     const reader = new FileReader();
     reader.onload = function(ev) {
-      const wrap = document.getElementById('logo-wrap-' + orgKey);
-      const fb   = document.getElementById('logo-fb-' + orgKey);
-      if (wrap && fb) {
-        fb.style.display = 'none';
-        const img = wrap.querySelector('img') || document.createElement('img');
-        img.src = ev.target.result;
-        img.style.cssText = 'width:100%;height:100%;object-fit:contain;';
-        if (!wrap.querySelector('img')) wrap.appendChild(img);
-        toast('Logo updated for ' + orgKey, 'ok');
-      }
+      const dataUrl = ev.target.result;
+      applyLogo(orgKey, dataUrl);
+      try { localStorage.setItem('nw_logo_' + orgKey, dataUrl); } catch(e) {}
+      toast('Logo updated — will persist across sessions', 'ok');
     };
     reader.readAsDataURL(file);
   };
   input.click();
 };
+
+// Restore logos immediately on load
+restoreLogos();
 
 /* ── Denied modal ── */
 window.openDeniedModal = function() { openModal('denied-modal'); };
@@ -2945,5 +3001,44 @@ window.doCreatePipeline = function() {
   closeModal('new-pipeline-modal');
   toast('Pipeline created for ' + org + ' — ' + opening.split('(')[0].trim(), 'ok');
 };
+
+/* ── Pipeline external link ── */
+window.openPipelineLink = function() {
+  const saved = localStorage.getItem('nw_pipeline_url') || '';
+  document.getElementById('pipeline-url-input').value = saved;
+  openModal('pipeline-link-modal');
+};
+window.savePipelineLink = function() {
+  const url = document.getElementById('pipeline-url-input').value.trim();
+  if (!url) { toast('Enter a URL first', 'bad'); return; }
+  localStorage.setItem('nw_pipeline_url', url);
+  closeModal('pipeline-link-modal');
+  window.open(url, '_blank');
+  toast('Pipeline link saved & opened', 'ok');
+};
 </script>
+
+<!-- Pipeline Link Modal -->
+<div class="modal-bg" id="pipeline-link-modal" onclick="if(event.target===this)closeModal('pipeline-link-modal')">
+  <div class="modal sm">
+    <div class="modal-hdr">
+      <div class="modal-title">Full pipeline URL</div>
+      <button class="modal-close" onclick="closeModal('pipeline-link-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:11px;color:var(--g5);margin-bottom:14px;line-height:1.6;">
+        Paste the URL for your real pipeline tool (Monday.com, Notion, Airtable, etc). Saved to this browser — opens in a new tab every time.
+      </div>
+      <div class="field">
+        <label>Pipeline URL</label>
+        <input type="url" id="pipeline-url-input" placeholder="https://your-pipeline-tool.com/board/..." style="font-family:monospace;font-size:12px;">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('pipeline-link-modal')">Cancel</button>
+      <button class="btn btn-p" onclick="savePipelineLink()">Save &amp; open ↗</button>
+    </div>
+  </div>
+</div>
+
 </body>
