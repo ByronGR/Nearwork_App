@@ -27,11 +27,39 @@ body{font-family:'Poppins',sans-serif;background:var(--g1);color:var(--black);mi
 .nav-logo{font-size:17px;font-weight:900;color:#fff;letter-spacing:-1px;cursor:pointer;text-decoration:none;flex-shrink:0;margin-right:8px;}
 .nav-logo span{color:var(--pl);}
 .nav-admin-chip{font-size:9px;font-weight:700;color:var(--amber);background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);padding:2px 8px;border-radius:99px;margin-right:24px;text-transform:uppercase;letter-spacing:.1em;}
-.nav-tabs{display:flex;align-items:center;gap:1px;flex:1;overflow-x:auto;}
-.nav-tabs::-webkit-scrollbar{display:none;}
-.ntab{padding:6px 12px;font-size:12px;font-weight:500;color:rgba(255,255,255,0.5);border-radius:7px;cursor:pointer;border:none;background:none;font-family:'Poppins',sans-serif;white-space:nowrap;transition:all .15s;}
-.ntab:hover{color:#fff;background:rgba(255,255,255,0.08);}
-.ntab.on{color:#fff;background:rgba(255,255,255,0.12);font-weight:600;}
+/* Current page label in nav */
+.nav-current{font-size:13px;font-weight:600;color:#fff;flex:1;padding-left:4px;}
+
+/* Hamburger button */
+.ham-btn{width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;transition:background .15s;flex-shrink:0;}
+.ham-btn:hover{background:rgba(255,255,255,0.14);}
+.ham-line{width:16px;height:2px;background:rgba(255,255,255,0.7);border-radius:99px;transition:all .2s;}
+
+/* Side drawer */
+.drawer-bg{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;opacity:0;pointer-events:none;transition:opacity .25s;backdrop-filter:blur(2px);}
+.drawer-bg.open{opacity:1;pointer-events:all;}
+.drawer{position:fixed;top:0;left:0;bottom:0;width:260px;background:#111;border-right:1px solid rgba(255,255,255,0.08);z-index:301;transform:translateX(-100%);transition:transform .25s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;overflow:hidden;}
+.drawer.open{transform:translateX(0);}
+.drawer-hdr{padding:18px 20px 14px;border-bottom:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.drawer-logo{font-size:17px;font-weight:900;color:#fff;letter-spacing:-1px;}
+.drawer-logo em{font-style:normal;color:var(--pl);}
+.drawer-chip{font-size:9px;font-weight:700;color:var(--amber);background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25);padding:2px 8px;border-radius:99px;text-transform:uppercase;letter-spacing:.1em;}
+.drawer-close{width:26px;height:26px;border-radius:6px;background:rgba(255,255,255,0.07);border:none;cursor:pointer;font-size:12px;color:rgba(255,255,255,0.5);display:flex;align-items:center;justify-content:center;}
+.drawer-close:hover{background:rgba(255,255,255,0.12);color:#fff;}
+.drawer-nav{flex:1;overflow-y:auto;padding:10px 10px;display:flex;flex-direction:column;gap:2px;}
+.drawer-nav::-webkit-scrollbar{display:none;}
+.dnav-section{font-size:9px;font-weight:700;color:rgba(255,255,255,0.2);text-transform:uppercase;letter-spacing:.14em;padding:10px 10px 4px;}
+.dtab{width:100%;display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;border:none;background:none;color:rgba(255,255,255,0.5);font-size:13px;font-weight:500;font-family:'Poppins',sans-serif;cursor:pointer;text-align:left;transition:all .15s;}
+.dtab:hover{background:rgba(255,255,255,0.07);color:#fff;}
+.dtab.on{background:rgba(108,60,225,0.2);color:#fff;font-weight:600;}
+.dtab-icon{font-size:15px;width:20px;text-align:center;flex-shrink:0;}
+.drawer-footer{padding:12px 10px;border-top:1px solid rgba(255,255,255,0.07);flex-shrink:0;}
+.drawer-user{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;background:rgba(255,255,255,0.04);}
+.du-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--pl));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0;}
+.du-name{font-size:12px;font-weight:700;color:#fff;}
+.du-role{font-size:10px;color:rgba(255,255,255,0.35);}
+.du-signout{margin-left:auto;font-size:10px;color:rgba(255,255,255,0.3);cursor:pointer;background:none;border:none;font-family:'Poppins',sans-serif;transition:color .15s;}
+.du-signout:hover{color:var(--red);}
 .nav-right{display:flex;align-items:center;gap:10px;margin-left:auto;flex-shrink:0;}
 .bell-wrap{position:relative;}
 .bell-btn{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;cursor:pointer;}
@@ -367,16 +395,13 @@ onAuthStateChanged(auth, async user => {
 <nav class="nav">
   <a class="nav-logo" onclick="showPage('dashboard')">Near<span>work</span></a>
   <div class="nav-admin-chip">Admin HQ</div>
-  <div class="nav-tabs">
-    <button class="ntab on" id="tab-dashboard" onclick="showPage('dashboard')">Dashboard</button>
-    <button class="ntab" id="tab-orgs" onclick="showPage('orgs')">Organizations</button>
-    <button class="ntab" id="tab-candidates" onclick="showPage('candidates')">Candidates</button>
-    <button class="ntab" id="tab-openings" onclick="showPage('openings')">Openings</button>
-    <button class="ntab" id="tab-assessments" onclick="showPage('assessments')">Assessments</button>
-    <button class="ntab" id="tab-hired" onclick="showPage('hired')">Hired</button>
-    <button class="ntab" id="tab-blog" onclick="showPage('blog')">Blog</button>
-    <button class="ntab" id="tab-team" onclick="showPage('team')">Team</button>
-    <button class="ntab" id="tab-audit" onclick="showPage('audit')">Audit Log</button>
+  <!-- Current page label -->
+  <div class="nav-current" id="nav-current-label">Dashboard</div>
+  <!-- Hamburger -->
+  <div class="ham-btn" onclick="toggleDrawer()" id="ham-btn">
+    <div class="ham-line"></div>
+    <div class="ham-line"></div>
+    <div class="ham-line"></div>
   </div>
   <div class="nav-right">
     <div class="bell-wrap" id="bell-wrap">
@@ -405,6 +430,64 @@ onAuthStateChanged(auth, async user => {
     </div>
   </div>
 </nav>
+
+<!-- ══ DRAWER ══ -->
+<div class="drawer-bg" id="drawer-bg" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-hdr">
+    <div>
+      <div class="drawer-logo">Near<em>work</em></div>
+      <div class="drawer-chip" style="margin-top:4px;">⚡ Admin HQ</div>
+    </div>
+    <button class="drawer-close" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="drawer-nav">
+    <div class="dnav-section">Overview</div>
+    <button class="dtab on" id="dtab-dashboard" onclick="navTo('dashboard','Dashboard')">
+      <span class="dtab-icon">📊</span>Dashboard
+    </button>
+
+    <div class="dnav-section">Clients</div>
+    <button class="dtab" id="dtab-orgs" onclick="navTo('orgs','Organizations')">
+      <span class="dtab-icon">🏢</span>Organizations
+    </button>
+    <button class="dtab" id="dtab-openings" onclick="navTo('openings','Openings')">
+      <span class="dtab-icon">📋</span>Openings
+    </button>
+
+    <div class="dnav-section">Talent</div>
+    <button class="dtab" id="dtab-candidates" onclick="navTo('candidates','Candidates')">
+      <span class="dtab-icon">👥</span>Candidates
+    </button>
+    <button class="dtab" id="dtab-assessments" onclick="navTo('assessments','Assessments')">
+      <span class="dtab-icon">🧪</span>Assessments
+    </button>
+    <button class="dtab" id="dtab-hired" onclick="navTo('hired','Hired')">
+      <span class="dtab-icon">🎉</span>Hired
+    </button>
+
+    <div class="dnav-section">Platform</div>
+    <button class="dtab" id="dtab-blog" onclick="navTo('blog','Blog')">
+      <span class="dtab-icon">✍️</span>Blog
+    </button>
+    <button class="dtab" id="dtab-team" onclick="navTo('team','Team')">
+      <span class="dtab-icon">⚙️</span>Team settings
+    </button>
+    <button class="dtab" id="dtab-audit" onclick="navTo('audit','Audit Log')">
+      <span class="dtab-icon">🔍</span>Audit Log
+    </button>
+  </div>
+  <div class="drawer-footer">
+    <div class="drawer-user">
+      <div class="du-av" id="drawer-av">BG</div>
+      <div>
+        <div class="du-name" id="drawer-name">Byron Giraldo</div>
+        <div class="du-role">Super Admin</div>
+      </div>
+      <button class="du-signout" onclick="signOut()">Sign out</button>
+    </div>
+  </div>
+</div>
 
 <div class="main">
 
@@ -1105,11 +1188,7 @@ onAuthStateChanged(auth, async user => {
           <div id="rev-users" style="display:flex;flex-direction:column;gap:6px;"></div>
         </div>
 
-        <!-- Firestore preview -->
-        <div style="background:#0D0D0D;border-radius:10px;padding:14px 16px;">
-          <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:.12em;margin-bottom:8px;">What gets written to Firestore</div>
-          <div style="font-family:monospace;font-size:11px;color:rgba(255,255,255,0.7);line-height:1.8;" id="rev-json">—</div>
-        </div>
+
 
         <div id="create-err" style="display:none;margin-top:12px;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--red);"></div>
       </div>
@@ -1280,14 +1359,34 @@ onAuthStateChanged(auth, async user => {
 <script>
 /* ══ PAGES ══ */
 const PAGES=['dashboard','orgs','candidates','openings','assessments','hired','blog','team','audit'];
+const PAGE_LABELS={
+  dashboard:'Dashboard',orgs:'Organizations',candidates:'Candidates',
+  openings:'Openings',assessments:'Assessments',hired:'Hired',
+  blog:'Blog',team:'Team settings',audit:'Audit Log'
+};
 function showPage(id){
   PAGES.forEach(p=>{
     document.getElementById('page-'+p).classList.toggle('show',p===id);
-    const t=document.getElementById('tab-'+p);
-    if(t) t.classList.toggle('on',p===id);
   });
   window.scrollTo(0,0);
   closeAllDrops();
+}
+function navTo(id, label){
+  showPage(id);
+  document.querySelectorAll('.dtab').forEach(t=>t.classList.remove('on'));
+  const dt=document.getElementById('dtab-'+id);
+  if(dt) dt.classList.add('on');
+  const lbl=document.getElementById('nav-current-label');
+  if(lbl) lbl.textContent=label||PAGE_LABELS[id]||id;
+  closeDrawer();
+}
+function toggleDrawer(){
+  document.getElementById('drawer').classList.toggle('open');
+  document.getElementById('drawer-bg').classList.toggle('open');
+}
+function closeDrawer(){
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('drawer-bg').classList.remove('open');
 }
 
 /* ══ IMPERSONATE ══ */
@@ -1413,7 +1512,6 @@ window.goOrgStep = function(step) {
     // Collect users
     const rows = document.querySelectorAll('.user-row');
     const usersHtml = [];
-    const userPreview = [];
     rows.forEach((row, i) => {
       const email = row.querySelector('.u-email').value.trim();
       const fname = row.querySelector('.u-fname').value.trim();
@@ -1425,20 +1523,9 @@ window.goOrgStep = function(step) {
         <div style="flex:1;"><div style="font-size:12px;font-weight:700;">${fname} ${lname}</div><div style="font-size:10px;color:var(--g5);">${email} · ${role === 'admin_client' ? 'Admin' : 'Viewer'}</div></div>
         <span style="font-size:9px;font-weight:700;background:var(--pp);color:var(--purple);padding:2px 7px;border-radius:99px;">Invite pending</span>
       </div>`);
-      userPreview.push(`  users/${email}: { role: "client", orgId: "${orgId}", access: "${role}" }`);
     });
     document.getElementById('rev-users').innerHTML = usersHtml.join('') || '<div style="font-size:12px;color:var(--g4);">No users added yet.</div>';
 
-    // Firestore preview
-    document.getElementById('rev-json').innerHTML = `<span style="color:#6EE7B7;">organizations/${orgId}</span> {<br>
-&nbsp;&nbsp;name: <span style="color:#FDE68A;">"${name}"</span>,<br>
-&nbsp;&nbsp;domain: <span style="color:#FDE68A;">"${domain}"</span>,<br>
-&nbsp;&nbsp;plan: <span style="color:#FDE68A;">"${plan}"</span>,<br>
-&nbsp;&nbsp;seats: <span style="color:#93C5FD;">${seats}</span>,<br>
-&nbsp;&nbsp;status: <span style="color:#FDE68A;">"active"</span>,<br>
-&nbsp;&nbsp;createdAt: <span style="color:#9CA3AF;">serverTimestamp()</span><br>
-}<br><br>
-${userPreview.map(u => `<span style="color:#6EE7B7;">${u.split(':')[0].trim()}</span>: {${u.split(':').slice(1).join(':')}}`).join('<br>')}`;
   }
 
   // Switch steps
