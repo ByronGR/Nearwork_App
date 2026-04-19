@@ -423,7 +423,7 @@ body{font-family:'Poppins',sans-serif;background:var(--g1);color:var(--black);mi
 .sm-sel{padding:9px 28px 9px 12px;border:1px solid rgba(255,255,255,0.15);border-radius:8px;font-size:12px;font-family:'Poppins',sans-serif;color:#fff;background:rgba(255,255,255,0.08) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffffff' d='M6 8L1 3h10z'/%3E%3C/svg%3E") no-repeat right 10px center;outline:none;cursor:pointer;appearance:none;}
 .btn-match{background:var(--green);color:#fff;padding:9px 20px;border-radius:8px;font-size:12px;font-weight:700;font-family:'Poppins',sans-serif;border:none;cursor:pointer;white-space:nowrap;}
 
-/* ══ OPENINGS PAGE ══ */
+/* ══ OPENINGS TABLE ══ */
 .openings-table{background:#fff;border-radius:13px;border:1px solid var(--g3);overflow:hidden;}
 .ot-hdr{display:grid;grid-template-columns:2fr 1.5fr 1fr 1fr 1fr 120px;padding:11px 18px;background:var(--g1);border-bottom:1px solid var(--g2);font-size:10px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.08em;gap:12px;}
 .ot-row{display:grid;grid-template-columns:2fr 1.5fr 1fr 1fr 1fr 120px;padding:13px 18px;border-bottom:1px solid var(--g2);font-size:12px;color:var(--g6);align-items:center;gap:12px;transition:background .15s;cursor:pointer;}
@@ -436,6 +436,48 @@ body{font-family:'Poppins',sans-serif;background:var(--g1);color:var(--black);mi
 .toggle.on{background:var(--green);}
 .toggle::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,0.2);}
 .toggle.on::after{transform:translateX(16px);}
+
+/* ══ OPENING DETAIL PAGE ══ */
+.opening-header{background:var(--black);border-radius:16px;padding:32px;margin-bottom:24px;color:#fff;}
+.opening-header-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px;flex-wrap:wrap;}
+.opening-title{font-size:28px;font-weight:900;color:#fff;letter-spacing:-1.5px;line-height:1.1;margin-bottom:12px;}
+.opening-skills-row{display:flex;flex-wrap:wrap;gap:6px;}
+.skill-chip{background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.85);font-size:11px;font-weight:600;padding:4px 10px;border-radius:99px;border:1px solid rgba(255,255,255,0.15);}
+.opening-meta-row{display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,0.5);flex-wrap:wrap;margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.1);}
+.opening-meta-row strong{color:rgba(255,255,255,0.85);}
+
+.opening-body{display:grid;grid-template-columns:1fr 300px;gap:24px;align-items:start;}
+.opening-content{display:flex;flex-direction:column;gap:0;}
+.opening-section{background:#fff;border:1px solid var(--g3);border-radius:13px;padding:24px;margin-bottom:14px;}
+.opening-section-nearwork{background:linear-gradient(135deg,#F5F3FF,#EFF6FF);border-color:rgba(108,60,225,0.15);}
+.opening-section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.opening-section-title{font-size:14px;font-weight:800;color:var(--black);letter-spacing:-.3px;}
+.opening-edit-btn{font-size:11px;font-weight:600;color:var(--purple);background:var(--pp);border:none;padding:4px 12px;border-radius:6px;cursor:pointer;font-family:'Poppins',sans-serif;transition:background .15s;}
+.opening-edit-btn:hover{background:#DDD6FE;}
+.opening-section-body{font-size:13px;color:var(--g6);line-height:1.75;}
+.opening-section-body p{margin-bottom:12px;}
+.opening-section-body p:last-child{margin-bottom:0;}
+.opening-section-body ul{padding-left:18px;display:flex;flex-direction:column;gap:6px;}
+.opening-section-body li{font-size:13px;color:var(--g6);}
+.skill-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.skill-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--g6);background:var(--g1);border-radius:8px;padding:9px 12px;}
+.skill-dot{width:6px;height:6px;border-radius:50%;background:var(--purple);flex-shrink:0;}
+.opening-edit-area{margin-top:8px;}
+.opening-textarea{width:100%;border:1.5px solid var(--g3);border-radius:9px;padding:12px;font-size:13px;font-family:'Poppins',sans-serif;color:var(--black);resize:vertical;outline:none;line-height:1.65;transition:border-color .2s;}
+.opening-textarea:focus{border-color:var(--purple);}
+.opening-edit-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:10px;}
+
+.opening-sidebar{display:flex;flex-direction:column;gap:14px;position:sticky;top:80px;}
+.opening-sidebar-card{background:#fff;border:1px solid var(--g3);border-radius:13px;padding:20px;}
+.osb-title{font-size:11px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px;}
+.osb-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:8px 0;border-bottom:1px solid var(--g2);}
+.osb-label{color:var(--g5);}
+
+@media(max-width:900px){
+  .opening-body{grid-template-columns:1fr;}
+  .opening-sidebar{position:static;}
+  .skill-grid{grid-template-columns:1fr;}
+}
 
 /* ══ ASSESSMENTS PAGE ══ */
 .assess-list{display:flex;flex-direction:column;gap:14px;}
@@ -1406,56 +1448,299 @@ onAuthStateChanged(auth, async user => {
   ══════════════════════════════ -->
   <div class="page" id="page-openings">
     <div class="ph">
-      <div><div class="ph-title">Openings</div><div class="ph-sub">All openings across all organizations.</div></div>
-      <button class="btn btn-p btn-sm" onclick="openModal('new-opening-modal')">+ New opening</button>
+      <div><div class="ph-title">Openings</div><div class="ph-sub">All job openings across all organizations.</div></div>
+      <button class="btn btn-p btn-sm" onclick="openNewOpening()">+ New opening</button>
     </div>
     <div class="toolbar">
-      <div class="sbox"><span class="si">🔍</span><input type="text" placeholder="Search openings..."></div>
-      <select class="fsel"><option>All orgs</option><option>Crestline SaaS</option><option>Axiom Tech</option><option>NovaDash</option></select>
-      <select class="fsel"><option>All statuses</option><option>Active</option><option>On hold</option><option>Closed</option></select>
-      <select class="fsel"><option>All recruiters</option><option>Byron Giraldo</option><option>Nany Salcedo</option><option>Andres García</option></select>
+      <div class="sbox"><span class="si">🔍</span><input type="text" id="opening-search" placeholder="Search by title or code..." oninput="filterOpenings()"></div>
+      <select class="fsel" id="opening-filter-status" onchange="filterOpenings()"><option value="">All statuses</option><option>Active</option><option>On hold</option><option>Closed</option></select>
+      <select class="fsel" id="opening-filter-recruiter" onchange="filterOpenings()"><option value="">All recruiters</option><option>Byron Giraldo</option><option>Nany Salcedo</option><option>Andres García</option></select>
     </div>
-    <div class="openings-table">
-      <div class="ot-hdr"><div>Opening</div><div>Organization</div><div>Recruiter</div><div>Candidates</div><div>Status</div><div>Public</div></div>
-      <div class="ot-row" onclick="openModal('edit-opening-modal')">
-        <div><div class="ot-role">Customer Success Manager</div><div class="ot-code">PL-CSM-4X8B</div></div>
-        <div style="font-size:12px;font-weight:600;">Crestline SaaS</div>
+    <div class="openings-table" id="openings-list">
+      <div class="ot-hdr"><div>Position</div><div>Code</div><div>Recruiter</div><div>Status</div><div>Published</div><div>Actions</div></div>
+
+      <div class="ot-row" data-title="customer success manager" data-code="open-csm-4x8b" data-status="active" data-recruiter="byron giraldo" onclick="openOpeningDetail('OPEN-CSM-4X8B','Customer Success Manager','active',true,'Byron Giraldo')">
+        <div><div class="ot-role">Customer Success Manager</div><div class="ot-code">OPEN-CSM-4X8B</div></div>
+        <div class="ot-code">OPEN-CSM-4X8B</div>
         <div style="font-size:12px;">Byron Giraldo</div>
-        <div><span class="badge b-gray">8 active</span></div>
         <div><span class="badge b-green">Active</span></div>
-        <div onclick="event.stopPropagation()"><div class="pub-toggle"><button class="toggle on" onclick="this.classList.toggle('on')"></button><span style="color:var(--green);font-size:11px;">Published</span></div></div>
+        <div onclick="event.stopPropagation()"><div class="pub-toggle"><button class="toggle on" onclick="this.classList.toggle('on');this.nextElementSibling.textContent=this.classList.contains('on')?'Published':'Draft';this.nextElementSibling.style.color=this.classList.contains('on')?'var(--green)':'var(--g4)'"></button><span style="color:var(--green);font-size:11px;">Published</span></div></div>
+        <div onclick="event.stopPropagation()" style="display:flex;gap:5px;">
+          <button class="btn btn-p btn-sm" onclick="openOpeningDetail('OPEN-CSM-4X8B','Customer Success Manager','active',true,'Byron Giraldo')">View</button>
+          <button class="btn btn-ghost btn-sm" onclick="openOpeningDetail('OPEN-CSM-4X8B','Customer Success Manager','active',true,'Byron Giraldo',true)">Edit</button>
+        </div>
       </div>
-      <div class="ot-row" onclick="openModal('edit-opening-modal')">
-        <div><div class="ot-role">SDR / Sales Development Rep</div><div class="ot-code">PL-SDR-9K2M</div></div>
-        <div style="font-size:12px;font-weight:600;">Crestline SaaS</div>
+
+      <div class="ot-row" data-title="sdr sales development rep" data-code="open-sdr-9k2m" data-status="active" data-recruiter="byron giraldo" onclick="openOpeningDetail('OPEN-SDR-9K2M','SDR / Sales Development Rep','active',true,'Byron Giraldo')">
+        <div><div class="ot-role">SDR / Sales Development Rep</div><div class="ot-code">OPEN-SDR-9K2M</div></div>
+        <div class="ot-code">OPEN-SDR-9K2M</div>
         <div style="font-size:12px;">Byron Giraldo</div>
-        <div><span class="badge b-gray">5 active</span></div>
         <div><span class="badge b-green">Active</span></div>
-        <div onclick="event.stopPropagation()"><div class="pub-toggle"><button class="toggle on" onclick="this.classList.toggle('on')"></button><span style="color:var(--green);font-size:11px;">Published</span></div></div>
+        <div onclick="event.stopPropagation()"><div class="pub-toggle"><button class="toggle on" onclick="this.classList.toggle('on');this.nextElementSibling.textContent=this.classList.contains('on')?'Published':'Draft';this.nextElementSibling.style.color=this.classList.contains('on')?'var(--green)':'var(--g4)'"></button><span style="color:var(--green);font-size:11px;">Published</span></div></div>
+        <div onclick="event.stopPropagation()" style="display:flex;gap:5px;">
+          <button class="btn btn-p btn-sm" onclick="openOpeningDetail('OPEN-SDR-9K2M','SDR / Sales Development Rep','active',true,'Byron Giraldo')">View</button>
+          <button class="btn btn-ghost btn-sm" onclick="openOpeningDetail('OPEN-SDR-9K2M','SDR / Sales Development Rep','active',true,'Byron Giraldo',true)">Edit</button>
+        </div>
       </div>
-      <div class="ot-row" onclick="openModal('edit-opening-modal')">
-        <div><div class="ot-role">Technical Support Specialist</div><div class="ot-code">PL-SUP-3B7R</div></div>
-        <div style="font-size:12px;font-weight:600;">Axiom Tech</div>
+
+      <div class="ot-row" data-title="technical support specialist" data-code="open-sup-3b7r" data-status="on hold" data-recruiter="nany salcedo" onclick="openOpeningDetail('OPEN-SUP-3B7R','Technical Support Specialist','on hold',false,'Nany Salcedo')">
+        <div><div class="ot-role">Technical Support Specialist</div><div class="ot-code">OPEN-SUP-3B7R</div></div>
+        <div class="ot-code">OPEN-SUP-3B7R</div>
         <div style="font-size:12px;">Nany Salcedo</div>
-        <div><span class="badge b-amber">4 active</span></div>
         <div><span class="badge b-amber">On hold</span></div>
-        <div onclick="event.stopPropagation()"><div class="pub-toggle"><button class="toggle" onclick="this.classList.toggle('on')"></button><span style="color:var(--g4);font-size:11px;">Draft</span></div></div>
+        <div onclick="event.stopPropagation()"><div class="pub-toggle"><button class="toggle" onclick="this.classList.toggle('on');this.nextElementSibling.textContent=this.classList.contains('on')?'Published':'Draft';this.nextElementSibling.style.color=this.classList.contains('on')?'var(--green)':'var(--g4)'"></button><span style="color:var(--g4);font-size:11px;">Draft</span></div></div>
+        <div onclick="event.stopPropagation()" style="display:flex;gap:5px;">
+          <button class="btn btn-p btn-sm" onclick="openOpeningDetail('OPEN-SUP-3B7R','Technical Support Specialist','on hold',false,'Nany Salcedo')">View</button>
+          <button class="btn btn-ghost btn-sm" onclick="openOpeningDetail('OPEN-SUP-3B7R','Technical Support Specialist','on hold',false,'Nany Salcedo',true)">Edit</button>
+        </div>
       </div>
-      <div class="ot-row" onclick="openModal('edit-opening-modal')">
-        <div><div class="ot-role">Operations Manager</div><div class="ot-code">NW-OPS-5P2W</div></div>
-        <div style="font-size:12px;font-weight:600;">Axiom Tech</div>
+
+      <div class="ot-row" data-title="operations manager" data-code="open-ops-5p2w" data-status="active" data-recruiter="andres garcia" onclick="openOpeningDetail('OPEN-OPS-5P2W','Operations Manager','active',true,'Andres García')">
+        <div><div class="ot-role">Operations Manager</div><div class="ot-code">OPEN-OPS-5P2W</div></div>
+        <div class="ot-code">OPEN-OPS-5P2W</div>
         <div style="font-size:12px;">Andres García</div>
-        <div><span class="badge b-gray">2 active</span></div>
         <div><span class="badge b-green">Active</span></div>
-        <div onclick="event.stopPropagation()"><div class="pub-toggle"><button class="toggle on" onclick="this.classList.toggle('on')"></button><span style="color:var(--green);font-size:11px;">Published</span></div></div>
+        <div onclick="event.stopPropagation()"><div class="pub-toggle"><button class="toggle on" onclick="this.classList.toggle('on');this.nextElementSibling.textContent=this.classList.contains('on')?'Published':'Draft';this.nextElementSibling.style.color=this.classList.contains('on')?'var(--green)':'var(--g4)'"></button><span style="color:var(--green);font-size:11px;">Published</span></div></div>
+        <div onclick="event.stopPropagation()" style="display:flex;gap:5px;">
+          <button class="btn btn-p btn-sm" onclick="openOpeningDetail('OPEN-OPS-5P2W','Operations Manager','active',true,'Andres García')">View</button>
+          <button class="btn btn-ghost btn-sm" onclick="openOpeningDetail('OPEN-OPS-5P2W','Operations Manager','active',true,'Andres García',true)">Edit</button>
+        </div>
       </div>
-      <div class="ot-row" onclick="openModal('edit-opening-modal')">
-        <div><div class="ot-role">Marketing Ops Specialist</div><div class="ot-code">NW-MKT-7Q4N</div></div>
-        <div style="font-size:12px;font-weight:600;">NovaDash</div>
+
+      <div class="ot-row" data-title="marketing ops specialist" data-code="open-mkt-7q4n" data-status="on hold" data-recruiter="byron giraldo" onclick="openOpeningDetail('OPEN-MKT-7Q4N','Marketing Ops Specialist','on hold',false,'Byron Giraldo')">
+        <div><div class="ot-role">Marketing Ops Specialist</div><div class="ot-code">OPEN-MKT-7Q4N</div></div>
+        <div class="ot-code">OPEN-MKT-7Q4N</div>
         <div style="font-size:12px;">Byron Giraldo</div>
-        <div><span class="badge b-amber">5 active</span></div>
         <div><span class="badge b-amber">On hold</span></div>
-        <div onclick="event.stopPropagation()"><div class="pub-toggle"><button class="toggle" onclick="this.classList.toggle('on')"></button><span style="color:var(--g4);font-size:11px;">Draft</span></div></div>
+        <div onclick="event.stopPropagation()"><div class="pub-toggle"><button class="toggle" onclick="this.classList.toggle('on');this.nextElementSibling.textContent=this.classList.contains('on')?'Published':'Draft';this.nextElementSibling.style.color=this.classList.contains('on')?'var(--green)':'var(--g4)'"></button><span style="color:var(--g4);font-size:11px;">Draft</span></div></div>
+        <div onclick="event.stopPropagation()" style="display:flex;gap:5px;">
+          <button class="btn btn-p btn-sm" onclick="openOpeningDetail('OPEN-MKT-7Q4N','Marketing Ops Specialist','on hold',false,'Byron Giraldo')">View</button>
+          <button class="btn btn-ghost btn-sm" onclick="openOpeningDetail('OPEN-MKT-7Q4N','Marketing Ops Specialist','on hold',false,'Byron Giraldo',true)">Edit</button>
+        </div>
+      </div>
+
+      <div id="openings-empty" style="display:none;padding:32px;text-align:center;font-size:13px;color:var(--g4);">No openings match your filters.</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       OPENING DETAIL / EDIT
+  ══════════════════════════════ -->
+  <div class="page" id="page-opening-detail">
+    <div style="margin-bottom:20px;">
+      <button class="btn btn-ghost btn-sm" onclick="navTo('openings','Openings')" style="margin-bottom:16px;">← Back to openings</button>
+    </div>
+
+    <!-- Header band -->
+    <div class="opening-header" id="od-header-band">
+      <div class="opening-header-top">
+        <div style="flex:1;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap;">
+            <span class="badge b-green" id="od-status-badge">Active</span>
+            <span class="badge b-gray" id="od-code-badge" style="font-family:monospace;">OPEN-CSM-4X8B</span>
+            <span class="badge b-gray" id="od-wfh-badge">🏠 Remote (Colombia-wide)</span>
+          </div>
+          <h1 class="opening-title" id="od-title">Customer Success Manager</h1>
+          <div class="opening-skills-row" id="od-skills-row">
+            <span class="skill-chip">SaaS</span><span class="skill-chip">CRM</span><span class="skill-chip">Customer Retention</span><span class="skill-chip">Salesforce</span><span class="skill-chip">English C1+</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start;">
+          <div id="od-admin-bar" style="display:flex;gap:8px;">
+            <button class="btn btn-ghost btn-sm" id="od-edit-btn" onclick="toggleOpeningEdit()">✏️ Edit</button>
+            <button class="btn btn-ghost btn-sm" id="od-visibility-btn" onclick="toggleOpeningVisibility()">👁 Set private</button>
+          </div>
+        </div>
+      </div>
+      <div class="opening-meta-row">
+        <span>Recruiter: <strong id="od-recruiter">Byron Giraldo</strong></span>
+        <span>·</span>
+        <span id="od-recruiter-label">Posted via Nearwork</span>
+        <span>·</span>
+        <span>English: <strong>C1 Advanced minimum</strong></span>
+        <span>·</span>
+        <span>Experience: <strong id="od-exp">Mid (2–5 yrs)</strong></span>
+      </div>
+    </div>
+
+    <!-- Body: two-column on wide screens -->
+    <div class="opening-body">
+
+      <!-- Left: all the content sections -->
+      <div class="opening-content">
+
+        <!-- About the Job -->
+        <div class="opening-section" id="ods-about">
+          <div class="opening-section-hdr">
+            <div class="opening-section-title">About the job</div>
+            <button class="opening-edit-btn" id="edit-btn-about" onclick="editSection('about')">Edit</button>
+          </div>
+          <div class="opening-section-body" id="view-about">
+            <p>We're looking for a driven Customer Success Manager to own relationships with a portfolio of US SaaS clients from Colombia. You'll work directly with decision-makers, drive product adoption, reduce churn, and expand accounts — all in English, fully remote, on US time zones.</p>
+            <p>This is a high-ownership role inside a fast-growing nearshore model. You won't be a middleman — you'll be the expert your clients rely on every day.</p>
+          </div>
+          <div class="opening-edit-area" id="edit-about" style="display:none;">
+            <textarea class="opening-textarea" id="ta-about" rows="6">We're looking for a driven Customer Success Manager to own relationships with a portfolio of US SaaS clients from Colombia. You'll work directly with decision-makers, drive product adoption, reduce churn, and expand accounts — all in English, fully remote, on US time zones.
+
+This is a high-ownership role inside a fast-growing nearshore model. You won't be a middleman — you'll be the expert your clients rely on every day.</textarea>
+            <div class="opening-edit-actions">
+              <button class="btn btn-ghost btn-sm" onclick="cancelSection('about')">Cancel</button>
+              <button class="btn btn-p btn-sm" onclick="saveSection('about')">Save</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Responsibilities -->
+        <div class="opening-section" id="ods-responsibilities">
+          <div class="opening-section-hdr">
+            <div class="opening-section-title">Responsibilities</div>
+            <button class="opening-edit-btn" id="edit-btn-responsibilities" onclick="editSection('responsibilities')">Edit</button>
+          </div>
+          <div class="opening-section-body" id="view-responsibilities">
+            <ul>
+              <li>Own a portfolio of 25–40 US SaaS accounts, serving as the primary point of contact</li>
+              <li>Drive onboarding, product adoption, and renewal conversations in English</li>
+              <li>Identify expansion opportunities and coordinate with the sales team</li>
+              <li>Monitor account health metrics and proactively intervene before churn</li>
+              <li>Conduct regular business reviews (weekly, monthly, quarterly) with clients</li>
+              <li>Document client needs and relay product feedback to internal teams</li>
+              <li>Maintain accurate records in CRM (Salesforce / HubSpot)</li>
+            </ul>
+          </div>
+          <div class="opening-edit-area" id="edit-responsibilities" style="display:none;">
+            <textarea class="opening-textarea" id="ta-responsibilities" rows="8">- Own a portfolio of 25–40 US SaaS accounts, serving as the primary point of contact
+- Drive onboarding, product adoption, and renewal conversations in English
+- Identify expansion opportunities and coordinate with the sales team
+- Monitor account health metrics and proactively intervene before churn
+- Conduct regular business reviews (weekly, monthly, quarterly) with clients
+- Document client needs and relay product feedback to internal teams
+- Maintain accurate records in CRM (Salesforce / HubSpot)</textarea>
+            <div class="opening-edit-actions">
+              <button class="btn btn-ghost btn-sm" onclick="cancelSection('responsibilities')">Cancel</button>
+              <button class="btn btn-p btn-sm" onclick="saveSection('responsibilities')">Save</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Skills -->
+        <div class="opening-section" id="ods-skills">
+          <div class="opening-section-hdr">
+            <div class="opening-section-title">Skills we're looking for</div>
+            <button class="opening-edit-btn" id="edit-btn-skills" onclick="editSection('skills')">Edit</button>
+          </div>
+          <div class="opening-section-body" id="view-skills">
+            <div class="skill-grid">
+              <div class="skill-item"><span class="skill-dot"></span>CRM proficiency (Salesforce, HubSpot, or similar)</div>
+              <div class="skill-item"><span class="skill-dot"></span>English C1 Advanced or higher (written & spoken)</div>
+              <div class="skill-item"><span class="skill-dot"></span>SaaS business model understanding</div>
+              <div class="skill-item"><span class="skill-dot"></span>Data analysis & reporting (Excel, Google Sheets)</div>
+              <div class="skill-item"><span class="skill-dot"></span>Strong verbal and written communication</div>
+              <div class="skill-item"><span class="skill-dot"></span>Problem-solving under pressure</div>
+              <div class="skill-item"><span class="skill-dot"></span>US business culture awareness</div>
+              <div class="skill-item"><span class="skill-dot"></span>Project coordination & time management</div>
+            </div>
+          </div>
+          <div class="opening-edit-area" id="edit-skills" style="display:none;">
+            <textarea class="opening-textarea" id="ta-skills" rows="8">CRM proficiency (Salesforce, HubSpot, or similar)
+English C1 Advanced or higher (written & spoken)
+SaaS business model understanding
+Data analysis & reporting (Excel, Google Sheets)
+Strong verbal and written communication
+Problem-solving under pressure
+US business culture awareness
+Project coordination & time management</textarea>
+            <div style="font-size:10px;color:var(--g4);margin-bottom:8px;">One skill per line.</div>
+            <div class="opening-edit-actions">
+              <button class="btn btn-ghost btn-sm" onclick="cancelSection('skills')">Cancel</button>
+              <button class="btn btn-p btn-sm" onclick="saveSection('skills')">Save</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Qualifications -->
+        <div class="opening-section" id="ods-qualifications">
+          <div class="opening-section-hdr">
+            <div class="opening-section-title">Qualifications</div>
+            <button class="opening-edit-btn" id="edit-btn-qualifications" onclick="editSection('qualifications')">Edit</button>
+          </div>
+          <div class="opening-section-body" id="view-qualifications">
+            <ul>
+              <li>2–5 years of experience in a Customer Success, Account Management, or client-facing SaaS role</li>
+              <li>Demonstrated ability to manage a book of business independently</li>
+              <li>Experience working with US-based teams or clients (preferred)</li>
+              <li>Professional English level — you'll be on calls with US stakeholders daily</li>
+              <li>Degree in Business, Communications, or related field (or equivalent experience)</li>
+              <li>Availability to work on Eastern or Central US time zone hours</li>
+            </ul>
+          </div>
+          <div class="opening-edit-area" id="edit-qualifications" style="display:none;">
+            <textarea class="opening-textarea" id="ta-qualifications" rows="7">- 2–5 years of experience in a Customer Success, Account Management, or client-facing SaaS role
+- Demonstrated ability to manage a book of business independently
+- Experience working with US-based teams or clients (preferred)
+- Professional English level — you'll be on calls with US stakeholders daily
+- Degree in Business, Communications, or related field (or equivalent experience)
+- Availability to work on Eastern or Central US time zone hours</textarea>
+            <div class="opening-edit-actions">
+              <button class="btn btn-ghost btn-sm" onclick="cancelSection('qualifications')">Cancel</button>
+              <button class="btn btn-p btn-sm" onclick="saveSection('qualifications')">Save</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- About Nearwork — fixed, not editable by default -->
+        <div class="opening-section opening-section-nearwork">
+          <div class="opening-section-hdr">
+            <div class="opening-section-title" style="color:var(--purple);">About Nearwork</div>
+          </div>
+          <div class="opening-section-body">
+            <p><strong>Nearwork</strong> connects top Colombian professionals with leading US SaaS companies — building careers, not just placements.</p>
+            <p>We handle everything: the match, the vetting, the compliance, and the ongoing support. You focus on the work. We make sure you're set up to succeed.</p>
+            <p>When you apply through Nearwork, you're not applying to just another job board. You're entering a curated pipeline where every company has been vetted, every role is real, and every placement comes with a 6-month guarantee — for both sides.</p>
+            <p style="margin-top:12px;font-weight:600;color:var(--black);">What you get working with Nearwork:</p>
+            <ul>
+              <li>Direct access to US SaaS companies without needing to relocate</li>
+              <li>Full remote work in USD salary</li>
+              <li>Ongoing support from your dedicated Nearwork recruiter</li>
+              <li>Transparent process — you always know where you stand</li>
+            </ul>
+          </div>
+        </div>
+
+      </div><!-- /opening-content -->
+
+      <!-- Right: sidebar -->
+      <div class="opening-sidebar">
+        <div class="opening-sidebar-card">
+          <div class="osb-title">Position details</div>
+          <div class="osb-row"><span class="osb-label">Work type</span><span id="osb-wfh">Remote</span></div>
+          <div class="osb-row"><span class="osb-label">Location</span><span id="osb-city">Colombia (any city)</span></div>
+          <div class="osb-row"><span class="osb-label">Experience</span><span id="osb-exp2">Mid (2–5 yrs)</span></div>
+          <div class="osb-row"><span class="osb-label">English</span><span>C1 Advanced min.</span></div>
+          <div class="osb-row"><span class="osb-label">Salary</span><span id="osb-salary">$2,000–$2,600 / mo</span></div>
+          <div class="osb-row"><span class="osb-label">Time zone</span><span>EST / CST alignment</span></div>
+          <div class="osb-row" style="border-bottom:none;"><span class="osb-label">Recruiter</span><strong id="osb-recruiter">Byron Giraldo</strong></div>
+        </div>
+
+        <!-- Admin-only sidebar card -->
+        <div class="opening-sidebar-card" id="od-admin-card">
+          <div class="osb-title" style="color:var(--purple);">Admin controls</div>
+          <div class="osb-row"><span class="osb-label">Opening code</span><span style="font-family:monospace;font-size:11px;color:var(--purple);" id="osb-code">OPEN-CSM-4X8B</span></div>
+          <div class="osb-row"><span class="osb-label">Org</span><span id="osb-org">Crestline SaaS</span></div>
+          <div class="osb-row"><span class="osb-label">Status</span><select class="fsel" style="font-size:11px;padding:4px 22px 4px 8px;" id="osb-status-sel" onchange="toast('Status updated.','ok')"><option>Active</option><option>On hold</option><option>Closed</option></select></div>
+          <div class="osb-row" style="border-bottom:none;">
+            <span class="osb-label">Visibility</span>
+            <div class="pub-toggle">
+              <button class="toggle on" id="osb-pub-toggle" onclick="this.classList.toggle('on');document.getElementById('osb-pub-label').textContent=this.classList.contains('on')?'Published':'Private';toast(this.classList.contains('on')?'Opening published.':'Opening set to private.','ok')"></button>
+              <span id="osb-pub-label" style="font-size:11px;color:var(--green);">Published</span>
+            </div>
+          </div>
+          <div style="margin-top:12px;display:flex;flex-direction:column;gap:6px;">
+            <button class="btn btn-ghost btn-sm" style="justify-content:center;" onclick="toast('Opening link copied to clipboard.','ok')">🔗 Copy candidate link</button>
+            <button class="btn btn-ghost btn-sm" style="justify-content:center;" onclick="navTo('pipeline','Pipelines')">🔄 View pipeline</button>
+          </div>
+        </div>
+
+        <button class="btn btn-p" style="width:100%;justify-content:center;margin-top:4px;" onclick="toast('Application submitted! Candidate will be notified.','ok')">Apply for this position →</button>
       </div>
     </div>
   </div>
@@ -1915,68 +2200,6 @@ onAuthStateChanged(auth, async user => {
   </div>
 </div>
 
-<!-- New Opening -->
-<div class="modal-bg" id="new-opening-modal" onclick="if(event.target===this)closeModal('new-opening-modal')">
-  <div class="modal">
-    <div class="modal-hdr"><div class="modal-title">Create new opening</div><button class="modal-close" onclick="closeModal('new-opening-modal')">✕</button></div>
-    <div class="modal-body">
-      <div class="field-row">
-        <div class="field"><label>Organization</label><select><option>Crestline SaaS</option><option>Axiom Tech</option><option>NovaDash</option></select></div>
-        <div class="field"><label>Role type</label><select><option>Customer Success Manager</option><option>SDR / Sales Dev Rep</option><option>Technical Support</option><option>Marketing Ops</option><option>Software Developer</option><option>Operations Manager</option><option>Other</option></select></div>
-      </div>
-      <div class="field"><label>Job title (exact)</label><input type="text" placeholder="e.g. Senior Customer Success Manager"></div>
-      <div class="field-row">
-        <div class="field"><label>Recruiter assigned</label><select><option>Byron Giraldo</option><option>Nany Salcedo</option><option>Andres García</option></select></div>
-        <div class="field"><label>Target hires</label><input type="number" value="1" min="1"></div>
-      </div>
-      <div class="field-row">
-        <div class="field"><label>Salary min (USD/mo)</label><input type="number" placeholder="2000"></div>
-        <div class="field"><label>Salary max (USD/mo)</label><input type="number" placeholder="2800"></div>
-      </div>
-      <div class="field"><label>Job description</label><textarea placeholder="Describe the role, responsibilities, requirements..."></textarea></div>
-      <div class="field-row">
-        <div class="field"><label>Experience required</label><select><option>Junior (0-2 yrs)</option><option>Mid (2-5 yrs)</option><option>Senior (5+ yrs)</option></select></div>
-        <div class="field"><label>English requirement</label><select><option>B2 Professional</option><option>C1 Advanced</option><option>Native only</option></select></div>
-      </div>
-      <div class="field"><label>Kick-off call notes</label><textarea placeholder="What we discussed with the client — salary budget, culture, team size, tools, start date..."></textarea></div>
-      <div class="field-row">
-        <div class="field"><label>Publish to nearwork.co/jobs?</label><select><option>Yes — publish immediately</option><option>No — keep internal</option></select></div>
-        <div class="field"><label>Opening code (auto-generated)</label><input type="text" value="PL-CSM-8P4Q" readonly style="background:var(--g1);color:var(--g5);cursor:not-allowed;font-family:monospace;"></div>
-      </div>
-    </div>
-    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('new-opening-modal')">Cancel</button><button class="btn btn-p" onclick="closeModal('new-opening-modal');toast('Opening created and published!','ok')">Create opening →</button></div>
-  </div>
-</div>
-
-<!-- Edit Opening -->
-<div class="modal-bg" id="edit-opening-modal" onclick="if(event.target===this)closeModal('edit-opening-modal')">
-  <div class="modal">
-    <div class="modal-hdr"><div class="modal-title">Edit opening — PL-CSM-4X8B</div><button class="modal-close" onclick="closeModal('edit-opening-modal')">✕</button></div>
-    <div class="modal-body">
-      <div class="field-row">
-        <div class="field"><label>Organization</label><select><option selected>Crestline SaaS</option><option>Axiom Tech</option><option>NovaDash</option></select></div>
-        <div class="field"><label>Recruiter assigned</label><select><option selected>Byron Giraldo</option><option>Nany Salcedo</option><option>Andres García</option></select></div>
-      </div>
-      <div class="field"><label>Job title</label><input type="text" value="Customer Success Manager"></div>
-      <div class="field-row">
-        <div class="field"><label>Status</label><select><option selected>Active</option><option>On hold</option><option>Closed</option></select></div>
-        <div class="field"><label>Target hires</label><input type="number" value="1"></div>
-      </div>
-      <div class="field"><label>Job description</label><textarea>Own the post-sale relationship with US SaaS clients. Drive adoption, reduce churn, and expand accounts...</textarea></div>
-      <div class="field"><label>Kick-off notes</label><textarea>Looking for a senior CSM to own 25-40 accounts in the $10K-$50K ARR range. Must have SaaS experience...</textarea></div>
-      <div class="field-row">
-        <div class="field"><label>Publish to nearwork.co/jobs?</label><select><option selected>Yes — published</option><option>No — unpublish</option></select></div>
-        <div class="field"><label>Opening code</label><input type="text" value="PL-CSM-4X8B" readonly style="background:var(--g1);color:var(--g5);cursor:not-allowed;font-family:monospace;"></div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-danger" onclick="closeModal('edit-opening-modal');toast('Opening closed.','ok')">Close opening</button>
-      <button class="btn btn-ghost" onclick="closeModal('edit-opening-modal')">Cancel</button>
-      <button class="btn btn-p" onclick="closeModal('edit-opening-modal');toast('Opening updated.','ok')">Save changes</button>
-    </div>
-  </div>
-</div>
-
 <!-- New Team Member -->
 <div class="modal-bg" id="new-team-modal" onclick="if(event.target===this)closeModal('new-team-modal')">
   <div class="modal sm">
@@ -2058,10 +2281,10 @@ onAuthStateChanged(auth, async user => {
 
 <script>
 /* ══ PAGES ══ */
-const PAGES=['dashboard','orgs','org-detail','pipeline','candidates','openings','assessments','hired','blog','team','audit'];
+const PAGES=['dashboard','orgs','org-detail','pipeline','candidates','openings','opening-detail','assessments','hired','blog','team','audit'];
 const PAGE_LABELS={
   dashboard:'Dashboard',orgs:'Organizations','org-detail':'Organization','pipeline':'Pipelines',candidates:'Candidates',
-  openings:'Openings',assessments:'Assessments',hired:'Hired',
+  openings:'Openings','opening-detail':'Opening',assessments:'Assessments',hired:'Hired',
   blog:'Blog',team:'Team settings',audit:'Audit Log'
 };
 function showPage(id){
@@ -2238,6 +2461,133 @@ window.openCandFullProfile = function() {
 window.openCandDetail = function(name) {
   openCandBrief(name, 'Medellín · C1 English', 87);
 };
+
+/* ══ OPENING DETAIL ══ */
+let _currentOpening = {};
+let _openingEditMode = false;
+
+window.openOpeningDetail = function(code, title, status, published, recruiter, editMode) {
+  _currentOpening = { code, title, status, published, recruiter };
+  _openingEditMode = !!editMode;
+
+  // Populate header
+  document.getElementById('od-title').textContent = title;
+  document.getElementById('od-code-badge').textContent = code;
+  const sb = document.getElementById('od-status-badge');
+  sb.textContent = status === 'active' ? 'Active' : status === 'on hold' ? 'On hold' : 'Closed';
+  sb.className = 'badge ' + (status === 'active' ? 'b-green' : 'b-amber');
+
+  // Sidebar
+  document.getElementById('osb-code').textContent = code;
+  document.getElementById('osb-recruiter').textContent = recruiter;
+  document.getElementById('od-recruiter').textContent = recruiter;
+  const pubToggle = document.getElementById('osb-pub-toggle');
+  const pubLabel  = document.getElementById('osb-pub-label');
+  if (pubToggle && pubLabel) {
+    pubToggle.className = 'toggle' + (published ? ' on' : '');
+    pubLabel.textContent = published ? 'Published' : 'Private';
+    pubLabel.style.color  = published ? 'var(--green)' : 'var(--g4)';
+  }
+
+  // Edit buttons visibility
+  document.querySelectorAll('.opening-edit-btn').forEach(b => {
+    b.style.display = _openingEditMode ? 'inline-block' : 'none';
+  });
+  document.getElementById('od-admin-card').style.display = 'block';
+
+  navTo('opening-detail', title);
+  history.replaceState({ page: 'opening-detail', code }, '', '/admin-dashboard/openings/' + code.toLowerCase());
+};
+
+window.openNewOpening = function() {
+  // Navigate to the opening detail page in "new" create mode
+  _currentOpening = { code: 'OPEN-NEW', title: 'New Opening', status: 'active', published: false, recruiter: 'Byron Giraldo' };
+  _openingEditMode = true;
+  document.getElementById('od-title').textContent = 'New Opening';
+  document.getElementById('od-code-badge').textContent = 'OPEN-' + Math.random().toString(36).slice(2,6).toUpperCase();
+  document.getElementById('od-status-badge').textContent = 'Draft';
+  document.getElementById('od-status-badge').className = 'badge b-gray';
+  document.querySelectorAll('.opening-edit-btn').forEach(b => b.style.display = 'inline-block');
+  // Auto-open all sections in edit mode
+  ['about','responsibilities','skills','qualifications'].forEach(s => editSection(s));
+  navTo('opening-detail', 'New Opening');
+};
+
+window.toggleOpeningEdit = function() {
+  _openingEditMode = !_openingEditMode;
+  document.querySelectorAll('.opening-edit-btn').forEach(b => {
+    b.style.display = _openingEditMode ? 'inline-block' : 'none';
+  });
+  document.getElementById('od-edit-btn').textContent = _openingEditMode ? '✓ Done editing' : '✏️ Edit';
+  if (!_openingEditMode) {
+    // Close all open edit areas
+    ['about','responsibilities','skills','qualifications'].forEach(s => cancelSection(s));
+  }
+};
+
+window.toggleOpeningVisibility = function() {
+  const btn = document.getElementById('od-visibility-btn');
+  const isPublic = btn.textContent.includes('private');
+  btn.textContent = isPublic ? '🔒 Set public' : '👁 Set private';
+  toast(isPublic ? 'Opening set to private — hidden from candidates.' : 'Opening published — visible to candidates.', 'ok');
+};
+
+window.editSection = function(section) {
+  document.getElementById('view-' + section).style.display = 'none';
+  document.getElementById('edit-' + section).style.display = 'block';
+  document.getElementById('edit-btn-' + section).textContent = 'Cancel';
+  document.getElementById('edit-btn-' + section).onclick = () => cancelSection(section);
+};
+
+window.cancelSection = function(section) {
+  document.getElementById('view-' + section).style.display = 'block';
+  document.getElementById('edit-' + section).style.display = 'none';
+  document.getElementById('edit-btn-' + section).textContent = 'Edit';
+  document.getElementById('edit-btn-' + section).onclick = () => editSection(section);
+};
+
+window.saveSection = function(section) {
+  const ta = document.getElementById('ta-' + section);
+  const view = document.getElementById('view-' + section);
+  if (!ta || !view) return;
+  const raw = ta.value.trim();
+
+  if (section === 'about') {
+    view.innerHTML = raw.split('\n\n').map(p => '<p>' + p.replace(/\n/g,'<br>') + '</p>').join('');
+  } else if (section === 'skills') {
+    const items = raw.split('\n').filter(Boolean);
+    view.innerHTML = '<div class="skill-grid">' + items.map(s => '<div class="skill-item"><span class="skill-dot"></span>' + s.replace(/^[-•]\s*/,'') + '</div>').join('') + '</div>';
+  } else {
+    // responsibilities / qualifications — bullet list
+    const items = raw.split('\n').filter(Boolean);
+    view.innerHTML = '<ul>' + items.map(s => '<li>' + s.replace(/^[-•]\s*/,'') + '</li>').join('') + '</ul>';
+  }
+
+  cancelSection(section);
+  toast('Section saved.', 'ok');
+  // In production: write to Firestore here
+};
+
+/* ══ OPENING FILTER ══ */
+function filterOpenings() {
+  const q       = (document.getElementById('opening-search')?.value || '').toLowerCase();
+  const status  = (document.getElementById('opening-filter-status')?.value || '').toLowerCase();
+  const recruit = (document.getElementById('opening-filter-recruiter')?.value || '').toLowerCase();
+  let visible = 0;
+  document.querySelectorAll('#openings-list .ot-row').forEach(row => {
+    const title = (row.dataset.title || '').toLowerCase();
+    const code  = (row.dataset.code  || '').toLowerCase();
+    const rs    = (row.dataset.status || '').toLowerCase();
+    const rr    = (row.dataset.recruiter || '').toLowerCase();
+    const match = (!q || title.includes(q) || code.includes(q))
+               && (!status  || rs.includes(status))
+               && (!recruit || rr.includes(recruit.toLowerCase()));
+    row.style.display = match ? '' : 'none';
+    if (match) visible++;
+  });
+  const empty = document.getElementById('openings-empty');
+  if (empty) empty.style.display = visible === 0 ? 'block' : 'none';
+}
 
 /* ══ ORG FILTER ══ */
 function filterOrgs() {
