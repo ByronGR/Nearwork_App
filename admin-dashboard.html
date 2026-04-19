@@ -203,6 +203,49 @@ body{font-family:'Poppins',sans-serif;background:var(--g1);color:var(--black);mi
 .pl-scroll::-webkit-scrollbar-track{background:var(--g2);border-radius:99px;}
 .pl-scroll::-webkit-scrollbar-thumb{background:var(--g3);border-radius:99px;}
 
+
+/* CANDIDATE BRIEF PANEL */
+.cand-brief-bg{position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:450;opacity:0;pointer-events:none;transition:opacity .2s;}
+.cand-brief-bg.show{opacity:1;pointer-events:all;}
+.cand-brief{position:fixed;right:0;top:0;bottom:0;width:400px;background:#fff;z-index:451;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);box-shadow:-8px 0 48px rgba(0,0,0,0.12);display:flex;flex-direction:column;overflow:hidden;}
+.cand-brief.show{transform:translateX(0);}
+.cb-hdr{padding:18px 20px;border-bottom:1px solid var(--g2);display:flex;align-items:flex-start;gap:12px;flex-shrink:0;}
+.cb-av{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff;flex-shrink:0;background:linear-gradient(135deg,var(--purple),var(--pl));}
+.cb-name{font-size:16px;font-weight:800;color:var(--black);letter-spacing:-.5px;margin-bottom:3px;}
+.cb-role{font-size:11px;color:var(--g5);}
+.cb-close{margin-left:auto;width:28px;height:28px;border-radius:50%;background:var(--g2);border:none;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.cb-close:hover{background:var(--g3);}
+.cb-body{flex:1;overflow-y:auto;padding:18px 20px;}
+.cb-section{margin-bottom:20px;}
+.cb-section-title{font-size:10px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.12em;margin-bottom:10px;}
+.cb-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--g2);font-size:12px;}
+.cb-row:last-child{border-bottom:none;}
+.cb-label{color:var(--g5);}
+.cb-val{font-weight:600;color:var(--black);}
+/* Nearwork Score ring */
+.nw-score-ring{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;margin:0 auto 16px;position:relative;}
+.nw-score-num{font-size:22px;font-weight:900;color:var(--black);letter-spacing:-1px;line-height:1;}
+.nw-score-lbl{font-size:8px;font-weight:700;color:var(--g4);text-transform:uppercase;letter-spacing:.1em;}
+.score-bar-wrap{margin-bottom:6px;}
+.score-bar-label{display:flex;justify-content:space-between;font-size:11px;color:var(--g6);margin-bottom:3px;}
+.score-bar-track{height:5px;background:var(--g2);border-radius:99px;overflow:hidden;}
+.score-bar-fill{height:5px;border-radius:99px;background:var(--purple);}
+.cb-footer{padding:14px 20px;border-top:1px solid var(--g2);flex-shrink:0;display:flex;gap:8px;}
+.cb-expand-btn{flex:1;padding:10px;border-radius:9px;background:var(--purple);color:#fff;font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:'Poppins',sans-serif;display:flex;align-items:center;justify-content:center;gap:5px;}
+.cb-stage-btn{padding:10px 14px;border-radius:9px;background:var(--g1);color:var(--g6);font-size:12px;font-weight:600;border:1.5px solid var(--g3);cursor:pointer;font-family:'Poppins',sans-serif;}
+.cb-stage-btn:hover{border-color:var(--purple);color:var(--purple);}
+
+/* CANDIDATE CARD v2 — cleaner with score badge */
+.pl-cand-card{background:#fff;border:1.5px solid var(--g3);border-radius:9px;padding:10px 11px;margin-bottom:6px;cursor:grab;transition:all .15s;position:relative;}
+.pl-cand-card:hover{border-color:var(--purple);box-shadow:0 2px 10px rgba(108,60,225,0.1);transform:translateY(-1px);}
+.pl-cand-card.highlight{border-color:rgba(108,60,225,0.3);background:var(--pp);}
+.pl-cand-card.dragging{opacity:.35;transform:rotate(2deg);cursor:grabbing;}
+.pl-cand-name{font-size:12px;font-weight:700;color:var(--black);margin-bottom:5px;line-height:1.2;}
+.pl-cand-city{font-size:10px;color:var(--g4);}
+.nw-score-badge{position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:50%;background:var(--purple);color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;line-height:1;}
+.nw-score-badge.high{background:var(--green);}
+.nw-score-badge.mid{background:var(--amber);}
+.nw-score-badge.low{background:var(--red);}
 /* PIPELINE PANEL v2 */
 .pipeline-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;}
 .pipeline-toolbar-left{display:flex;align-items:center;gap:8px;}
@@ -891,25 +934,53 @@ onAuthStateChanged(auth, async user => {
             <div class="pl-scroll">
               <div class="pl-stage-col" data-stage="applied" ondragover="dragOver(event)" ondrop="dropCard(event,this,'CSM')">
                 <div class="pl-stage-hdr">Applied <span class="pl-stage-count">3</span></div>
-                <div class="pl-cand-card highlight" draggable="true" ondragstart="dragStart(event,this,'María López','Applied','CSM')"><div class="pl-cand-name">María López</div><div style="display:flex;justify-content:space-between;"><span class="pl-cand-role">C1 · Medellín</span><span class="pl-cand-score">72</span></div></div>
-                <div class="pl-cand-card" draggable="true" ondragstart="dragStart(event,this,'Carlos Ruiz','Applied','CSM')"><div class="pl-cand-name">Carlos Ruiz</div><div style="display:flex;justify-content:space-between;"><span class="pl-cand-role">C1 · Bogotá</span><span class="pl-cand-score">68</span></div></div>
-                <div class="pl-cand-card" draggable="true" ondragstart="dragStart(event,this,'Sofía Vargas','Applied','CSM')"><div class="pl-cand-name">Sofía Vargas</div><div style="display:flex;justify-content:space-between;"><span class="pl-cand-role">C1 · Medellín</span><span class="pl-cand-score">71</span></div></div>
+                <div class="pl-cand-card highlight" draggable="true" ondragstart="dragStart(event,this,'María López','Applied','CSM')" onclick="openCandBrief('María López','',0)">
+                <div class="pl-cand-name">María López</div>
+                <div class="pl-cand-city"></div>
+                <div class="nw-score-badge low">0</div>
+              </div><div style="display:flex;justify-content:space-between;"><span class="pl-cand-role">C1 · Medellín</span><span class="pl-cand-score">72</span></div></div>
+                <div class="pl-cand-card" draggable="true" ondragstart="dragStart(event,this,'Carlos Ruiz','Applied','CSM')" onclick="openCandBrief('Carlos Ruiz','',0)">
+                <div class="pl-cand-name">Carlos Ruiz</div>
+                <div class="pl-cand-city"></div>
+                <div class="nw-score-badge low">0</div>
+              </div><div style="display:flex;justify-content:space-between;"><span class="pl-cand-role">C1 · Bogotá</span><span class="pl-cand-score">68</span></div></div>
+                <div class="pl-cand-card" draggable="true" ondragstart="dragStart(event,this,'Sofía Vargas','Applied','CSM')" onclick="openCandBrief('Sofía Vargas','',0)">
+                <div class="pl-cand-name">Sofía Vargas</div>
+                <div class="pl-cand-city"></div>
+                <div class="nw-score-badge low">0</div>
+              </div><div style="display:flex;justify-content:space-between;"><span class="pl-cand-role">C1 · Medellín</span><span class="pl-cand-score">71</span></div></div>
                 <div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add</div>
               </div>
               <div class="pl-stage-col" data-stage="profile-review" ondragover="dragOver(event)" ondrop="dropCard(event,this,'CSM')">
                 <div class="pl-stage-hdr">Profile Review <span class="pl-stage-count">2</span></div>
-                <div class="pl-cand-card highlight" draggable="true" ondragstart="dragStart(event,this,'Isabella Gómez','Profile Review','CSM')"><div class="pl-cand-name">Isabella Gómez</div><div style="display:flex;justify-content:space-between;"><span class="pl-cand-role">C1 · Medellín</span><span class="pl-cand-score">88</span></div></div>
-                <div class="pl-cand-card" draggable="true" ondragstart="dragStart(event,this,'Jorge Pérez','Profile Review','CSM')"><div class="pl-cand-name">Jorge Pérez</div><div style="display:flex;justify-content:space-between;"><span class="pl-cand-role">C1 · Cali</span><span class="pl-cand-score">81</span></div></div>
+                <div class="pl-cand-card highlight" draggable="true" ondragstart="dragStart(event,this,'Isabella Gómez','Profile Review','CSM')" onclick="openCandBrief('Isabella Gómez','',0)">
+                <div class="pl-cand-name">Isabella Gómez</div>
+                <div class="pl-cand-city"></div>
+                <div class="nw-score-badge low">0</div>
+              </div><div style="display:flex;justify-content:space-between;"><span class="pl-cand-role">C1 · Medellín</span><span class="pl-cand-score">88</span></div></div>
+                <div class="pl-cand-card" draggable="true" ondragstart="dragStart(event,this,'Jorge Pérez','Profile Review','CSM')" onclick="openCandBrief('Jorge Pérez','',0)">
+                <div class="pl-cand-name">Jorge Pérez</div>
+                <div class="pl-cand-city"></div>
+                <div class="nw-score-badge low">0</div>
+              </div><div style="display:flex;justify-content:space-between;"><span class="pl-cand-role">C1 · Cali</span><span class="pl-cand-score">81</span></div></div>
                 <div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add</div>
               </div>
               <div class="pl-stage-col" data-stage="assessment" ondragover="dragOver(event)" ondrop="dropCard(event,this,'CSM')">
                 <div class="pl-stage-hdr">Assessment <span class="pl-stage-count">1</span></div>
-                <div class="pl-cand-card highlight" draggable="true" ondragstart="dragStart(event,this,'David Herrera','Assessment','CSM')"><div class="pl-cand-name">David Herrera</div><div style="display:flex;justify-content:space-between;"><span class="pl-cand-role">C1 · Bogotá</span><span class="pl-cand-score">87</span></div></div>
+                <div class="pl-cand-card highlight" draggable="true" ondragstart="dragStart(event,this,'David Herrera','Assessment','CSM')" onclick="openCandBrief('David Herrera','',0)">
+                <div class="pl-cand-name">David Herrera</div>
+                <div class="pl-cand-city"></div>
+                <div class="nw-score-badge low">0</div>
+              </div><div style="display:flex;justify-content:space-between;"><span class="pl-cand-role">C1 · Bogotá</span><span class="pl-cand-score">87</span></div></div>
                 <div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add</div>
               </div>
               <div class="pl-stage-col" data-stage="background" ondragover="dragOver(event)" ondrop="dropCard(event,this,'CSM')">
                 <div class="pl-stage-hdr">Background Check <span class="pl-stage-count">1</span></div>
-                <div class="pl-cand-card highlight" draggable="true" ondragstart="dragStart(event,this,'Valentina Ríos','Background Check','CSM')"><div class="pl-cand-name">Valentina Ríos</div><div style="display:flex;justify-content:space-between;"><span class="pl-cand-role">C1 · Medellín</span><span class="pl-cand-score">91</span></div></div>
+                <div class="pl-cand-card highlight" draggable="true" ondragstart="dragStart(event,this,'Valentina Ríos','Background Check','CSM')" onclick="openCandBrief('Valentina Ríos','',0)">
+                <div class="pl-cand-name">Valentina Ríos</div>
+                <div class="pl-cand-city"></div>
+                <div class="nw-score-badge low">0</div>
+              </div><div style="display:flex;justify-content:space-between;"><span class="pl-cand-role">C1 · Medellín</span><span class="pl-cand-score">91</span></div></div>
                 <div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add</div>
               </div>
               <div class="pl-stage-col" data-stage="presented" ondragover="dragOver(event)" ondrop="dropCard(event,this,'CSM')">
@@ -952,13 +1023,25 @@ onAuthStateChanged(auth, async user => {
             <div class="pl-scroll">
               <div class="pl-stage-col" data-stage="applied" ondragover="dragOver(event)" ondrop="dropCard(event,this,'SUP')">
                 <div class="pl-stage-hdr">Applied <span class="pl-stage-count">2</span></div>
-                <div class="pl-cand-card" draggable="true" ondragstart="dragStart(event,this,'Luis Herrera','Applied','SUP')"><div class="pl-cand-name">Luis Herrera</div><div style="display:flex;justify-content:space-between;"><span class="pl-cand-role">C1 · Medellín</span><span class="pl-cand-score">66</span></div></div>
-                <div class="pl-cand-card" draggable="true" ondragstart="dragStart(event,this,'Camila Torres','Applied','SUP')"><div class="pl-cand-name">Camila Torres</div><div style="display:flex;justify-content:space-between;"><span class="pl-cand-role">C1 · Bogotá</span><span class="pl-cand-score">70</span></div></div>
+                <div class="pl-cand-card" draggable="true" ondragstart="dragStart(event,this,'Luis Herrera','Applied','SUP')" onclick="openCandBrief('Luis Herrera','',0)">
+                <div class="pl-cand-name">Luis Herrera</div>
+                <div class="pl-cand-city"></div>
+                <div class="nw-score-badge low">0</div>
+              </div><div style="display:flex;justify-content:space-between;"><span class="pl-cand-role">C1 · Medellín</span><span class="pl-cand-score">66</span></div></div>
+                <div class="pl-cand-card" draggable="true" ondragstart="dragStart(event,this,'Camila Torres','Applied','SUP')" onclick="openCandBrief('Camila Torres','',0)">
+                <div class="pl-cand-name">Camila Torres</div>
+                <div class="pl-cand-city"></div>
+                <div class="nw-score-badge low">0</div>
+              </div><div style="display:flex;justify-content:space-between;"><span class="pl-cand-role">C1 · Bogotá</span><span class="pl-cand-score">70</span></div></div>
                 <div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add</div>
               </div>
               <div class="pl-stage-col" data-stage="profile-review" ondragover="dragOver(event)" ondrop="dropCard(event,this,'SUP')">
                 <div class="pl-stage-hdr">Profile Review <span class="pl-stage-count">1</span></div>
-                <div class="pl-cand-card highlight" draggable="true" ondragstart="dragStart(event,this,'Alejandro Ríos','Profile Review','SUP')"><div class="pl-cand-name">Alejandro Ríos</div><div style="display:flex;justify-content:space-between;"><span class="pl-cand-role">C1 · Medellín</span><span class="pl-cand-score">79</span></div></div>
+                <div class="pl-cand-card highlight" draggable="true" ondragstart="dragStart(event,this,'Alejandro Ríos','Profile Review','SUP')" onclick="openCandBrief('Alejandro Ríos','',0)">
+                <div class="pl-cand-name">Alejandro Ríos</div>
+                <div class="pl-cand-city"></div>
+                <div class="nw-score-badge low">0</div>
+              </div><div style="display:flex;justify-content:space-between;"><span class="pl-cand-role">C1 · Medellín</span><span class="pl-cand-score">79</span></div></div>
                 <div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add</div>
               </div>
               <div class="pl-stage-col" ondragover="dragOver(event)" ondrop="dropCard(event,this,'SUP')"><div class="pl-stage-hdr">Assessment <span class="pl-stage-count">0</span></div><div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add</div></div>
@@ -1993,6 +2076,68 @@ function addStage(){
   list.appendChild(div);
   div.querySelector('input').focus();
 }
+
+/* ── URL Router ── */
+function setUrl(path) {
+  history.pushState({ path }, '', path);
+}
+window.addEventListener('popstate', function(e) {
+  const path = e.state?.path || '/admin-dashboard';
+  if (path === '/admin-dashboard' || path.endsWith('admin-dashboard')) {
+    navTo('dashboard', 'Dashboard');
+  } else if (path.includes('/org/')) {
+    navTo('org-detail', document.getElementById('od-name')?.textContent || 'Organization');
+  } else if (path.includes('/candidate/')) {
+    // handled by candidate panel
+  }
+});
+
+
+/* ── Candidate brief panel ── */
+let _currentCand = null;
+
+window.openCandBrief = function(name, city, score) {
+  _currentCand = { name, city, score };
+  // Populate
+  const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
+  document.getElementById('cb-av').textContent = initials;
+  document.getElementById('cb-name').textContent = name;
+  document.getElementById('cb-role').textContent = city + ' · C1 English';
+  document.getElementById('cb-city').textContent = city.split('·').pop()?.trim() || city;
+  document.getElementById('cb-score-num').textContent = score;
+  // Update score arc (circumference = 213.6, offset = 213.6 * (1 - score/100))
+  const arc = document.getElementById('cb-score-arc');
+  if (arc) arc.setAttribute('stroke-dashoffset', (213.6 * (1 - score/100)).toFixed(1));
+  // Update score bar colors
+  document.getElementById('cb-expand-btn').onclick = openCandFullProfile;
+  // Push URL
+  const slug = name.toLowerCase().replace(/[^a-z0-9]/g,'-');
+  setUrl('/candidate/' + slug);
+  // Show
+  document.getElementById('cand-brief-bg').classList.add('show');
+  document.getElementById('cand-brief').classList.add('show');
+};
+
+window.closeCandBrief = function() {
+  document.getElementById('cand-brief-bg').classList.remove('show');
+  document.getElementById('cand-brief').classList.remove('show');
+  // Restore org URL
+  history.back();
+};
+
+window.openCandFullProfile = function() {
+  if (!_currentCand) return;
+  const slug = _currentCand.name.toLowerCase().replace(/[^a-z0-9]/g,'-');
+  // Open in new tab — admin-only candidate profile page
+  window.open('/candidate/' + slug, '_blank');
+  toast('Opening full candidate profile in new tab...', 'ok');
+};
+
+// Override old openCandDetail to use new brief
+window.openCandDetail = function(name) {
+  openCandBrief(name, 'Medellín · C1 English', 87);
+};
+
 function signOut(){
   toast('Signing out...','');
   import('./firebase-config.js').then(({auth}) => {
@@ -2099,8 +2244,10 @@ window.openOrgDetail = function(orgId, name, domain, initials, plan, status) {
   odTab(document.querySelector('.od-tab'), 'od-panel-pipeline');
   // Navigate to org-detail page
   navTo('org-detail', name);
-  // Update the nav label to show org name
   document.getElementById('nav-current-label').textContent = name;
+  // Push URL
+  const slug = orgId.toLowerCase().replace(/[^a-z0-9]/g, '-');
+  setUrl('/org/' + slug);
 };
 
 /* ── Org detail tab switcher ── */
@@ -2446,7 +2593,8 @@ window.inviteTeamMember = async function() {
   </div>
 </div>
 
-</body
+<script>
+
 /* ── Pipeline: collapse / expand ── */
 window.toggleBoard = function(id) {
   const card = document.getElementById(id);
@@ -2531,6 +2679,65 @@ document.addEventListener('dragend', function() {
   document.querySelectorAll('.pl-stage-col').forEach(c => c.classList.remove('drag-over'));
   document.querySelectorAll('.pl-cand-card').forEach(c => c.classList.remove('dragging'));
 });
-
 </script>
+
+<!-- Candidate brief panel (slide-in) -->
+<div class="cand-brief-bg" id="cand-brief-bg" onclick="closeCandBrief()"></div>
+<div class="cand-brief" id="cand-brief">
+  <div class="cb-hdr">
+    <div class="cb-av" id="cb-av">VR</div>
+    <div>
+      <div class="cb-name" id="cb-name">Valentina Ríos</div>
+      <div class="cb-role" id="cb-role">CSM Opening · Medellín · C1 English</div>
+    </div>
+    <button class="cb-close" onclick="closeCandBrief()">✕</button>
+  </div>
+  <div class="cb-body">
+
+    <!-- Nearwork Score -->
+    <div class="cb-section">
+      <div class="cb-section-title">Nearwork Score</div>
+      <div style="background:var(--g1);border-radius:11px;padding:18px;text-align:center;">
+        <svg width="80" height="80" viewBox="0 0 80 80" style="display:block;margin:0 auto 8px;">
+          <circle cx="40" cy="40" r="34" fill="none" stroke="var(--g2)" stroke-width="6"/>
+          <circle cx="40" cy="40" r="34" fill="none" stroke="var(--purple)" stroke-width="6"
+            stroke-dasharray="213.6" stroke-dashoffset="42.7" stroke-linecap="round"
+            transform="rotate(-90 40 40)" id="cb-score-arc"/>
+        </svg>
+        <div style="font-size:28px;font-weight:900;color:var(--black);letter-spacing:-2px;line-height:1;margin-bottom:4px;" id="cb-score-num">91</div>
+        <div style="font-size:10px;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:.1em;">Nearwork Score</div>
+      </div>
+      <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px;">
+        <div class="score-bar-wrap"><div class="score-bar-label"><span>English (C1)</span><span style="font-weight:700;">94</span></div><div class="score-bar-track"><div class="score-bar-fill" style="width:94%;background:var(--green);"></div></div></div>
+        <div class="score-bar-wrap"><div class="score-bar-label"><span>Technical</span><span style="font-weight:700;">88</span></div><div class="score-bar-track"><div class="score-bar-fill" style="width:88%;"></div></div></div>
+        <div class="score-bar-wrap"><div class="score-bar-label"><span>Culture fit</span><span style="font-weight:700;">90</span></div><div class="score-bar-track"><div class="score-bar-fill" style="width:90%;background:#8B5CF6;"></div></div></div>
+        <div class="score-bar-wrap"><div class="score-bar-label"><span>Experience</span><span style="font-weight:700;">85</span></div><div class="score-bar-track"><div class="score-bar-fill" style="width:85%;background:var(--amber);"></div></div></div>
+      </div>
+    </div>
+
+    <!-- Key details -->
+    <div class="cb-section">
+      <div class="cb-section-title">Overview</div>
+      <div class="cb-row"><span class="cb-label">City</span><span class="cb-val" id="cb-city">Medellín</span></div>
+      <div class="cb-row"><span class="cb-label">English level</span><span class="cb-val">C1 Advanced</span></div>
+      <div class="cb-row"><span class="cb-label">Experience</span><span class="cb-val">4 years</span></div>
+      <div class="cb-row"><span class="cb-label">Current stage</span><span class="cb-val badge b-purple" id="cb-stage">Background Check</span></div>
+      <div class="cb-row"><span class="cb-label">Applied</span><span class="cb-val">Apr 8, 2026</span></div>
+    </div>
+
+    <!-- Recruiter note -->
+    <div class="cb-section">
+      <div class="cb-section-title">Recruiter note</div>
+      <div style="background:var(--g1);border-radius:9px;padding:12px;font-size:12px;color:var(--g6);line-height:1.65;font-style:italic;">"Strong communicator, excellent client-facing manner. Salary expectation: $2,200/mo. Available in 2 weeks."</div>
+    </div>
+
+  </div>
+  <div class="cb-footer">
+    <button class="cb-stage-btn" onclick="closeCandBrief();openModal('cand-detail-modal')">Move stage</button>
+    <button class="cb-expand-btn" id="cb-expand-btn" onclick="openCandFullProfile()">
+      Open full profile ↗
+    </button>
+  </div>
+</div>
+
 </body>
