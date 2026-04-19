@@ -7,67 +7,81 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-:root{--purple:#6C3CE1;--pd:#4F28B8;--pl:#8B5CF6;--pp:#F0EBFF;--black:#0D0D0D;--white:#fff;--g1:#F9FAFB;--g3:#D1D5DB;--g5:#6B7280;--green:#10B981;--gl:#6EE7B7;--red:#EF4444;}
+:root{
+  --purple:#6C3CE1;--pd:#4F28B8;--pl:#8B5CF6;--pp:#F0EBFF;
+  --black:#0D0D0D;--white:#fff;
+  --g1:#F9FAFB;--g2:#F3F4F6;--g3:#D1D5DB;--g4:#9CA3AF;--g5:#6B7280;
+  --green:#10B981;--gl:#6EE7B7;--red:#EF4444;
+}
 html,body{height:100%;font-family:'Poppins',sans-serif;overflow:hidden;}
 body{background:var(--g1);display:flex;}
 
-/* LEFT — value panel */
+/* ── LEFT ── */
 .left{flex:1;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:center;padding:56px;background:var(--black);}
-.left-bg{position:absolute;inset:0;background:radial-gradient(ellipse at 20% 50%,rgba(108,60,225,0.25),transparent 52%),radial-gradient(ellipse at 80% 20%,rgba(108,60,225,0.12),transparent 48%);pointer-events:none;}
-.left-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px);background-size:52px 52px;pointer-events:none;}
+.left-bg{position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse at 15% 30%,rgba(108,60,225,0.35),transparent 52%),
+    radial-gradient(ellipse at 85% 75%,rgba(108,60,225,0.2),transparent 50%),
+    radial-gradient(ellipse at 50% 10%,rgba(139,92,246,0.15),transparent 45%);
+  pointer-events:none;}
+.left-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.025) 1px,transparent 1px);background-size:52px 52px;pointer-events:none;}
+.blob{position:absolute;border-radius:50%;pointer-events:none;filter:blur(70px);opacity:.4;}
+.blob1{width:320px;height:320px;background:rgba(108,60,225,0.5);top:-80px;left:-80px;}
+.blob2{width:200px;height:200px;background:rgba(139,92,246,0.35);bottom:-40px;right:60px;}
+
+/* Back button — pinned top-left, prominent pill */
+.back-home{position:absolute;top:24px;left:28px;z-index:10;font-size:12px;font-weight:700;color:#fff;text-decoration:none;display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);border-radius:99px;padding:8px 16px;backdrop-filter:blur(4px);transition:all .2s;}
+.back-home:hover{background:rgba(255,255,255,0.25);}
+
 .left-content{position:relative;z-index:1;max-width:460px;}
 
-.brand{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
-.logo{font-size:20px;font-weight:900;color:#fff;letter-spacing:-1px;}
+.logo{font-size:22px;font-weight:900;color:#fff;letter-spacing:-1px;margin-bottom:32px;}
 .logo span{color:var(--pl);}
-.back-home{font-size:11px;color:rgba(255,255,255,0.3);text-decoration:none;display:flex;align-items:center;gap:5px;transition:color .2s;}
-.back-home:hover{color:rgba(255,255,255,0.6);}
 
-.l-chip{display:inline-flex;align-items:center;gap:6px;background:rgba(108,60,225,0.2);border:1px solid rgba(108,60,225,0.3);color:var(--pl);font-size:10px;font-weight:700;padding:4px 12px;border-radius:99px;margin-top:28px;margin-bottom:16px;text-transform:uppercase;letter-spacing:.1em;}
-.l-headline{font-size:clamp(26px,3vw,40px);font-weight:900;color:#fff;letter-spacing:-2px;line-height:1.08;margin-bottom:12px;}
+.l-chip{display:inline-flex;align-items:center;gap:6px;background:rgba(108,60,225,0.25);border:1px solid rgba(108,60,225,0.4);color:var(--pl);font-size:10px;font-weight:700;padding:5px 13px;border-radius:99px;margin-bottom:18px;text-transform:uppercase;letter-spacing:.12em;}
+
+.l-headline{font-size:clamp(28px,3.2vw,42px);font-weight:900;color:#fff;letter-spacing:-2px;line-height:1.06;margin-bottom:14px;}
 .l-headline span{color:var(--pl);}
-.l-sub{font-size:13px;color:rgba(255,255,255,0.45);line-height:1.75;font-weight:300;margin-bottom:36px;max-width:380px;}
+.l-sub{font-size:14px;color:rgba(255,255,255,0.5);line-height:1.8;font-weight:300;margin-bottom:36px;max-width:400px;}
 
-/* feature list */
-.feats{display:flex;flex-direction:column;gap:14px;margin-bottom:36px;}
-.feat{display:flex;align-items:flex-start;gap:13px;}
-.feat-ic{width:36px;height:36px;border-radius:9px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
-.feat-title{font-size:13px;font-weight:700;color:#fff;margin-bottom:3px;}
+/* Feature cards — 2x2 grid */
+.feat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:32px;}
+.feat-card{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:16px;transition:background .2s;}
+.feat-card:hover{background:rgba(255,255,255,0.09);}
+.feat-icon{font-size:20px;margin-bottom:8px;display:block;}
+.feat-title{font-size:12px;font-weight:700;color:#fff;margin-bottom:3px;}
 .feat-desc{font-size:11px;color:rgba(255,255,255,0.4);line-height:1.5;}
 
-/* stats */
-.cl-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.cls{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:11px;padding:16px;}
-.cls-n{font-size:24px;font-weight:900;color:#fff;letter-spacing:-1.5px;margin-bottom:3px;}
-.cls-n em{color:var(--gl);font-style:normal;}
-.cls-l{font-size:11px;color:rgba(255,255,255,0.35);line-height:1.4;}
+/* Stats row */
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.stat-card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:11px;padding:14px 12px;text-align:center;}
+.stat-n{font-size:20px;font-weight:900;color:#fff;letter-spacing:-1px;line-height:1;margin-bottom:4px;}
+.stat-n em{color:var(--pl);font-style:normal;}
+.stat-l{font-size:10px;color:rgba(255,255,255,0.35);line-height:1.4;}
 
-/* RIGHT — login panel */
-.right{width:480px;flex-shrink:0;background:#fff;display:flex;flex-direction:column;justify-content:center;padding:52px 48px;overflow-y:auto;box-shadow:-4px 0 32px rgba(0,0,0,0.08);}
+/* ── RIGHT ── */
+.right{width:460px;flex-shrink:0;background:#fff;display:flex;flex-direction:column;justify-content:center;padding:52px 44px;overflow-y:auto;box-shadow:-4px 0 32px rgba(0,0,0,0.07);}
 
-.r-logo{font-size:18px;font-weight:900;color:var(--black);letter-spacing:-1px;margin-bottom:4px;}
+.r-logo{font-size:18px;font-weight:900;color:var(--black);letter-spacing:-1px;margin-bottom:6px;}
 .r-logo span{color:var(--purple);}
 .r-chip{display:inline-block;font-size:9px;font-weight:700;color:var(--purple);background:var(--pp);border:1px solid rgba(108,60,225,0.2);padding:3px 9px;border-radius:99px;margin-bottom:32px;text-transform:uppercase;letter-spacing:.1em;}
 
-/* steps */
+/* Steps */
 .step{display:none;}
 .step.show{display:block;animation:sin .3s ease both;}
 @keyframes sin{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 
-.s-title{font-size:22px;font-weight:800;color:var(--black);letter-spacing:-1px;line-height:1.15;margin-bottom:5px;}
-.s-sub{font-size:12px;color:var(--g5);margin-bottom:24px;line-height:1.6;}
+.s-title{font-size:21px;font-weight:800;color:var(--black);letter-spacing:-1px;line-height:1.15;margin-bottom:6px;}
+.s-sub{font-size:12px;color:var(--g5);margin-bottom:24px;line-height:1.65;}
 .s-sub strong{color:var(--black);}
 
-/* Google */
-.btn-google{width:100%;display:flex;align-items:center;justify-content:center;gap:9px;padding:12px;border-radius:9px;border:1.5px solid var(--g3);background:#fff;font-size:13px;font-weight:600;color:var(--black);cursor:pointer;font-family:'Poppins',sans-serif;transition:border-color .2s,box-shadow .2s;margin-bottom:14px;}
-.btn-google:hover{border-color:var(--purple);box-shadow:0 0 0 3px rgba(108,60,225,0.08);}
+/* Invite notice */
+.invite-notice{background:var(--g1);border:1.5px solid var(--g3);border-radius:10px;padding:14px 16px;margin-bottom:22px;display:flex;gap:10px;align-items:flex-start;}
+.in-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
+.in-text{font-size:12px;color:var(--g5);line-height:1.65;}
+.in-text strong{color:var(--black);}
 
-/* divider */
-.or{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
-.or-l{flex:1;height:1px;background:var(--g3);}
-.or-t{font-size:10px;color:var(--g5);font-weight:500;}
-
-/* fields */
+/* Fields */
 .f{margin-bottom:13px;}
 .f label{display:block;font-size:11px;font-weight:700;color:var(--black);margin-bottom:5px;letter-spacing:.03em;}
 .f input{width:100%;padding:11px 13px;border:1.5px solid var(--g3);border-radius:9px;font-size:13px;font-family:'Poppins',sans-serif;color:var(--black);background:#fff;outline:none;transition:border-color .2s,box-shadow .2s;}
@@ -79,43 +93,42 @@ body{background:var(--g1);display:flex;}
 .pw-r input{padding-right:40px;}
 .eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--g5);font-size:12px;padding:2px;}
 
-/* buttons */
+/* Buttons */
 .btn-p{width:100%;padding:13px;border-radius:9px;background:var(--purple);color:#fff;font-size:13px;font-weight:700;font-family:'Poppins',sans-serif;border:none;cursor:pointer;transition:background .2s,transform .15s;margin-top:4px;}
 .btn-p:hover{background:var(--pd);transform:translateY(-1px);}
 .btn-p:disabled{background:var(--g3);cursor:not-allowed;transform:none;}
 .btn-sec{width:100%;padding:12px;border-radius:9px;background:var(--g1);color:var(--g5);font-size:13px;font-weight:600;font-family:'Poppins',sans-serif;border:1.5px solid var(--g3);cursor:pointer;margin-top:8px;}
 .btn-sec:hover{border-color:var(--purple);color:var(--purple);}
 
-.forgot-link{text-align:right;margin-bottom:10px;}
-.forgot-link a{font-size:11px;color:var(--purple);cursor:pointer;text-decoration:none;}
-.global-err{font-size:11px;color:var(--red);text-align:center;margin-top:10px;display:none;}
-.global-err.show{display:block;}
-.bottom-note{font-size:11px;color:var(--g5);text-align:center;margin-top:20px;line-height:1.6;padding-top:16px;border-top:1px solid var(--g3);}
-.bottom-note a{color:var(--purple);font-weight:600;text-decoration:none;}
+.forgot-inline{text-align:right;margin-top:-6px;margin-bottom:12px;}
+.forgot-inline a{font-size:11px;color:var(--purple);cursor:pointer;text-decoration:none;}
+.forgot-inline a:hover{text-decoration:underline;}
 
-/* back btn */
 .back{background:none;border:none;font-family:'Poppins',sans-serif;font-size:11px;color:var(--g5);cursor:pointer;padding:0;margin-bottom:20px;display:flex;align-items:center;gap:4px;}
 .back:hover{color:var(--purple);}
 
-/* no account screen */
-.no-acc{text-align:center;padding:8px 0;}
-.no-acc-icon{font-size:52px;margin-bottom:16px;display:block;}
-.no-acc-title{font-size:20px;font-weight:800;color:var(--black);letter-spacing:-1px;margin-bottom:8px;line-height:1.2;}
-.no-acc-sub{font-size:13px;color:var(--g5);line-height:1.7;margin-bottom:24px;}
-.btn-book{display:block;width:100%;padding:13px;border-radius:9px;background:var(--purple);color:#fff;font-size:14px;font-weight:700;font-family:'Poppins',sans-serif;border:none;cursor:pointer;text-decoration:none;text-align:center;transition:background .2s;margin-bottom:10px;}
+/* Divider */
+.divider-label{display:flex;align-items:center;gap:10px;margin:18px 0;font-size:11px;color:var(--g4);}
+.divider-label::before,.divider-label::after{content:'';flex:1;height:1px;background:var(--g3);}
+
+/* Not a client box */
+.not-client-box{background:var(--g1);border-radius:10px;border:1.5px solid var(--g3);padding:18px;margin-top:20px;text-align:center;}
+.ncb-title{font-size:12px;font-weight:700;color:var(--black);margin-bottom:4px;}
+.ncb-sub{font-size:11px;color:var(--g5);line-height:1.6;margin-bottom:12px;}
+.btn-book{display:block;width:100%;padding:11px;border-radius:9px;background:var(--purple);color:#fff;font-size:12px;font-weight:700;font-family:'Poppins',sans-serif;border:none;cursor:pointer;text-decoration:none;text-align:center;transition:background .2s;}
 .btn-book:hover{background:var(--pd);}
 
-/* success */
+/* Success */
 .succ{text-align:center;padding:12px 0;}
 .succ-icon{font-size:44px;margin-bottom:14px;display:block;}
 .succ-title{font-size:18px;font-weight:800;color:var(--black);letter-spacing:-1px;margin-bottom:6px;}
 .succ-sub{font-size:12px;color:var(--g5);line-height:1.65;margin-bottom:18px;}
 
-/* spinner */
+/* Spinner */
 .spin{width:14px;height:14px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;display:inline-block;vertical-align:middle;margin-right:5px;}
 @keyframes sp{to{transform:rotate(360deg);}}
 
-/* toast */
+/* Toast */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--black);color:#fff;font-size:12px;font-weight:500;padding:11px 20px;border-radius:9px;box-shadow:0 8px 32px rgba(0,0,0,0.2);transition:transform .35s cubic-bezier(.4,0,.2,1);z-index:200;white-space:nowrap;}
 .toast.show{transform:translateX(-50%) translateY(0);}
 .toast.ok{background:var(--green);}
@@ -134,25 +147,45 @@ body{background:var(--g1);display:flex;}
 <div class="left">
   <div class="left-bg"></div>
   <div class="left-grid"></div>
+  <div class="blob blob1"></div>
+  <div class="blob blob2"></div>
+
+  <a class="back-home" href="https://app.nearwork.co/login">← Back</a>
+
   <div class="left-content">
-    <div class="brand">
-      <div class="logo">Near<span>work</span></div>
-      <a class="back-home" href="login.html">← Back</a>
-    </div>
+    <div class="logo">Near<span>work</span></div>
     <div class="l-chip">🏢 Client Portal</div>
+
     <div class="l-headline">Your hiring pipeline.<br><span>All in one place.</span></div>
     <p class="l-sub">See every candidate in real time, review scorecards, leave notes, and manage your team — with full transparency at every stage of the process.</p>
-    <div class="feats">
-      <div class="feat"><div class="feat-ic">📋</div><div><div class="feat-title">Live Kanban pipeline</div><div class="feat-desc">Candidates move through stages in real time. You see every update the moment it happens.</div></div></div>
-      <div class="feat"><div class="feat-ic">📊</div><div><div class="feat-title">Full scorecards & results</div><div class="feat-desc">Technical test scores, English level, culture fit, background check — all visible, nothing hidden.</div></div></div>
-      <div class="feat"><div class="feat-ic">💬</div><div><div class="feat-title">Notes & recommendations</div><div class="feat-desc">Comment directly on candidate profiles. Your whole team sees everything live and in sync.</div></div></div>
-      <div class="feat"><div class="feat-ic">👥</div><div><div class="feat-title">Team management</div><div class="feat-desc">Invite hiring managers and viewers. Control who can see what across your organization.</div></div></div>
+
+    <div class="feat-grid">
+      <div class="feat-card">
+        <span class="feat-icon">📋</span>
+        <div class="feat-title">Live Kanban pipeline</div>
+        <div class="feat-desc">Every stage update in real time. Nothing hidden.</div>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">📊</span>
+        <div class="feat-title">Full scorecards</div>
+        <div class="feat-desc">Test scores, English level, culture fit — all visible.</div>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">💬</span>
+        <div class="feat-title">Notes & feedback</div>
+        <div class="feat-desc">Comment on profiles. Your whole team stays in sync.</div>
+      </div>
+      <div class="feat-card">
+        <span class="feat-icon">👥</span>
+        <div class="feat-title">Team management</div>
+        <div class="feat-desc">Invite hiring managers and control access roles.</div>
+      </div>
     </div>
-    <div class="cl-stats">
-      <div class="cls"><div class="cls-n"><em>21d</em></div><div class="cls-l">Average time<br>to first shortlist</div></div>
-      <div class="cls"><div class="cls-n"><em>60%</em></div><div class="cls-l">Average cost<br>savings vs US hire</div></div>
-      <div class="cls"><div class="cls-n"><em>6mo</em></div><div class="cls-l">Replacement<br>guarantee</div></div>
-      <div class="cls"><div class="cls-n"><em>#1</em></div><div class="cls-l">Colombia — US<br>nearshore 2026</div></div>
+
+    <div class="stat-row">
+      <div class="stat-card"><div class="stat-n"><em>21d</em></div><div class="stat-l">Avg. days to<br>first shortlist</div></div>
+      <div class="stat-card"><div class="stat-n"><em>60%</em></div><div class="stat-l">Cost savings<br>vs US hire</div></div>
+      <div class="stat-card"><div class="stat-n"><em>6mo</em></div><div class="stat-l">Replacement<br>guarantee</div></div>
     </div>
   </div>
 </div>
@@ -167,31 +200,46 @@ body{background:var(--g1);display:flex;}
     <div class="s-title">Sign in to your account.</div>
     <p class="s-sub">Access your pipeline, candidates, and team dashboard.</p>
 
-    <button class="btn-google" onclick="handleClientGoogle()">
-      <svg viewBox="0 0 24 24" width="17" height="17"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-      Continue with Google
-    </button>
-    <div class="or"><div class="or-l"></div><div class="or-t">or sign in with email</div><div class="or-l"></div></div>
-    <div class="f"><label>Work email</label><input type="email" id="cl-email" placeholder="you@company.com" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div class="invite-notice">
+      <span class="in-icon">🔒</span>
+      <div class="in-text"><strong>Invite-only access.</strong> Your account is created by Nearwork when your organization is onboarded. Check your email for an invitation to set your password.</div>
+    </div>
+
+    <div class="f">
+      <label>Work email</label>
+      <input type="email" id="cl-email" placeholder="your@company.com" onkeydown="if(event.key==='Enter')document.getElementById('cl-pw').focus()">
+    </div>
     <div class="f">
       <label>Password</label>
-      <div class="pw-r"><input type="password" id="cl-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"><button class="eye" onclick="tpw('cl-pw',this)" type="button">👁</button></div>
-      <div class="ferr" id="pw-err">Incorrect email or password.</div>
+      <div class="pw-r">
+        <input type="password" id="cl-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')doClientLogin()">
+        <button class="eye" onclick="tpw('cl-pw',this)" type="button">👁</button>
+      </div>
+      <div class="ferr" id="pw-err">Incorrect email or password. Try again or reset your password.</div>
     </div>
-    <div class="forgot-link"><a onclick="go('s-forgot')">Forgot password?</a></div>
-    <button class="btn-p" id="login-btn" onclick="doClientLogin()">Sign in →</button>
-    <div class="global-err" id="no-acc-err">No account found. <a onclick="go('s-no-acc')" style="color:var(--red);font-weight:700;cursor:pointer;">Learn more →</a></div>
-    <div class="bottom-note">Not a client yet? <a href="https://nearwork.co/book">Schedule a free call with Nearwork →</a></div>
+
+    <div class="forgot-inline"><a onclick="showStep('s-forgot')">Forgot password?</a></div>
+    <button class="btn-p" id="login-btn" data-label="Sign in →" onclick="doClientLogin()">Sign in →</button>
+
+    <div class="divider-label">not a client yet?</div>
+    <div class="not-client-box">
+      <div class="ncb-title">Ready to hire Colombian talent?</div>
+      <div class="ncb-sub">Schedule a free call with Nearwork. We'll walk you through the platform and get your organization set up.</div>
+      <a href="https://nearwork.co/book" class="btn-book">Schedule a free call →</a>
+    </div>
   </div>
 
   <!-- STEP: forgot -->
   <div class="step" id="s-forgot">
-    <button class="back" onclick="go('s-signin')">← Back to sign in</button>
-    <div class="s-title">Forgot your password?</div>
-    <p class="s-sub" style="margin-bottom:18px;">Enter your work email and we'll send you a reset link within a few minutes.</p>
-    <div class="f"><label>Work email</label><input type="email" id="forgot-email" placeholder="you@company.com" onkeydown="if(event.key==='Enter')resetSend()"></div>
-    <button class="btn-p" id="reset-btn" onclick="clResetSend()">Send reset link →</button>
-    <button class="btn-sec" onclick="go('s-signin')">Back to sign in</button>
+    <button class="back" onclick="showStep('s-signin')">← Back to sign in</button>
+    <div class="s-title">Reset your password.</div>
+    <p class="s-sub" style="margin-bottom:18px;">Enter your work email and we'll send you a reset link. Check your spam folder if you don't see it within a few minutes.</p>
+    <div class="f">
+      <label>Work email</label>
+      <input type="email" id="forgot-email" placeholder="your@company.com" onkeydown="if(event.key==='Enter')clResetSend()">
+    </div>
+    <button class="btn-p" id="reset-btn" data-label="Send reset link →" onclick="clResetSend()">Send reset link →</button>
+    <button class="btn-sec" onclick="showStep('s-signin')">Back to sign in</button>
   </div>
 
   <!-- STEP: reset sent -->
@@ -199,19 +247,8 @@ body{background:var(--g1);display:flex;}
     <div class="succ">
       <span class="succ-icon">📧</span>
       <div class="succ-title">Check your inbox.</div>
-      <p class="succ-sub">We sent a password reset link to <strong id="reset-email-show"></strong>. It expires in 1 hour. Check your spam folder if you don't see it.</p>
-      <button class="btn-p" onclick="go('s-signin')">Back to sign in</button>
-    </div>
-  </div>
-
-  <!-- STEP: no account -->
-  <div class="step" id="s-no-acc">
-    <div class="no-acc">
-      <span class="no-acc-icon">🔒</span>
-      <div class="no-acc-title">Client accounts<br>are invite-only.</div>
-      <p class="no-acc-sub">Nearwork creates your account when we onboard you as a client. If you're ready to start hiring Colombian talent, schedule a free call with our team — we'll get you set up.</p>
-      <a href="https://nearwork.co/book" class="btn-book">Schedule a free call with Nearwork →</a>
-      <button class="btn-sec" onclick="go('s-signin')">← Back to sign in</button>
+      <p class="succ-sub">We sent a reset link to <strong id="reset-email-show"></strong>.<br>It expires in 1 hour. Check spam if you don't see it.</p>
+      <button class="btn-p" onclick="showStep('s-signin')">Back to sign in</button>
     </div>
   </div>
 
@@ -221,70 +258,95 @@ body{background:var(--g1);display:flex;}
 
 <script type="module">
 import {
-  auth, db, signInWithGoogle, signInWithEmailAndPassword,
-  sendPasswordResetEmail, onAuthStateChanged,
-  getUserProfile, saveUserProfile, redirectByRole
+  auth,
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail,
+  onAuthStateChanged,
+  getUserProfile,
+  redirectByRole
 } from './firebase-config.js';
+
+/* ── Remove .html from URL if present ── */
+if (location.pathname.endsWith('.html')) {
+  history.replaceState(null, '', location.pathname.slice(0, -5) + location.search + location.hash);
+}
 
 /* ── Auto-redirect if already logged in ── */
 onAuthStateChanged(auth, async user => {
-  if (user) {
-    const profile = await getUserProfile(user.uid);
-    if (profile?.role) redirectByRole(profile.role);
+  if (!user) return;
+  const profile = await getUserProfile(user.uid);
+  if (profile?.role && ['client','admin'].includes(profile.role)) {
+    redirectByRole(profile.role);
   }
 });
 
-/* ── Google sign in (clients only) ── */
-window.handleClientGoogle = async function() {
-  try {
-    const user = await signInWithGoogle();
-    const profile = await getUserProfile(user.uid);
-    if (!profile) { clShow('cl-no-acc'); return; }
-    if (profile.role === 'client' || profile.role === 'admin') {
-      redirectByRole(profile.role);
-    } else {
-      clShow('cl-no-acc');
-    }
-  } catch(e) {
-    showToast('Google sign-in failed.', 'bad');
-  }
-};
-
-/* ── Email sign in ── */
+/* ── Email sign in — clients only ── */
 window.doClientLogin = async function() {
   const email = document.getElementById('cl-email').value.trim();
   const pw    = document.getElementById('cl-pw').value;
+  const errEl = document.getElementById('pw-err');
+  const pwEl  = document.getElementById('cl-pw');
   if (!email || !pw) { showToast('Please enter your email and password.', 'bad'); return; }
-  const btn = document.getElementById('login-btn');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spin dk"></span>Signing in...';
+  errEl.classList.remove('show');
+  pwEl.classList.remove('err');
+  setLoading('login-btn', true);
   try {
     const cred = await signInWithEmailAndPassword(auth, email, pw);
     const profile = await getUserProfile(cred.user.uid);
     if (!profile || !['client','admin'].includes(profile.role)) {
       await auth.signOut();
-      clShow('cl-no-acc');
-      btn.disabled = false; btn.innerHTML = 'Sign in →';
+      showToast('This account does not have client access.', 'bad');
+      setLoading('login-btn', false);
       return;
     }
     redirectByRole(profile.role);
   } catch(e) {
-    document.getElementById('pw-err').classList.add('show');
-    document.getElementById('cl-pw').classList.add('err');
-    btn.disabled = false; btn.innerHTML = 'Sign in →';
+    errEl.classList.add('show');
+    pwEl.classList.add('err');
+    setLoading('login-btn', false);
   }
 };
 
-/* ── Forgot password ── */
+/* ── Password reset ── */
 window.clResetSend = async function() {
-  const email = document.getElementById('cl-forgot-email').value.trim();
-  if (!email) { showToast('Please enter your email.', 'bad'); return; }
+  const email = document.getElementById('forgot-email').value.trim();
+  if (!email) { showToast('Please enter your work email.', 'bad'); return; }
+  setLoading('reset-btn', true);
   try {
     await sendPasswordResetEmail(auth, email);
-    document.getElementById('cl-reset-email').textContent = email;
-    clShow('cl-reset-sent');
+    document.getElementById('reset-email-show').textContent = email;
+    showStep('s-reset-sent');
   } catch(e) {
-    showToast('Could not send reset email.', 'bad');
+    showToast('Could not send reset email. Check the address and try again.', 'bad');
+    setLoading('reset-btn', false);
   }
 };
+
+/* ── Utilities ── */
+function setLoading(btnId, loading) {
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  btn.disabled = loading;
+  btn.innerHTML = loading ? '<span class="spin"></span>Please wait...' : (btn.dataset.label || btn.textContent);
+}
+
+window.showStep = function(id) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('show'));
+  document.getElementById(id).classList.add('show');
+};
+
+window.tpw = function(id, btn) {
+  const el = document.getElementById(id);
+  el.type = el.type === 'password' ? 'text' : 'password';
+  btn.textContent = el.type === 'password' ? '👁' : '🙈';
+};
+
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (type ? ' ' + type : '') + ' show';
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
 </script>
+</body>
+</html>
