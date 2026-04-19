@@ -177,8 +177,8 @@ body{font-family:'Poppins',sans-serif;background:var(--g1);color:var(--black);mi
 
 /* Users table in org detail */
 .ud-table{background:#fff;border-radius:11px;border:1px solid var(--g3);overflow:hidden;margin-bottom:20px;}
-.ud-hdr{display:grid;grid-template-columns:2fr 1fr 1fr 100px;padding:10px 16px;background:var(--g1);border-bottom:1px solid var(--g2);font-size:10px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.08em;gap:12px;}
-.ud-row{display:grid;grid-template-columns:2fr 1fr 1fr 100px;padding:12px 16px;border-bottom:1px solid var(--g2);font-size:12px;color:var(--g6);align-items:center;gap:12px;transition:background .15s;}
+.ud-hdr{display:grid;grid-template-columns:2fr 1fr 1fr 160px;padding:10px 18px;background:var(--g1);border-bottom:1px solid var(--g2);font-size:10px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.08em;gap:16px;}
+.ud-row{display:grid;grid-template-columns:2fr 1fr 1fr 160px;padding:14px 18px;border-bottom:1px solid var(--g2);font-size:12px;color:var(--g6);align-items:center;gap:16px;transition:background .15s;}
 .ud-row:last-child{border-bottom:none;}
 .ud-row:hover{background:var(--g1);}
 .ud-user{display:flex;align-items:center;gap:9px;}
@@ -805,111 +805,121 @@ onAuthStateChanged(auth, async user => {
 
     <!-- ── PANEL: Pipeline ── -->
     <div class="od-panel show" id="od-panel-pipeline">
-      <div class="od-section-title">
-        <span>Candidate pipeline — <span id="od-pipeline-opening-label">All openings</span></span>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <select class="fsel" id="od-opening-filter" onchange="filterPipeline(this.value)" style="font-size:12px;">
-            <option value="all">All openings</option>
-            <option value="csm">Customer Success Manager</option>
-            <option value="sdr">SDR / Sales Dev Rep</option>
-          </select>
-          <button class="btn btn-p btn-sm" onclick="openModal('add-candidate-modal')">+ Add candidate</button>
-        </div>
+
+      <!-- Visibility note -->
+      <div style="padding:10px 14px;background:var(--pp);border-radius:9px;font-size:11px;color:var(--g6);border:1px solid rgba(108,60,225,0.1);margin-bottom:20px;">
+        💡 <strong>Client visibility:</strong> Stages <strong>Client Review</strong> and <strong>Hired</strong> are visible to the client. All earlier stages are internal to Nearwork only.
       </div>
 
-      <!-- Kanban board scoped to this org -->
-      <div class="pl-scroll" id="od-kanban">
+      <!-- Per-opening pipeline cards -->
+      <div style="display:flex;flex-direction:column;gap:20px;" id="od-pipelines-list">
 
-        <div class="pl-stage-col" data-stage="applied">
-          <div class="pl-stage-hdr">Applied <span class="pl-stage-count">4</span></div>
-          <div class="pl-cand-card" onclick="openCandDetail('María López')">
-            <div class="pl-cand-name">María López</div>
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-              <div class="pl-cand-role">CSM Opening</div>
-              <div class="pl-cand-score">72</div>
+        <!-- Pipeline 1: CSM -->
+        <div class="card" style="padding:0;overflow:hidden;">
+          <!-- Pipeline header -->
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--g2);">
+            <div>
+              <div style="font-size:14px;font-weight:700;color:var(--black);margin-bottom:2px;">Customer Success Manager</div>
+              <div style="font-size:10px;color:var(--g5);">NW-CSM-4X8B · Recruiter: Byron Giraldo · 8 candidates</div>
+            </div>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <span class="badge b-green">Active</span>
+              <button class="btn btn-ghost btn-sm" onclick="openModal('add-candidate-modal')">+ Add candidate</button>
             </div>
           </div>
-          <div class="pl-cand-card" onclick="openCandDetail('Carlos Ruiz')">
-            <div class="pl-cand-name">Carlos Ruiz</div>
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-              <div class="pl-cand-role">CSM Opening</div>
-              <div class="pl-cand-score">68</div>
+          <!-- Kanban board — CSM only -->
+          <div style="padding:14px;">
+            <div class="pl-scroll">
+              <div class="pl-stage-col" data-stage="applied">
+                <div class="pl-stage-hdr">Applied <span class="pl-stage-count">3</span></div>
+                <div class="pl-cand-card" onclick="openCandDetail('María López')"><div class="pl-cand-name">María López</div><div style="display:flex;justify-content:space-between;"><div class="pl-cand-role">C1 · Medellín</div><div class="pl-cand-score">72</div></div></div>
+                <div class="pl-cand-card" onclick="openCandDetail('Carlos Ruiz')"><div class="pl-cand-name">Carlos Ruiz</div><div style="display:flex;justify-content:space-between;"><div class="pl-cand-role">C1 · Bogotá</div><div class="pl-cand-score">68</div></div></div>
+                <div class="pl-cand-card" onclick="openCandDetail('Sofía Vargas')"><div class="pl-cand-name">Sofía Vargas</div><div style="display:flex;justify-content:space-between;"><div class="pl-cand-role">C1 · Medellín</div><div class="pl-cand-score">71</div></div></div>
+                <div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add</div>
+              </div>
+              <div class="pl-stage-col">
+                <div class="pl-stage-hdr">Profile Review <span class="pl-stage-count">2</span></div>
+                <div class="pl-cand-card highlight" onclick="openCandDetail('Isabella Gómez')"><div class="pl-cand-name">Isabella Gómez</div><div style="display:flex;justify-content:space-between;"><div class="pl-cand-role">C1 · Medellín</div><div class="pl-cand-score">88</div></div></div>
+                <div class="pl-cand-card" onclick="openCandDetail('Jorge Pérez')"><div class="pl-cand-name">Jorge Pérez</div><div style="display:flex;justify-content:space-between;"><div class="pl-cand-role">C1 · Cali</div><div class="pl-cand-score">81</div></div></div>
+                <div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add</div>
+              </div>
+              <div class="pl-stage-col">
+                <div class="pl-stage-hdr">Assessment <span class="pl-stage-count">1</span></div>
+                <div class="pl-cand-card highlight" onclick="openCandDetail('David Herrera')"><div class="pl-cand-name">David Herrera</div><div style="display:flex;justify-content:space-between;"><div class="pl-cand-role">C1 · Bogotá</div><div class="pl-cand-score">87</div></div></div>
+                <div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add</div>
+              </div>
+              <div class="pl-stage-col">
+                <div class="pl-stage-hdr">Background Check <span class="pl-stage-count">1</span></div>
+                <div class="pl-cand-card highlight" onclick="openCandDetail('Valentina Ríos')"><div class="pl-cand-name">Valentina Ríos</div><div style="display:flex;justify-content:space-between;"><div class="pl-cand-role">C1 · Medellín</div><div class="pl-cand-score">91</div></div></div>
+                <div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add</div>
+              </div>
+              <div class="pl-stage-col">
+                <div class="pl-stage-hdr">Presented <span class="pl-stage-count">0</span></div>
+                <div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add</div>
+              </div>
+              <div class="pl-stage-col" style="background:rgba(108,60,225,0.05);border:1px solid rgba(108,60,225,0.15);">
+                <div class="pl-stage-hdr" style="color:var(--purple);">Client Review <span class="pl-stage-count" style="background:rgba(108,60,225,0.1);color:var(--purple);">0</span></div>
+                <div style="font-size:9px;color:var(--purple);text-align:center;margin-bottom:6px;opacity:.6;">👁 Visible to client</div>
+                <div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add</div>
+              </div>
+              <div class="pl-stage-col" style="background:rgba(16,185,129,0.05);border:1px solid rgba(16,185,129,0.15);">
+                <div class="pl-stage-hdr" style="color:var(--green);">Hired <span class="pl-stage-count" style="background:rgba(16,185,129,0.1);color:var(--green);">0</span></div>
+                <div style="font-size:9px;color:var(--green);text-align:center;margin-bottom:6px;opacity:.6;">👁 Visible to client</div>
+                <div class="pl-add-card">+ Move here</div>
+              </div>
             </div>
           </div>
-          <div class="pl-cand-card" onclick="openCandDetail('Ana Gómez')">
-            <div class="pl-cand-name">Ana Gómez</div>
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-              <div class="pl-cand-role">SDR Opening</div>
-              <div class="pl-cand-score">75</div>
+        </div>
+
+        <!-- Pipeline 2: Technical Support -->
+        <div class="card" style="padding:0;overflow:hidden;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--g2);">
+            <div>
+              <div style="font-size:14px;font-weight:700;color:var(--black);margin-bottom:2px;">Technical Support Specialist</div>
+              <div style="font-size:10px;color:var(--g5);">NW-SUP-3B7R · Recruiter: Nany Salcedo · 3 candidates</div>
+            </div>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <span class="badge b-amber">Paused</span>
+              <button class="btn btn-ghost btn-sm" onclick="openModal('add-candidate-modal')">+ Add candidate</button>
             </div>
           </div>
-          <div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add candidate</div>
-        </div>
-
-        <div class="pl-stage-col" data-stage="profile-review">
-          <div class="pl-stage-hdr">Profile Review <span class="pl-stage-count">2</span></div>
-          <div class="pl-cand-card highlight" onclick="openCandDetail('Isabella Gómez')">
-            <div class="pl-cand-name">Isabella Gómez</div>
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-              <div class="pl-cand-role">CSM Opening</div>
-              <div class="pl-cand-score">88</div>
+          <div style="padding:14px;">
+            <div class="pl-scroll">
+              <div class="pl-stage-col">
+                <div class="pl-stage-hdr">Applied <span class="pl-stage-count">2</span></div>
+                <div class="pl-cand-card" onclick="openCandDetail('Luis Herrera')"><div class="pl-cand-name">Luis Herrera</div><div style="display:flex;justify-content:space-between;"><div class="pl-cand-role">C1 · Medellín</div><div class="pl-cand-score">66</div></div></div>
+                <div class="pl-cand-card" onclick="openCandDetail('Camila Torres')"><div class="pl-cand-name">Camila Torres</div><div style="display:flex;justify-content:space-between;"><div class="pl-cand-role">C1 · Bogotá</div><div class="pl-cand-score">70</div></div></div>
+                <div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add</div>
+              </div>
+              <div class="pl-stage-col">
+                <div class="pl-stage-hdr">Profile Review <span class="pl-stage-count">1</span></div>
+                <div class="pl-cand-card highlight" onclick="openCandDetail('Alejandro Ríos')"><div class="pl-cand-name">Alejandro Ríos</div><div style="display:flex;justify-content:space-between;"><div class="pl-cand-role">C1 · Medellín</div><div class="pl-cand-score">79</div></div></div>
+                <div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add</div>
+              </div>
+              <div class="pl-stage-col"><div class="pl-stage-hdr">Assessment <span class="pl-stage-count">0</span></div><div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add</div></div>
+              <div class="pl-stage-col"><div class="pl-stage-hdr">Background Check <span class="pl-stage-count">0</span></div><div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add</div></div>
+              <div class="pl-stage-col"><div class="pl-stage-hdr">Presented <span class="pl-stage-count">0</span></div><div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add</div></div>
+              <div class="pl-stage-col" style="background:rgba(108,60,225,0.05);border:1px solid rgba(108,60,225,0.15);">
+                <div class="pl-stage-hdr" style="color:var(--purple);">Client Review <span class="pl-stage-count" style="background:rgba(108,60,225,0.1);color:var(--purple);">0</span></div>
+                <div style="font-size:9px;color:var(--purple);text-align:center;margin-bottom:6px;opacity:.6;">👁 Visible to client</div>
+                <div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add</div>
+              </div>
+              <div class="pl-stage-col" style="background:rgba(16,185,129,0.05);border:1px solid rgba(16,185,129,0.15);">
+                <div class="pl-stage-hdr" style="color:var(--green);">Hired <span class="pl-stage-count" style="background:rgba(16,185,129,0.1);color:var(--green);">0</span></div>
+                <div style="font-size:9px;color:var(--green);text-align:center;margin-bottom:6px;opacity:.6;">👁 Visible to client</div>
+                <div class="pl-add-card">+ Move here</div>
+              </div>
             </div>
           </div>
-          <div class="pl-cand-card" onclick="openCandDetail('Jorge Pérez')">
-            <div class="pl-cand-name">Jorge Pérez</div>
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-              <div class="pl-cand-role">CSM Opening</div>
-              <div class="pl-cand-score">81</div>
-            </div>
-          </div>
-          <div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add candidate</div>
         </div>
 
-        <div class="pl-stage-col" data-stage="assessment">
-          <div class="pl-stage-hdr">Assessment <span class="pl-stage-count">1</span></div>
-          <div class="pl-cand-card highlight" onclick="openCandDetail('David Herrera')">
-            <div class="pl-cand-name">David Herrera</div>
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-              <div class="pl-cand-role">CSM Opening</div>
-              <div class="pl-cand-score">87</div>
-            </div>
-          </div>
-          <div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add candidate</div>
+        <!-- Empty state: create new pipeline -->
+        <div style="border:2px dashed var(--g3);border-radius:13px;padding:28px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;" onclick="openModal('new-pipeline-modal')" onmouseover="this.style.borderColor='var(--purple)';this.style.background='var(--pp)'" onmouseout="this.style.borderColor='var(--g3)';this.style.background=''">
+          <div style="font-size:24px;margin-bottom:8px;">➕</div>
+          <div style="font-size:13px;font-weight:700;color:var(--black);margin-bottom:4px;">Create a new pipeline</div>
+          <div style="font-size:11px;color:var(--g5);">Each opening gets its own separate pipeline with its own candidates and hiring manager.</div>
         </div>
 
-        <div class="pl-stage-col" data-stage="background">
-          <div class="pl-stage-hdr">Background Check <span class="pl-stage-count">1</span></div>
-          <div class="pl-cand-card highlight" onclick="openCandDetail('Valentina Ríos')">
-            <div class="pl-cand-name">Valentina Ríos</div>
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-              <div class="pl-cand-role">CSM Opening</div>
-              <div class="pl-cand-score">91</div>
-            </div>
-          </div>
-          <div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add candidate</div>
-        </div>
-
-        <div class="pl-stage-col" data-stage="presented">
-          <div class="pl-stage-hdr">Presented <span class="pl-stage-count">0</span></div>
-          <div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add candidate</div>
-        </div>
-
-        <div class="pl-stage-col" data-stage="client-review" style="background:rgba(108,60,225,0.06);border:1px solid rgba(108,60,225,0.15);">
-          <div class="pl-stage-hdr" style="color:var(--purple);">Client Review <span class="pl-stage-count" style="background:rgba(108,60,225,0.1);color:var(--purple);">0</span></div>
-          <div style="font-size:10px;color:var(--g4);text-align:center;padding:8px 0;">Visible to client</div>
-          <div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add candidate</div>
-        </div>
-
-        <div class="pl-stage-col" data-stage="hired" style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.15);">
-          <div class="pl-stage-hdr" style="color:var(--green);">Hired <span class="pl-stage-count" style="background:rgba(16,185,129,0.1);color:var(--green);">0</span></div>
-          <div style="font-size:10px;color:var(--g4);text-align:center;padding:8px 0;">Visible to client</div>
-          <div class="pl-add-card">+ Move candidate here</div>
-        </div>
-
-      </div>
-
-      <div style="margin-top:12px;padding:10px 14px;background:var(--pp);border-radius:9px;font-size:11px;color:var(--g6);border:1px solid rgba(108,60,225,0.1);">
-        💡 <strong>Client visibility:</strong> Stages <strong>Client Review</strong> and <strong>Hired</strong> are visible to the client. All other stages are internal to Nearwork only.
       </div>
     </div>
 
@@ -928,9 +938,9 @@ onAuthStateChanged(auth, async user => {
           </div>
           <div><span class="badge b-purple">Admin</span></div>
           <div><span class="badge b-green">Active</span></div>
-          <div style="display:flex;gap:5px;">
-            <button class="btn btn-ghost btn-sm">Edit</button>
-            <button class="btn btn-danger btn-sm" onclick="toast('User deactivated.','ok')">Remove</button>
+          <div style="display:flex;gap:5px;flex-wrap:wrap;">
+            <button class="btn btn-ghost btn-sm" onclick="toast('Password reset email sent.','ok')" title="Send reset password email">🔑 Reset pw</button>
+            <button class="btn btn-danger btn-sm" onclick="toast('User removed.','ok')">Remove</button>
           </div>
         </div>
         <div class="ud-row">
@@ -940,9 +950,9 @@ onAuthStateChanged(auth, async user => {
           </div>
           <div><span class="badge b-gray">Viewer</span></div>
           <div><span class="badge b-green">Active</span></div>
-          <div style="display:flex;gap:5px;">
-            <button class="btn btn-ghost btn-sm">Edit</button>
-            <button class="btn btn-danger btn-sm" onclick="toast('User deactivated.','ok')">Remove</button>
+          <div style="display:flex;gap:5px;flex-wrap:wrap;">
+            <button class="btn btn-ghost btn-sm" onclick="toast('Password reset email sent.','ok')" title="Send reset password email">🔑 Reset pw</button>
+            <button class="btn btn-danger btn-sm" onclick="toast('User removed.','ok')">Remove</button>
           </div>
         </div>
         <div class="ud-row">
@@ -2321,25 +2331,43 @@ window.inviteTeamMember = async function() {
 
 <!-- Add user to org modal -->
 <div class="modal-bg" id="add-org-user-modal" onclick="if(event.target===this)closeModal('add-org-user-modal')">
-  <div class="modal sm">
-    <div class="modal-hdr"><div class="modal-title">Add portal user</div><button class="modal-close" onclick="closeModal('add-org-user-modal')">✕</button></div>
-    <div class="modal-body">
-      <div style="background:var(--pp);border:1px solid rgba(108,60,225,0.15);border-radius:9px;padding:11px 14px;margin-bottom:16px;font-size:11px;color:var(--g6);line-height:1.65;">
-        📧 A Firebase account will be created and a password-set invitation email sent automatically.
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-hdr">
+      <div>
+        <div class="modal-title">Add portal user</div>
+        <div style="font-size:11px;color:var(--g5);margin-top:2px;">User will receive an invitation email to set their password.</div>
       </div>
-      <div class="field-row">
-        <div class="field"><label>First name</label><input type="text" placeholder="Sarah"></div>
-        <div class="field"><label>Last name</label><input type="text" placeholder="Reynolds"></div>
+      <button class="modal-close" onclick="closeModal('add-org-user-modal')">✕</button>
+    </div>
+    <div class="modal-body" style="padding:24px;">
+      <div style="background:var(--pp);border:1px solid rgba(108,60,225,0.15);border-radius:10px;padding:13px 16px;margin-bottom:20px;display:flex;gap:10px;align-items:flex-start;">
+        <span style="font-size:16px;flex-shrink:0;">📧</span>
+        <div style="font-size:11px;color:var(--g6);line-height:1.65;">A Firebase account will be created and a <strong style="color:var(--black);">password-set invitation email</strong> sent to the user automatically. They click the link and set their own password.</div>
       </div>
-      <div class="field"><label>Work email *</label><input type="email" placeholder="sarah@company.io"></div>
-      <div class="field"><label>Portal role</label>
-        <select>
-          <option value="admin_client">Admin — full access</option>
-          <option value="viewer_client">Viewer — read only</option>
+      <div class="field-row" style="gap:12px;">
+        <div class="field" style="margin-bottom:0;">
+          <label>First name</label>
+          <input type="text" id="aou-fname" placeholder="Sarah" style="width:100%;">
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label>Last name</label>
+          <input type="text" id="aou-lname" placeholder="Reynolds" style="width:100%;">
+        </div>
+      </div>
+      <div class="field" style="margin-top:12px;">
+        <label>Work email *</label>
+        <input type="email" id="aou-email" placeholder="sarah@company.io" style="width:100%;">
+      </div>
+      <div class="field">
+        <label>Portal role</label>
+        <select id="aou-role" style="width:100%;">
+          <option value="admin_client">Admin — full access to pipeline and candidates</option>
+          <option value="viewer_client">Viewer — read only, no notes or changes</option>
         </select>
       </div>
+      <div id="aou-err" style="display:none;font-size:11px;color:var(--red);margin-top:8px;padding:8px 12px;background:rgba(239,68,68,0.05);border-radius:7px;border:1px solid rgba(239,68,68,0.15);"></div>
     </div>
-    <div class="modal-footer">
+    <div class="modal-footer" style="padding:16px 24px;">
       <button class="btn btn-ghost" onclick="closeModal('add-org-user-modal')">Cancel</button>
       <button class="btn btn-p" onclick="closeModal('add-org-user-modal');toast('User created & invite sent.','ok')">Create & send invite →</button>
     </div>
