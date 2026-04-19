@@ -7,57 +7,75 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-:root{--purple:#6C3CE1;--pd:#4F28B8;--pl:#8B5CF6;--pp:#F0EBFF;--black:#0D0D0D;--white:#fff;--g1:#F9FAFB;--g3:#D1D5DB;--g5:#6B7280;--green:#10B981;--gl:#6EE7B7;--red:#EF4444;}
+:root{
+  --purple:#6C3CE1;--pd:#4F28B8;--pl:#8B5CF6;--pp:#F0EBFF;
+  --black:#0D0D0D;--white:#fff;
+  --g1:#F9FAFB;--g3:#D1D5DB;--g5:#6B7280;
+  --green:#10B981;--gl:#6EE7B7;--red:#EF4444;
+}
 html,body{height:100%;font-family:'Poppins',sans-serif;overflow:hidden;}
 body{background:var(--black);display:flex;}
 
-/* LEFT — info panel */
+/* ── LEFT ── */
 .left{flex:1;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:center;padding:56px;}
-.left-bg{position:absolute;inset:0;background:radial-gradient(ellipse at 15% 55%,rgba(16,185,129,0.2),transparent 52%),radial-gradient(ellipse at 85% 15%,rgba(108,60,225,0.18),transparent 48%),radial-gradient(ellipse at 50% 90%,rgba(108,60,225,0.1),transparent 40%);pointer-events:none;}
-.left-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px);background-size:52px 52px;pointer-events:none;}
-.left-content{position:relative;z-index:1;max-width:460px;}
 
-.brand{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
-.logo{font-size:20px;font-weight:900;color:#fff;letter-spacing:-1px;}
+/* Cheerful gradient: warm purple + green + a hint of gold */
+.left-bg{position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse at 15% 30%,rgba(108,60,225,0.35),transparent 55%),
+    radial-gradient(ellipse at 80% 70%,rgba(16,185,129,0.25),transparent 50%),
+    radial-gradient(ellipse at 55% 10%,rgba(245,158,11,0.12),transparent 45%),
+    radial-gradient(ellipse at 10% 85%,rgba(139,92,246,0.2),transparent 45%);
+  pointer-events:none;}
+.left-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px);background-size:52px 52px;pointer-events:none;}
+/* floating blobs for warmth */
+.blob{position:absolute;border-radius:50%;pointer-events:none;filter:blur(60px);opacity:.5;}
+.blob1{width:280px;height:280px;background:rgba(108,60,225,0.4);top:-60px;left:-60px;}
+.blob2{width:200px;height:200px;background:rgba(16,185,129,0.35);bottom:-40px;right:80px;}
+.blob3{width:150px;height:150px;background:rgba(245,158,11,0.25);top:40%;right:-30px;}
+
+.left-content{position:relative;z-index:1;max-width:480px;}
+
+.brand{display:flex;align-items:center;justify-content:space-between;margin-bottom:40px;}
+.logo{font-size:21px;font-weight:900;color:#fff;letter-spacing:-1px;}
 .logo span{color:var(--pl);}
-.back-home{font-size:11px;color:rgba(255,255,255,0.3);text-decoration:none;display:flex;align-items:center;gap:5px;transition:color .2s;cursor:pointer;}
-.back-home:hover{color:rgba(255,255,255,0.6);}
+.back-home{font-size:11px;color:rgba(255,255,255,0.4);text-decoration:none;display:flex;align-items:center;gap:4px;transition:color .2s;}
+.back-home:hover{color:#fff;}
 
-.l-headline{font-size:clamp(26px,3vw,40px);font-weight:900;color:#fff;letter-spacing:-2px;line-height:1.08;margin-bottom:12px;margin-top:36px;}
+.l-headline{font-size:clamp(30px,3.5vw,46px);font-weight:900;color:#fff;letter-spacing:-2.5px;line-height:1.05;margin-bottom:14px;}
 .l-headline span{color:var(--gl);}
-.l-sub{font-size:13px;color:rgba(255,255,255,0.45);line-height:1.75;font-weight:300;margin-bottom:32px;max-width:380px;}
+.l-sub{font-size:14px;color:rgba(255,255,255,0.6);line-height:1.8;font-weight:300;margin-bottom:36px;max-width:400px;}
 
-/* stats */
-.stats{display:flex;gap:0;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:12px;margin-bottom:28px;overflow:hidden;}
-.stat{flex:1;padding:14px 12px;text-align:center;border-right:1px solid rgba(255,255,255,0.06);}
-.stat:last-child{border-right:none;}
-.stat-n{font-size:20px;font-weight:900;color:#fff;letter-spacing:-1px;line-height:1;}
+/* Pill benefits row */
+.benefits{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:36px;}
+.benefit{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:99px;padding:6px 14px;font-size:11px;font-weight:600;color:#fff;backdrop-filter:blur(4px);}
+.benefit .dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.benefit.g .dot{background:var(--gl);}
+.benefit.p .dot{background:var(--pl);}
+.benefit.y .dot{background:#FDE68A;}
+
+/* Stat cards */
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:36px;}
+.stat-card{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:16px 12px;text-align:center;backdrop-filter:blur(4px);}
+.stat-n{font-size:22px;font-weight:900;color:#fff;letter-spacing:-1px;line-height:1;margin-bottom:4px;}
 .stat-n em{color:var(--gl);font-style:normal;}
-.stat-l{font-size:9px;color:rgba(255,255,255,0.28);margin-top:3px;line-height:1.3;}
+.stat-l{font-size:10px;color:rgba(255,255,255,0.4);line-height:1.4;}
 
-/* testimonials */
-.testis{display:flex;flex-direction:column;gap:10px;margin-bottom:28px;}
-.testi{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:13px 15px;}
-.testi-txt{font-size:11px;color:rgba(255,255,255,0.45);line-height:1.65;font-style:italic;margin-bottom:8px;}
-.testi-row{display:flex;align-items:center;gap:8px;}
-.tav{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff;flex-shrink:0;}
-.tname{font-size:10px;font-weight:700;color:#fff;}
-.trole{font-size:9px;color:rgba(255,255,255,0.28);}
+/* Role tags */
+.roles-lbl{font-size:9px;font-weight:700;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:.14em;margin-bottom:10px;}
+.roles{display:flex;flex-wrap:wrap;gap:6px;}
+.rtag{font-size:10px;font-weight:600;padding:4px 11px;border-radius:99px;border:1px solid;}
+.rtag.hot{color:var(--gl);border-color:rgba(110,231,183,0.3);background:rgba(16,185,129,0.1);}
+.rtag.norm{color:rgba(255,255,255,0.5);border-color:rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);}
 
-/* roles */
-.roles-lbl{font-size:9px;font-weight:700;color:rgba(255,255,255,0.2);text-transform:uppercase;letter-spacing:.12em;margin-bottom:8px;}
-.roles{display:flex;flex-wrap:wrap;gap:5px;}
-.rtag{font-size:9px;font-weight:600;color:rgba(255,255,255,0.4);background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);padding:3px 9px;border-radius:99px;}
-.rtag.hot{color:var(--gl);border-color:rgba(110,231,183,0.25);background:rgba(16,185,129,0.07);}
-
-/* RIGHT — auth panel */
+/* ── RIGHT ── */
 .right{width:460px;flex-shrink:0;background:#fff;display:flex;flex-direction:column;justify-content:center;padding:52px 44px;overflow-y:auto;}
 
 .r-logo{font-size:18px;font-weight:900;color:var(--black);letter-spacing:-1px;margin-bottom:6px;}
 .r-logo span{color:var(--purple);}
 .r-chip{display:inline-block;font-size:9px;font-weight:700;color:var(--green);background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);padding:3px 9px;border-radius:99px;margin-bottom:28px;text-transform:uppercase;letter-spacing:.1em;}
 
-/* steps */
+/* Steps */
 .step{display:none;}
 .step.show{display:block;animation:sin .3s ease both;}
 @keyframes sin{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
@@ -66,20 +84,18 @@ body{background:var(--black);display:flex;}
 .s-sub{font-size:12px;color:var(--g5);margin-bottom:22px;line-height:1.6;}
 .s-sub strong{color:var(--black);}
 
-/* social */
+/* Social buttons */
 .socials{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
 .btn-soc{width:100%;display:flex;align-items:center;justify-content:center;gap:9px;padding:11px;border-radius:9px;border:1.5px solid var(--g3);background:#fff;font-size:12px;font-weight:600;color:var(--black);cursor:pointer;font-family:'Poppins',sans-serif;transition:border-color .2s,box-shadow .2s;}
 .btn-soc:hover{border-color:var(--purple);box-shadow:0 0 0 3px rgba(108,60,225,0.08);}
 .btn-soc svg{width:17px;height:17px;flex-shrink:0;}
-.btn-soc.li{border-color:#0A66C2;background:#f0f7ff;}
-.btn-soc.li:hover{border-color:#0A66C2;box-shadow:0 0 0 3px rgba(10,102,194,0.1);}
 
-/* divider */
+/* Divider */
 .or{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
 .or-l{flex:1;height:1px;background:var(--g3);}
 .or-t{font-size:10px;color:var(--g5);font-weight:500;}
 
-/* fields */
+/* Fields */
 .f{margin-bottom:12px;}
 .f label{display:block;font-size:10px;font-weight:700;color:var(--black);margin-bottom:4px;letter-spacing:.04em;}
 .f input{width:100%;padding:10px 13px;border:1.5px solid var(--g3);border-radius:8px;font-size:13px;font-family:'Poppins',sans-serif;color:var(--black);background:#fff;outline:none;transition:border-color .2s,box-shadow .2s;}
@@ -92,7 +108,7 @@ body{background:var(--black);display:flex;}
 .pw-r input{padding-right:38px;}
 .eye{position:absolute;right:11px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--g5);font-size:12px;padding:2px;}
 
-/* pw strength */
+/* Password strength */
 .pws{margin-top:5px;}
 .pws-bars{display:flex;gap:3px;margin-bottom:2px;}
 .pws-b{flex:1;height:3px;border-radius:99px;background:var(--g3);transition:background .3s;}
@@ -103,48 +119,36 @@ body{background:var(--black);display:flex;}
 
 .name-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 
-/* buttons */
+/* Buttons */
 .btn-p{width:100%;padding:12px;border-radius:9px;background:var(--green);color:#fff;font-size:13px;font-weight:700;font-family:'Poppins',sans-serif;border:none;cursor:pointer;transition:background .2s,transform .15s;margin-top:4px;}
 .btn-p:hover{background:#059669;transform:translateY(-1px);}
 .btn-p:disabled{background:var(--g3);cursor:not-allowed;transform:none;}
 .btn-sec{width:100%;padding:12px;border-radius:9px;background:var(--g1);color:var(--g5);font-size:13px;font-weight:600;font-family:'Poppins',sans-serif;border:1.5px solid var(--g3);cursor:pointer;margin-top:8px;}
 .btn-sec:hover{border-color:var(--purple);color:var(--purple);}
 
-/* back */
 .back{background:none;border:none;font-family:'Poppins',sans-serif;font-size:11px;color:var(--g5);cursor:pointer;padding:0;margin-bottom:18px;display:flex;align-items:center;gap:4px;}
 .back:hover{color:var(--purple);}
 
-.forgot-link{text-align:right;margin-bottom:10px;}
-.forgot-link a{font-size:11px;color:var(--purple);cursor:pointer;text-decoration:none;}
+/* Forgot password link — shown inline under password on sign-in step */
+.forgot-inline{text-align:right;margin-top:-6px;margin-bottom:12px;}
+.forgot-inline a{font-size:11px;color:var(--purple);cursor:pointer;text-decoration:none;}
+.forgot-inline a:hover{text-decoration:underline;}
 
 .terms{font-size:10px;color:var(--g5);margin-top:12px;line-height:1.6;text-align:center;}
 .terms a{color:var(--purple);text-decoration:none;}
+.terms a:hover{text-decoration:underline;}
 
-.switch{font-size:11px;color:var(--g5);text-align:center;margin-top:16px;}
-.switch a{color:var(--purple);font-weight:600;cursor:pointer;text-decoration:none;}
-
-/* success */
+/* Success */
 .succ{text-align:center;padding:12px 0;}
 .succ-icon{font-size:44px;margin-bottom:14px;display:block;}
 .succ-title{font-size:18px;font-weight:800;color:var(--black);letter-spacing:-1px;margin-bottom:6px;}
 .succ-sub{font-size:12px;color:var(--g5);line-height:1.65;margin-bottom:18px;}
 
-/* spinner */
+/* Spinner */
 .spin{width:14px;height:14px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;display:inline-block;vertical-align:middle;margin-right:5px;}
 @keyframes sp{to{transform:rotate(360deg);}}
 
-/* LinkedIn modal */
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:100;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .25s;}
-.modal-bg.show{opacity:1;pointer-events:all;}
-.modal{background:#fff;border-radius:16px;padding:32px;max-width:340px;width:90%;text-align:center;transform:scale(.94);transition:transform .25s;}
-.modal-bg.show .modal{transform:scale(1);}
-.modal-icon{font-size:40px;margin-bottom:12px;display:block;}
-.modal-title{font-size:16px;font-weight:800;color:var(--black);letter-spacing:-1px;margin-bottom:8px;}
-.modal-sub{font-size:12px;color:var(--g5);line-height:1.65;margin-bottom:18px;}
-.modal-btn{width:100%;padding:11px;border-radius:9px;background:var(--purple);color:#fff;font-size:13px;font-weight:700;font-family:'Poppins',sans-serif;border:none;cursor:pointer;}
-.modal-note{font-size:10px;color:var(--g5);margin-top:8px;}
-
-/* toast */
+/* Toast */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--black);color:#fff;font-size:12px;font-weight:500;padding:11px 20px;border-radius:9px;box-shadow:0 8px 32px rgba(0,0,0,0.2);transition:transform .35s cubic-bezier(.4,0,.2,1);z-index:200;white-space:nowrap;}
 .toast.show{transform:translateX(-50%) translateY(0);}
 .toast.ok{background:var(--green);}
@@ -159,99 +163,93 @@ body{background:var(--black);display:flex;}
 </head>
 <body>
 
-<!-- LinkedIn modal -->
-<div class="modal-bg" id="li-modal">
-  <div class="modal">
-    <span class="modal-icon">🔗</span>
-    <div class="modal-title">LinkedIn login coming soon.</div>
-    <p class="modal-sub">We're finalizing our LinkedIn integration. Use Google, Apple, or email to sign in for now.</p>
-    <button class="modal-btn" onclick="document.getElementById('li-modal').classList.remove('show')">Got it</button>
-    <div class="modal-note">No action needed — LinkedIn will be available very soon.</div>
-  </div>
-</div>
-
-<!-- LEFT: info -->
+<!-- LEFT -->
 <div class="left">
   <div class="left-bg"></div>
   <div class="left-grid"></div>
+  <div class="blob blob1"></div>
+  <div class="blob blob2"></div>
+  <div class="blob blob3"></div>
   <div class="left-content">
     <div class="brand">
       <div class="logo">Near<span>work</span></div>
       <a class="back-home" href="login.html">← Back</a>
     </div>
+
     <div class="l-headline">Your next great job<br>is <span>waiting for you.</span></div>
-    <p class="l-sub">Join Colombian professionals working with top US SaaS companies — earning in USD, working remotely, with full transparency at every stage.</p>
-    <div class="stats">
-      <div class="stat"><div class="stat-n"><em>—</em></div><div class="stat-l">Candidates<br>on platform</div></div>
-      <div class="stat"><div class="stat-n"><em>—</em></div><div class="stat-l">Successfully<br>placed</div></div>
-      <div class="stat"><div class="stat-n"><em>60%</em></div><div class="stat-l">Avg. salary<br>increase</div></div>
-      <div class="stat"><div class="stat-n"><em>21d</em></div><div class="stat-l">Days to first<br>interview</div></div>
+    <p class="l-sub">Join Colombian professionals working with top US SaaS companies — earning in USD, working remotely, with full transparency at every step.</p>
+
+    <div class="benefits">
+      <div class="benefit g"><div class="dot"></div>Free to apply</div>
+      <div class="benefit p"><div class="dot"></div>C1 English</div>
+      <div class="benefit g"><div class="dot"></div>USD salaries</div>
+      <div class="benefit y"><div class="dot"></div>100% remote</div>
+      <div class="benefit p"><div class="dot"></div>🇨🇴 Colombia only</div>
     </div>
-    <div class="testis">
-      <div class="testi">
-        <div class="testi-txt">"I applied on a Monday. Three weeks later I was hired by a San Francisco SaaS company. Nearwork changed my career completely."</div>
-        <div class="testi-row"><div class="tav" style="background:linear-gradient(135deg,#6C3CE1,#8B5CF6);">VR</div><div><div class="tname">Valentina Ríos</div><div class="trole">Customer Success Manager · Medellín</div></div></div>
-      </div>
-      <div class="testi">
-        <div class="testi-txt">"The process was transparent from day one. I always knew exactly where I stood. That's rare in recruitment."</div>
-        <div class="testi-row"><div class="tav" style="background:linear-gradient(135deg,#10B981,#059669);">AS</div><div><div class="tname">Andrés Salazar</div><div class="trole">SDR · Bogotá</div></div></div>
-      </div>
+
+    <div class="stat-row">
+      <div class="stat-card"><div class="stat-n"><em>60%</em></div><div class="stat-l">Avg. salary<br>increase</div></div>
+      <div class="stat-card"><div class="stat-n"><em>&lt;21d</em></div><div class="stat-l">Days to first<br>interview</div></div>
+      <div class="stat-card"><div class="stat-n"><em>94%</em></div><div class="stat-l">12-month<br>retention</div></div>
     </div>
+
     <div class="roles-lbl">Roles we place</div>
     <div class="roles">
-      <div class="rtag hot">Customer Success</div><div class="rtag hot">SDR</div><div class="rtag hot">Technical Support</div>
-      <div class="rtag">Marketing Ops</div><div class="rtag">Developer</div><div class="rtag">Operations</div><div class="rtag">Content & SEO</div>
+      <div class="rtag hot">Customer Success</div>
+      <div class="rtag hot">SDR</div>
+      <div class="rtag hot">Technical Support</div>
+      <div class="rtag norm">Marketing Ops</div>
+      <div class="rtag norm">Developer</div>
+      <div class="rtag norm">Operations</div>
+      <div class="rtag norm">Content & SEO</div>
     </div>
   </div>
 </div>
 
-<!-- RIGHT: auth -->
+<!-- RIGHT -->
 <div class="right">
   <div class="r-logo">Near<span>work</span></div>
   <div class="r-chip">🇨🇴 For Candidates</div>
 
-  <!-- STEP 0: landing -->
+  <!-- STEP 0 -->
   <div class="step show" id="s0">
     <div class="s-title" id="s0-title">Join for free.</div>
     <p class="s-sub" id="s0-sub">Create your profile, browse open roles, and track your application — all in one place.</p>
+
     <div class="socials">
       <button class="btn-soc" onclick="handleGoogle()">
         <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
         Continue with Google
       </button>
-      <button class="btn-soc" onclick="handleGoogle()">
-        <svg viewBox="0 0 24 24" fill="black" width="17" height="17"><path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"/></svg>
-        Continue with Apple
-      </button>
-      <button class="btn-soc li" onclick="document.getElementById('li-modal').classList.add('show')">
-        <svg viewBox="0 0 24 24" fill="#0A66C2" width="17" height="17"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-        Continue with LinkedIn
-      </button>
     </div>
+
     <div class="or"><div class="or-l"></div><div class="or-t">or use email</div><div class="or-l"></div></div>
-    <div class="f"><label>Email address</label><input type="email" id="email" placeholder="you@gmail.com" onkeydown="if(event.key==='Enter')next()"></div>
-    <button class="btn-p" onclick="next()">Continue →</button>
-    <div class="terms">By continuing you agree to our <a href="https://nearwork.co/terms-of-service">Terms</a> and <a href="https://nearwork.co/privacy-policy">Privacy Policy</a>.</div>
-    <div class="switch" id="sw">Already have an account? <a onclick="toggle()">Sign in</a></div>
+    <div class="f"><label>Email address</label><input type="email" id="email" placeholder="you@gmail.com" onkeydown="if(event.key==='Enter')nextStep()"></div>
+    <button class="btn-p" onclick="nextStep()">Continue →</button>
+    <div class="terms">By continuing you agree to our <a href="https://nearwork.co/terms-of-service" target="_blank" rel="noopener">Terms</a> and <a href="https://nearwork.co/privacy-policy" target="_blank" rel="noopener">Privacy Policy</a>.</div>
   </div>
 
   <!-- STEP: sign in -->
   <div class="step" id="s-signin">
-    <button class="back" onclick="go('s0')">← Back</button>
+    <button class="back" onclick="showStep('s0')">← Back</button>
     <div class="s-title">Welcome back.</div>
     <p class="s-sub">Signing in as <strong id="email-show"></strong></p>
     <div class="f">
       <label>Password</label>
-      <div class="pw-r"><input type="password" id="pw-si" placeholder="••••••••" onkeydown="if(event.key==='Enter')bypass(event)"><button class="eye" onclick="tpw('pw-si',this)" type="button">👁</button></div>
+      <div class="pw-r">
+        <input type="password" id="pw-si" placeholder="••••••••" onkeydown="if(event.key==='Enter')doSignIn()">
+        <button class="eye" onclick="tpw('pw-si',this)" type="button">👁</button>
+      </div>
       <div class="ferr" id="pw-si-err">Incorrect password. Please try again.</div>
     </div>
-    <div class="forgot-link"><a onclick="go('s-forgot')">Forgot password?</a></div>
+    <div class="forgot-inline"><a onclick="showStep('s-forgot')">Forgot password?</a></div>
     <button class="btn-p" id="signin-btn" data-label="Sign in →" onclick="doSignIn()">Sign in →</button>
+    <div class="terms">By continuing you agree to our <a href="https://nearwork.co/terms-of-service" target="_blank" rel="noopener">Terms</a> and <a href="https://nearwork.co/privacy-policy" target="_blank" rel="noopener">Privacy Policy</a>.</div>
   </div>
 
   <!-- STEP: create -->
   <div class="step" id="s-create">
-    <button class="back" onclick="go('s0')">← Back</button>
+    <button class="back" onclick="showStep('s0')">← Back</button>
     <div class="s-title">Create your account.</div>
     <p class="s-sub">Setting up <strong id="email-show-c"></strong></p>
     <div class="name-row">
@@ -260,22 +258,28 @@ body{background:var(--black);display:flex;}
     </div>
     <div class="f">
       <label>Password</label>
-      <div class="pw-r"><input type="password" id="pw-cr" placeholder="Min. 8 characters" oninput="str()"><button class="eye" onclick="tpw('pw-cr',this)" type="button">👁</button></div>
-      <div class="pws"><div class="pws-bars"><div class="pws-b" id="b1"></div><div class="pws-b" id="b2"></div><div class="pws-b" id="b3"></div></div><div class="pws-lbl" id="pws-lbl">Enter a password</div></div>
+      <div class="pw-r">
+        <input type="password" id="pw-cr" placeholder="Min. 8 characters" oninput="checkStrength()">
+        <button class="eye" onclick="tpw('pw-cr',this)" type="button">👁</button>
+      </div>
+      <div class="pws">
+        <div class="pws-bars"><div class="pws-b" id="b1"></div><div class="pws-b" id="b2"></div><div class="pws-b" id="b3"></div></div>
+        <div class="pws-lbl" id="pws-lbl">Enter a password</div>
+      </div>
       <div class="ferr" id="pw-cr-err">Password must be at least 8 characters.</div>
     </div>
-    <button class="btn-p" onclick="handleGoogle()">Create account & continue →</button>
-    <div class="terms">By joining you agree to our <a href="https://nearwork.co/terms-of-service">Terms</a> and <a href="https://nearwork.co/privacy-policy">Privacy Policy</a>.</div>
+    <button class="btn-p" id="create-btn" data-label="Create account →" onclick="doCreate()">Create account →</button>
+    <div class="terms">By joining you agree to our <a href="https://nearwork.co/terms-of-service" target="_blank" rel="noopener">Terms</a> and <a href="https://nearwork.co/privacy-policy" target="_blank" rel="noopener">Privacy Policy</a>.</div>
   </div>
 
   <!-- STEP: forgot -->
   <div class="step" id="s-forgot">
-    <button class="back" onclick="go('s-signin')">← Back to sign in</button>
+    <button class="back" onclick="showStep('s-signin')">← Back to sign in</button>
     <div class="s-title">Reset your password.</div>
-    <p class="s-sub" style="margin-bottom:18px;">Enter your email and we'll send a reset link. Check your spam if you don't see it within a few minutes.</p>
+    <p class="s-sub" style="margin-bottom:18px;">Enter your email and we'll send you a reset link. Check your spam folder if you don't see it within a few minutes.</p>
     <div class="f"><label>Email address</label><input type="email" id="forgot-email" placeholder="you@gmail.com" onkeydown="if(event.key==='Enter')resetSend()"></div>
-    <button class="btn-p" id="reset-btn" onclick="resetSend()">Send reset link →</button>
-    <button class="btn-sec" onclick="go('s-signin')">Back to sign in</button>
+    <button class="btn-p" id="reset-btn" data-label="Send reset link →" onclick="resetSend()">Send reset link →</button>
+    <button class="btn-sec" onclick="showStep('s-signin')">Back to sign in</button>
   </div>
 
   <!-- STEP: reset sent -->
@@ -284,7 +288,7 @@ body{background:var(--black);display:flex;}
       <span class="succ-icon">📧</span>
       <div class="succ-title">Check your inbox.</div>
       <p class="succ-sub">We sent a reset link to <strong id="reset-email-show"></strong>.<br>It expires in 1 hour. Check spam if needed.</p>
-      <button class="btn-p" onclick="go('s-signin')">Back to sign in</button>
+      <button class="btn-p" onclick="showStep('s-signin')">Back to sign in</button>
     </div>
   </div>
 
@@ -294,73 +298,113 @@ body{background:var(--black);display:flex;}
 
 <script type="module">
 import {
-  auth, db, gProvider, signInWithGoogle,
-  signInWithEmailAndPassword, createUserWithEmailAndPassword,
-  sendPasswordResetEmail, onAuthStateChanged,
-  getUserProfile, saveUserProfile, redirectByRole,
-  guessRole, isAdminDomain, serverTimestamp,
-  doc, setDoc
+  auth, gProvider,
+  signInWithPopup,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
+  onAuthStateChanged,
+  fetchSignInMethodsForEmail
 } from './firebase-config.js';
 
-/* ── Auto-redirect if already logged in ── */
+import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+const db = getFirestore();
+
+/* ── helpers ── */
+async function getUserProfile(uid) {
+  const snap = await getDoc(doc(db, 'users', uid));
+  return snap.exists() ? snap.data() : null;
+}
+async function saveProfile(uid, data) {
+  await setDoc(doc(db, 'users', uid), data, { merge: true });
+}
+function redirectByRole(role) {
+  const map = { admin: 'admin-dashboard', client: 'client-dashboard', candidate: 'candidate-dashboard' };
+  const page = map[role] || 'candidate-dashboard';
+  window.location.href = page + '.html';
+}
+function isAdmin(email) {
+  return ['nearwork.co','ByronGR'].some(d => email.includes(d));
+}
+
+/* ── URL extension flexibility ── */
+// Remove .html from address bar if present (clean URLs)
+if (location.pathname.endsWith('.html')) {
+  const clean = location.pathname.slice(0, -5);
+  history.replaceState(null, '', clean + location.search + location.hash);
+}
+
+/* ── Auth state ── */
+const params = new URLSearchParams(location.search);
+const redirect = params.get('redirect') || null;
+
 onAuthStateChanged(auth, async user => {
-  if (user) {
-    const profile = await getUserProfile(user.uid);
-    if (profile?.role) redirectByRole(profile.role);
-  }
+  if (!user) return;
+  const profile = await getUserProfile(user.uid);
+  if (profile?.role) { redirectByRole(profile.role); return; }
+  window.location.href = 'candidate-dashboard.html';
 });
 
-/* ── Preserve redirect param through login ── */
-const params  = new URLSearchParams(window.location.search);
-const redirect = params.get('redirect') || 'candidate-dashboard.html';
-
-/* ── Google sign in ── */
+/* ── Google ── */
 window.handleGoogle = async function() {
   try {
-    const user = await signInWithGoogle();
+    const result = await signInWithPopup(auth, gProvider);
+    const user = result.user;
     const profile = await getUserProfile(user.uid);
     if (profile?.role) { redirectByRole(profile.role); return; }
-    // New Google user — save as candidate
-    await saveUserProfile(user.uid, {
+    await saveProfile(user.uid, {
       email: user.email,
       name: user.displayName || '',
-      role: isAdminDomain(user.email) ? 'admin' : 'candidate',
+      role: isAdmin(user.email) ? 'admin' : 'candidate',
       createdAt: serverTimestamp(),
       onboarded: false
     });
-    window.location.href = redirect;
+    window.location.href = 'candidate-dashboard.html';
   } catch(e) {
-    showToast('Google sign-in failed. Please try again.', 'bad');
+    if (e.code !== 'auth/popup-closed-by-user') {
+      showToast('Google sign-in failed. Please try again.', 'bad');
+    }
   }
 };
 
-/* ── Email continue ── */
-window.next = async function() {
+/* ── Email continue — check if account exists ── */
+window.nextStep = async function() {
   const email = document.getElementById('email').value.trim();
-  if (!email || !email.includes('@')) { showToast('Please enter a valid email.', 'bad'); return; }
+  if (!email || !email.includes('@')) { showToast('Please enter a valid email address.', 'bad'); return; }
   document.getElementById('email-show').textContent = email;
   document.getElementById('email-show-c').textContent = email;
   document.getElementById('forgot-email').value = email;
-  showStep(createMode ? 's-create' : 's-signin');
+  try {
+    const methods = await fetchSignInMethodsForEmail(auth, email);
+    if (methods.length > 0) {
+      showStep('s-signin');
+    } else {
+      showStep('s-create');
+    }
+  } catch(e) {
+    // fallback — show sign in
+    showStep('s-signin');
+  }
 };
 
 /* ── Sign in ── */
 window.doSignIn = async function() {
   const email = document.getElementById('email').value.trim();
   const pw    = document.getElementById('pw-si').value;
-  document.getElementById('pw-si-err').classList.remove('show');
+  const errEl = document.getElementById('pw-si-err');
+  const pwEl  = document.getElementById('pw-si');
+  errEl.classList.remove('show');
+  pwEl.classList.remove('err');
   setLoading('signin-btn', true);
   try {
     const cred = await signInWithEmailAndPassword(auth, email, pw);
     const profile = await getUserProfile(cred.user.uid);
     if (profile?.role) { redirectByRole(profile.role); }
-    else {
-      await saveUserProfile(cred.user.uid, { email, role: 'candidate', createdAt: serverTimestamp(), onboarded: false });
-      window.location.href = redirect;
-    }
+    else { window.location.href = 'candidate-dashboard.html'; }
   } catch(e) {
-    document.getElementById('pw-si-err').classList.add('show');
-    document.getElementById('pw-si').classList.add('err');
+    errEl.classList.add('show');
+    pwEl.classList.add('err');
     setLoading('signin-btn', false);
   }
 };
@@ -375,41 +419,76 @@ window.doCreate = async function() {
   setLoading('create-btn', true);
   try {
     const cred = await createUserWithEmailAndPassword(auth, email, pw);
-    await saveUserProfile(cred.user.uid, {
+    await saveProfile(cred.user.uid, {
       email,
       name: (fname + ' ' + lname).trim(),
-      role: isAdminDomain(email) ? 'admin' : 'candidate',
+      role: isAdmin(email) ? 'admin' : 'candidate',
       createdAt: serverTimestamp(),
       onboarded: false
     });
-    window.location.href = redirect;
+    window.location.href = 'candidate-dashboard.html';
   } catch(e) {
     const msg = e.code === 'auth/email-already-in-use'
       ? 'This email already has an account. Sign in instead.'
-      : e.message;
+      : 'Something went wrong. Please try again.';
     showToast(msg, 'bad');
     setLoading('create-btn', false);
   }
 };
 
-/* ── Forgot password ── */
+/* ── Forgot / reset ── */
 window.resetSend = async function() {
   const email = document.getElementById('forgot-email').value.trim();
-  if (!email) { showToast('Please enter your email.', 'bad'); return; }
+  if (!email) { showToast('Please enter your email address.', 'bad'); return; }
+  setLoading('reset-btn', true);
   try {
     await sendPasswordResetEmail(auth, email);
     document.getElementById('reset-email-show').textContent = email;
     showStep('s-reset-sent');
   } catch(e) {
     showToast('Could not send reset email. Check the address and try again.', 'bad');
+    setLoading('reset-btn', false);
   }
 };
 
+/* ── Utils ── */
 function setLoading(btnId, loading) {
   const btn = document.getElementById(btnId);
   if (!btn) return;
   btn.disabled = loading;
-  btn.innerHTML = loading ? '<span class="spin"></span>Please wait...' : btn.dataset.label || btn.textContent;
-  if (!loading && btn.dataset.label) btn.textContent = btn.dataset.label;
+  btn.innerHTML = loading
+    ? '<span class="spin"></span>Please wait...'
+    : (btn.dataset.label || btn.textContent);
 }
+
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (type ? ' ' + type : '') + ' show';
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+window.showStep = function(id) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('show'));
+  document.getElementById(id).classList.add('show');
+};
+
+window.tpw = function(id, btn) {
+  const el = document.getElementById(id);
+  el.type = el.type === 'password' ? 'text' : 'password';
+  btn.textContent = el.type === 'password' ? '👁' : '🙈';
+};
+
+window.checkStrength = function() {
+  const pw = document.getElementById('pw-cr').value;
+  const bars = [document.getElementById('b1'), document.getElementById('b2'), document.getElementById('b3')];
+  const lbl  = document.getElementById('pws-lbl');
+  bars.forEach(b => b.className = 'pws-b');
+  if (pw.length === 0) { lbl.textContent = 'Enter a password'; return; }
+  if (pw.length < 6)   { bars[0].classList.add('weak'); lbl.textContent = 'Too short'; return; }
+  if (pw.length < 10)  { bars[0].classList.add('fair'); bars[1].classList.add('fair'); lbl.textContent = 'Fair'; return; }
+  bars.forEach(b => b.classList.add('strong')); lbl.textContent = 'Strong';
+};
 </script>
+</body>
+</html>
