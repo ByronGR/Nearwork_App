@@ -203,6 +203,38 @@ body{font-family:'Poppins',sans-serif;background:var(--g1);color:var(--black);mi
 .pl-scroll::-webkit-scrollbar-track{background:var(--g2);border-radius:99px;}
 .pl-scroll::-webkit-scrollbar-thumb{background:var(--g3);border-radius:99px;}
 
+/* NW Score badge on pipeline cards */
+.nw-score-badge{display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;padding:2px 7px;border-radius:99px;background:var(--pp);color:var(--purple);}
+.nw-score-badge.low{background:var(--g2);color:var(--g5);}
+
+/* Pipeline board cards (in org-detail pipeline tab) */
+.pl-board-card{background:#fff;border:1px solid var(--g3);border-radius:14px;overflow:hidden;margin-bottom:14px;}
+.pl-board-hdr{display:flex;align-items:center;gap:10px;padding:14px 18px;cursor:pointer;user-select:none;background:#fff;border-bottom:1px solid var(--g2);}
+.pl-board-title{font-size:14px;font-weight:700;color:var(--black);}
+.pl-board-meta{font-size:11px;color:var(--g5);}
+.pl-board-actions{display:flex;gap:8px;align-items:center;margin-left:auto;}
+.pl-board-body{padding:14px 18px 18px;}
+.pl-collapse-icon{font-size:11px;color:var(--g4);transition:transform .2s;flex-shrink:0;}
+.pl-board-card.collapsed .pl-collapse-icon{transform:rotate(-90deg);}
+.pl-board-card.collapsed .pl-board-body{display:none;}
+
+/* Pipeline status select */
+.pl-status-sel{padding:5px 10px;border:1.5px solid var(--g3);border-radius:8px;font-size:11px;font-weight:600;font-family:'Poppins',sans-serif;background:#fff;cursor:pointer;outline:none;}
+.pl-status-sel.s-active{border-color:var(--green);color:var(--green);}
+.pl-status-sel.s-paused{border-color:var(--amber);color:var(--amber);}
+.pl-status-sel.s-completed{border-color:var(--blue);color:var(--blue);}
+.pl-status-sel.s-cancelled{border-color:var(--red);color:var(--red);}
+
+/* Pipeline toolbar */
+.pipeline-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap;}
+
+/* Candidate card inside pipeline board — FIXED structure */
+.pl-cand-card-inner{display:flex;align-items:flex-start;justify-content:space-between;gap:4px;}
+.pl-cand-footer{display:flex;align-items:center;justify-content:space-between;margin-top:5px;}
+.pl-cand-city-badge{font-size:9px;color:var(--g5);}
+.pl-cand-inner{display:flex;align-items:flex-start;justify-content:space-between;gap:4px;margin-bottom:4px;}
+
+
 
 /* CANDIDATE BRIEF PANEL */
 .cand-brief-bg{position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:450;opacity:0;pointer-events:none;transition:opacity .2s;}
@@ -934,53 +966,46 @@ onAuthStateChanged(auth, async user => {
             <div class="pl-scroll">
               <div class="pl-stage-col" data-stage="applied" ondragover="dragOver(event)" ondrop="dropCard(event,this,'CSM')">
                 <div class="pl-stage-hdr">Applied <span class="pl-stage-count">3</span></div>
-                <div class="pl-cand-card highlight" draggable="true" ondragstart="dragStart(event,this,'María López','Applied','CSM')" onclick="openCandBrief('María López','',0)">
-                <div class="pl-cand-name">María López</div>
-                <div class="pl-cand-city"></div>
-                <div class="nw-score-badge low">0</div>
-              </div><div style="display:flex;justify-content:space-between;"><span class="pl-cand-role">C1 · Medellín</span><span class="pl-cand-score">72</span></div></div>
-                <div class="pl-cand-card" draggable="true" ondragstart="dragStart(event,this,'Carlos Ruiz','Applied','CSM')" onclick="openCandBrief('Carlos Ruiz','',0)">
-                <div class="pl-cand-name">Carlos Ruiz</div>
-                <div class="pl-cand-city"></div>
-                <div class="nw-score-badge low">0</div>
-              </div><div style="display:flex;justify-content:space-between;"><span class="pl-cand-role">C1 · Bogotá</span><span class="pl-cand-score">68</span></div></div>
-                <div class="pl-cand-card" draggable="true" ondragstart="dragStart(event,this,'Sofía Vargas','Applied','CSM')" onclick="openCandBrief('Sofía Vargas','',0)">
-                <div class="pl-cand-name">Sofía Vargas</div>
-                <div class="pl-cand-city"></div>
-                <div class="nw-score-badge low">0</div>
-              </div><div style="display:flex;justify-content:space-between;"><span class="pl-cand-role">C1 · Medellín</span><span class="pl-cand-score">71</span></div></div>
+                <div class="pl-cand-card highlight" draggable="true" ondragstart="dragStart(event,this,'María López','Applied','CSM')" onclick="openCandBrief('María López','C1 · Medellín',72)">
+                  <div class="pl-cand-inner"><div class="pl-cand-name">María López</div><span class="nw-score-badge">72</span></div>
+                  <div class="pl-cand-role">C1 · Medellín</div>
+                </div>
+                <div class="pl-cand-card" draggable="true" ondragstart="dragStart(event,this,'Carlos Ruiz','Applied','CSM')" onclick="openCandBrief('Carlos Ruiz','C1 · Bogotá',68)">
+                  <div class="pl-cand-inner"><div class="pl-cand-name">Carlos Ruiz</div><span class="nw-score-badge">68</span></div>
+                  <div class="pl-cand-role">C1 · Bogotá</div>
+                </div>
+                <div class="pl-cand-card" draggable="true" ondragstart="dragStart(event,this,'Sofía Vargas','Applied','CSM')" onclick="openCandBrief('Sofía Vargas','C1 · Medellín',71)">
+                  <div class="pl-cand-inner"><div class="pl-cand-name">Sofía Vargas</div><span class="nw-score-badge">71</span></div>
+                  <div class="pl-cand-role">C1 · Medellín</div>
+                </div>
                 <div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add</div>
               </div>
               <div class="pl-stage-col" data-stage="profile-review" ondragover="dragOver(event)" ondrop="dropCard(event,this,'CSM')">
                 <div class="pl-stage-hdr">Profile Review <span class="pl-stage-count">2</span></div>
-                <div class="pl-cand-card highlight" draggable="true" ondragstart="dragStart(event,this,'Isabella Gómez','Profile Review','CSM')" onclick="openCandBrief('Isabella Gómez','',0)">
-                <div class="pl-cand-name">Isabella Gómez</div>
-                <div class="pl-cand-city"></div>
-                <div class="nw-score-badge low">0</div>
-              </div><div style="display:flex;justify-content:space-between;"><span class="pl-cand-role">C1 · Medellín</span><span class="pl-cand-score">88</span></div></div>
-                <div class="pl-cand-card" draggable="true" ondragstart="dragStart(event,this,'Jorge Pérez','Profile Review','CSM')" onclick="openCandBrief('Jorge Pérez','',0)">
-                <div class="pl-cand-name">Jorge Pérez</div>
-                <div class="pl-cand-city"></div>
-                <div class="nw-score-badge low">0</div>
-              </div><div style="display:flex;justify-content:space-between;"><span class="pl-cand-role">C1 · Cali</span><span class="pl-cand-score">81</span></div></div>
+                <div class="pl-cand-card highlight" draggable="true" ondragstart="dragStart(event,this,'Isabella Gómez','Profile Review','CSM')" onclick="openCandBrief('Isabella Gómez','C1 · Medellín',88)">
+                  <div class="pl-cand-inner"><div class="pl-cand-name">Isabella Gómez</div><span class="nw-score-badge">88</span></div>
+                  <div class="pl-cand-role">C1 · Medellín</div>
+                </div>
+                <div class="pl-cand-card" draggable="true" ondragstart="dragStart(event,this,'Jorge Pérez','Profile Review','CSM')" onclick="openCandBrief('Jorge Pérez','C1 · Cali',81)">
+                  <div class="pl-cand-inner"><div class="pl-cand-name">Jorge Pérez</div><span class="nw-score-badge">81</span></div>
+                  <div class="pl-cand-role">C1 · Cali</div>
+                </div>
                 <div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add</div>
               </div>
               <div class="pl-stage-col" data-stage="assessment" ondragover="dragOver(event)" ondrop="dropCard(event,this,'CSM')">
                 <div class="pl-stage-hdr">Assessment <span class="pl-stage-count">1</span></div>
-                <div class="pl-cand-card highlight" draggable="true" ondragstart="dragStart(event,this,'David Herrera','Assessment','CSM')" onclick="openCandBrief('David Herrera','',0)">
-                <div class="pl-cand-name">David Herrera</div>
-                <div class="pl-cand-city"></div>
-                <div class="nw-score-badge low">0</div>
-              </div><div style="display:flex;justify-content:space-between;"><span class="pl-cand-role">C1 · Bogotá</span><span class="pl-cand-score">87</span></div></div>
+                <div class="pl-cand-card highlight" draggable="true" ondragstart="dragStart(event,this,'David Herrera','Assessment','CSM')" onclick="openCandBrief('David Herrera','C1 · Bogotá',87)">
+                  <div class="pl-cand-inner"><div class="pl-cand-name">David Herrera</div><span class="nw-score-badge">87</span></div>
+                  <div class="pl-cand-role">C1 · Bogotá</div>
+                </div>
                 <div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add</div>
               </div>
               <div class="pl-stage-col" data-stage="background" ondragover="dragOver(event)" ondrop="dropCard(event,this,'CSM')">
                 <div class="pl-stage-hdr">Background Check <span class="pl-stage-count">1</span></div>
-                <div class="pl-cand-card highlight" draggable="true" ondragstart="dragStart(event,this,'Valentina Ríos','Background Check','CSM')" onclick="openCandBrief('Valentina Ríos','',0)">
-                <div class="pl-cand-name">Valentina Ríos</div>
-                <div class="pl-cand-city"></div>
-                <div class="nw-score-badge low">0</div>
-              </div><div style="display:flex;justify-content:space-between;"><span class="pl-cand-role">C1 · Medellín</span><span class="pl-cand-score">91</span></div></div>
+                <div class="pl-cand-card highlight" draggable="true" ondragstart="dragStart(event,this,'Valentina Ríos','Background Check','CSM')" onclick="openCandBrief('Valentina Ríos','C1 · Medellín',91)">
+                  <div class="pl-cand-inner"><div class="pl-cand-name">Valentina Ríos</div><span class="nw-score-badge">91</span></div>
+                  <div class="pl-cand-role">C1 · Medellín</div>
+                </div>
                 <div class="pl-add-card" onclick="openModal('add-candidate-modal')">+ Add</div>
               </div>
               <div class="pl-stage-col" data-stage="presented" ondragover="dragOver(event)" ondrop="dropCard(event,this,'CSM')">
@@ -1980,7 +2005,8 @@ const PAGE_LABELS={
 };
 function showPage(id){
   PAGES.forEach(p=>{
-    document.getElementById('page-'+p).classList.toggle('show',p===id);
+    const el=document.getElementById('page-'+p);
+    if(el) el.classList.toggle('show',p===id);
   });
   window.scrollTo(0,0);
   closeAllDrops();
@@ -1993,6 +2019,9 @@ function navTo(id, label){
   const lbl=document.getElementById('nav-current-label');
   if(lbl) lbl.textContent=label||PAGE_LABELS[id]||id;
   closeDrawer();
+  // Update URL
+  const slug=id==='dashboard'?'':'/'+id;
+  history.pushState({page:id},'','/admin-dashboard'+slug);
 }
 function toggleDrawer(){
   document.getElementById('drawer').classList.toggle('open');
@@ -2082,13 +2111,23 @@ function setUrl(path) {
   history.pushState({ path }, '', path);
 }
 window.addEventListener('popstate', function(e) {
-  const path = e.state?.path || '/admin-dashboard';
-  if (path === '/admin-dashboard' || path.endsWith('admin-dashboard')) {
-    navTo('dashboard', 'Dashboard');
-  } else if (path.includes('/org/')) {
-    navTo('org-detail', document.getElementById('od-name')?.textContent || 'Organization');
-  } else if (path.includes('/candidate/')) {
-    // handled by candidate panel
+  const page = e.state?.page;
+  const path = e.state?.path || '';
+  if (path.startsWith('/candidate/')) {
+    // Browser back from candidate panel — just close it
+    document.getElementById('cand-brief-bg').classList.remove('show');
+    document.getElementById('cand-brief').classList.remove('show');
+    return;
+  }
+  if (page && PAGES.includes(page)) {
+    showPage(page);
+    document.querySelectorAll('.dtab').forEach(t=>t.classList.remove('on'));
+    const dt=document.getElementById('dtab-'+page);
+    if(dt) dt.classList.add('on');
+    const lbl=document.getElementById('nav-current-label');
+    if(lbl) lbl.textContent=PAGE_LABELS[page]||page;
+  } else {
+    navTo('dashboard','Dashboard');
   }
 });
 
@@ -2102,17 +2141,16 @@ window.openCandBrief = function(name, city, score) {
   const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
   document.getElementById('cb-av').textContent = initials;
   document.getElementById('cb-name').textContent = name;
-  document.getElementById('cb-role').textContent = city + ' · C1 English';
-  document.getElementById('cb-city').textContent = city.split('·').pop()?.trim() || city;
+  document.getElementById('cb-role').textContent = (city || 'Colombia') + ' · C1 English';
+  document.getElementById('cb-city').textContent = city ? city.split('·').pop()?.trim() : 'Colombia';
   document.getElementById('cb-score-num').textContent = score;
-  // Update score arc (circumference = 213.6, offset = 213.6 * (1 - score/100))
+  // Update score arc (circumference = 213.6)
   const arc = document.getElementById('cb-score-arc');
   if (arc) arc.setAttribute('stroke-dashoffset', (213.6 * (1 - score/100)).toFixed(1));
-  // Update score bar colors
   document.getElementById('cb-expand-btn').onclick = openCandFullProfile;
   // Push URL
   const slug = name.toLowerCase().replace(/[^a-z0-9]/g,'-');
-  setUrl('/candidate/' + slug);
+  history.pushState({ path: '/candidate/' + slug }, '', '/candidate/' + slug);
   // Show
   document.getElementById('cand-brief-bg').classList.add('show');
   document.getElementById('cand-brief').classList.add('show');
@@ -2121,8 +2159,10 @@ window.openCandBrief = function(name, city, score) {
 window.closeCandBrief = function() {
   document.getElementById('cand-brief-bg').classList.remove('show');
   document.getElementById('cand-brief').classList.remove('show');
-  // Restore org URL
-  history.back();
+  // Restore the current page URL without navigating
+  const currentPage = document.querySelector('.dtab.on')?.id?.replace('dtab-','') || 'dashboard';
+  const slug = currentPage === 'dashboard' ? '' : '/' + currentPage;
+  history.replaceState({ page: currentPage }, '', '/admin-dashboard' + slug);
 };
 
 window.openCandFullProfile = function() {
@@ -2245,9 +2285,9 @@ window.openOrgDetail = function(orgId, name, domain, initials, plan, status) {
   // Navigate to org-detail page
   navTo('org-detail', name);
   document.getElementById('nav-current-label').textContent = name;
-  // Push URL
+  // Push URL — override the one navTo just pushed so it includes the org slug
   const slug = orgId.toLowerCase().replace(/[^a-z0-9]/g, '-');
-  setUrl('/org/' + slug);
+  history.replaceState({ page: 'org-detail', orgId, name }, '', '/admin-dashboard/org/' + slug);
 };
 
 /* ── Org detail tab switcher ── */
