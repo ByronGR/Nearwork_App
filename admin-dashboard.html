@@ -107,6 +107,11 @@ body{font-family:'Poppins',sans-serif;background:var(--g1);color:var(--black);mi
 .b-red{background:rgba(239,68,68,0.08);color:var(--red);}
 .b-blue{background:#EFF6FF;color:var(--blue);}
 .b-dark{background:var(--black);color:#fff;}
+/* ── Plan badges — one color per plan, always ── */
+.b-plan-standard{background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE;}   /* blue */
+.b-plan-lite{background:#F0FDF4;color:#15803D;border:1px solid #BBF7D0;}        /* green */
+.b-plan-essential{background:#F5F3FF;color:#6D28D9;border:1px solid #DDD6FE;}  /* purple */
+.b-plan-elite{background:#FFF7ED;color:#C2410C;border:1px solid #FED7AA;}      /* orange */
 .btn{padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;font-family:'Poppins',sans-serif;border:none;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px;text-decoration:none;}
 .btn-p{background:var(--purple);color:#fff;}
 .btn-p:hover{background:var(--pd);transform:translateY(-1px);}
@@ -380,8 +385,8 @@ body{font-family:'Poppins',sans-serif;background:var(--g1);color:var(--black);mi
 
 /* ══ ORGANIZATIONS PAGE ══ */
 .org-list{background:#fff;border-radius:13px;border:1px solid var(--g3);overflow:hidden;}
-.org-list-hdr{display:grid;grid-template-columns:44px 2.5fr 1fr 1fr 1fr 190px;gap:14px;padding:10px 20px;background:var(--g1);border-bottom:1px solid var(--g2);font-size:10px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.08em;align-items:center;}
-.org-row{display:grid;grid-template-columns:44px 2.5fr 1fr 1fr 1fr 190px;gap:14px;padding:13px 20px;border-bottom:1px solid var(--g2);align-items:center;cursor:pointer;transition:background .15s;}
+.org-list-hdr{display:grid;grid-template-columns:44px 2.5fr 1fr 1fr 1fr 260px;gap:14px;padding:10px 20px;background:var(--g1);border-bottom:1px solid var(--g2);font-size:10px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.08em;align-items:center;}
+.org-row{display:grid;grid-template-columns:44px 2.5fr 1fr 1fr 1fr 260px;gap:14px;padding:13px 20px;border-bottom:1px solid var(--g2);align-items:center;cursor:pointer;transition:background .15s;}
 .org-row:last-child{border-bottom:none;}
 .org-row:hover{background:var(--g1);}
 .org-logo-wrap{width:36px;height:36px;border-radius:8px;background:var(--g1);border:1px solid var(--g2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:var(--purple);flex-shrink:0;overflow:hidden;cursor:pointer;position:relative;transition:border-color .15s;}
@@ -783,7 +788,7 @@ onAuthStateChanged(auth, async user => {
       </div>
 
       <!-- Crestline SaaS -->
-      <div class="org-row" id="org-crestline" data-name="crestline saas" data-domain="crestline.io" data-plan="essential" data-status="active" onclick="openOrgDetail('ORG-CS01','Crestline SaaS','crestline.io','CS','Essential','active')">
+      <div class="org-row" id="org-crestline" data-name="crestline saas" data-domain="crestline.io" data-code="org-cs01" data-plan="essential" data-status="active" onclick="openOrgDetail('ORG-CS01','Crestline SaaS','crestline.io','CS','Essential','active')">
         <div class="org-logo-wrap" id="logo-wrap-crestline" title="Click to upload logo" onclick="event.stopPropagation();triggerLogoUpload('crestline')">
           <span id="logo-fb-crestline">CS</span>
         </div>
@@ -792,7 +797,7 @@ onAuthStateChanged(auth, async user => {
           <div class="org-domain">crestline.io</div>
         </div>
         <div class="org-code-mono">ORG-CS01</div>
-        <div><span class="badge b-purple">Essential</span></div>
+        <div><span class="badge b-plan-essential">Essential</span></div>
         <div><span class="badge b-green" id="status-crestline">Active</span></div>
         <div class="org-row-actions" onclick="event.stopPropagation()">
           <button class="btn btn-ghost btn-sm" onclick="openModal('access-modal')">👥 Access</button>
@@ -802,7 +807,7 @@ onAuthStateChanged(auth, async user => {
       </div>
 
       <!-- Axiom Tech -->
-      <div class="org-row" id="org-axiom" data-name="axiom tech" data-domain="axiomtech.io" data-plan="lite" data-status="active" onclick="openOrgDetail('ORG-AT02','Axiom Tech','axiomtech.io','AT','Lite','active')">
+      <div class="org-row" id="org-axiom" data-name="axiom tech" data-domain="axiomtech.io" data-code="org-at02" data-plan="lite" data-status="active" onclick="openOrgDetail('ORG-AT02','Axiom Tech','axiomtech.io','AT','Lite','active')">
         <div class="org-logo-wrap" id="logo-wrap-axiom" title="Click to upload logo" onclick="event.stopPropagation();triggerLogoUpload('axiom')">
           <span id="logo-fb-axiom">AT</span>
         </div>
@@ -811,7 +816,7 @@ onAuthStateChanged(auth, async user => {
           <div class="org-domain">axiomtech.io</div>
         </div>
         <div class="org-code-mono">ORG-AT02</div>
-        <div><span class="badge b-blue">Lite</span></div>
+        <div><span class="badge b-plan-lite">Lite</span></div>
         <div><span class="badge b-green" id="status-axiom">Active</span></div>
         <div class="org-row-actions" onclick="event.stopPropagation()">
           <button class="btn btn-ghost btn-sm" onclick="openModal('access-modal')">👥 Access</button>
@@ -821,7 +826,7 @@ onAuthStateChanged(auth, async user => {
       </div>
 
       <!-- NovaDash -->
-      <div class="org-row" id="org-novadash" data-name="novadash" data-domain="novadash.com" data-plan="essential" data-status="on hold" style="opacity:.8;" onclick="openOrgDetail('ORG-ND03','NovaDash','novadash.com','ND','Essential','hold')">
+      <div class="org-row" id="org-novadash" data-name="novadash" data-domain="novadash.com" data-code="org-nd03" data-plan="essential" data-status="on hold" style="opacity:.8;" onclick="openOrgDetail('ORG-ND03','NovaDash','novadash.com','ND','Essential','hold')">
         <div class="org-logo-wrap" id="logo-wrap-novadash" title="Click to upload logo" onclick="event.stopPropagation();triggerLogoUpload('novadash')">
           <span id="logo-fb-novadash">ND</span>
         </div>
@@ -830,7 +835,7 @@ onAuthStateChanged(auth, async user => {
           <div class="org-domain">novadash.com</div>
         </div>
         <div class="org-code-mono">ORG-ND03</div>
-        <div><span class="badge b-amber">Essential</span></div>
+        <div><span class="badge b-plan-essential">Essential</span></div>
         <div><span class="badge b-amber" id="status-novadash">On hold</span></div>
         <div class="org-row-actions" onclick="event.stopPropagation()">
           <button class="btn btn-ghost btn-sm" onclick="openModal('access-modal')">👥 Access</button>
@@ -865,7 +870,7 @@ onAuthStateChanged(auth, async user => {
           </div>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <button class="btn btn-ghost btn-sm" onclick="openModal('edit-org-modal')">Edit org</button>
+          <button class="btn btn-ghost btn-sm" onclick="openEditOrg('crestline','Crestline SaaS','crestline.io','Essential',5,'Active')">Edit org</button>
           <button class="btn btn-p btn-sm" id="od-view-btn" onclick="impersonate('Crestline SaaS')">👁 View as client</button>
           <button class="btn btn-danger btn-sm" id="od-suspend-btn" onclick="suspendOrg('ORG-CS01','crestline','Crestline SaaS')">Suspend</button>
         </div>
@@ -910,10 +915,7 @@ onAuthStateChanged(auth, async user => {
             ℹ️ <strong>All stages are visible to clients</strong> — they can only <strong>action</strong> on the last 2 stages (Client Review &amp; Hired).
           </div>
         </div>
-        <div style="display:flex;gap:8px;">
-          <button class="btn btn-ghost btn-sm" onclick="openPipelineLink()">↗ Open full pipeline</button>
-          <button class="btn btn-p btn-sm" onclick="openModal('new-pipeline-modal')">+ New pipeline</button>
-        </div>
+        <button class="btn btn-p btn-sm" onclick="openModal('new-pipeline-modal')">+ New pipeline</button>
       </div>
 
       <!-- Pipeline boards — one per opening -->
@@ -925,7 +927,7 @@ onAuthStateChanged(auth, async user => {
             <span class="pl-collapse-icon">▼</span>
             <div style="flex:1;">
               <div class="pl-board-title">Customer Success Manager</div>
-              <div class="pl-board-meta">NW-CSM-4X8B · Byron Giraldo · 8 candidates</div>
+              <div class="pl-board-meta">PL-CSM-4X8B · Byron Giraldo · 8 candidates</div>
             </div>
             <div class="pl-board-actions" onclick="event.stopPropagation()">
               <select class="pl-status-sel s-active" onchange="updatePipelineStatus(this,'pl-board-csm')">
@@ -935,6 +937,7 @@ onAuthStateChanged(auth, async user => {
                 <option value="cancelled">✕ Cancelled</option>
               </select>
               <button class="btn btn-ghost btn-sm" onclick="openModal('add-candidate-modal')">+ Add candidate</button>
+              <button class="btn btn-ghost btn-sm" onclick="openPipelineLink('PL-CSM-4X8B')" title="Open full pipeline for PL-CSM-4X8B">↗ Full pipeline</button>
             </div>
           </div>
           <div class="pl-board-body">
@@ -1012,7 +1015,7 @@ onAuthStateChanged(auth, async user => {
             <span class="pl-collapse-icon">▼</span>
             <div style="flex:1;">
               <div class="pl-board-title">Technical Support Specialist</div>
-              <div class="pl-board-meta">NW-SUP-3B7R · Nany Salcedo · 3 candidates</div>
+              <div class="pl-board-meta">PL-SUP-3B7R · Nany Salcedo · 3 candidates</div>
             </div>
             <div class="pl-board-actions" onclick="event.stopPropagation()">
               <select class="pl-status-sel s-paused" onchange="updatePipelineStatus(this,'pl-board-sup')">
@@ -1022,6 +1025,7 @@ onAuthStateChanged(auth, async user => {
                 <option value="cancelled">✕ Cancelled</option>
               </select>
               <button class="btn btn-ghost btn-sm" onclick="openModal('add-candidate-modal')">+ Add candidate</button>
+              <button class="btn btn-ghost btn-sm" onclick="openPipelineLink('PL-SUP-3B7R')" title="Open full pipeline for PL-SUP-3B7R">↗ Full pipeline</button>
             </div>
           </div>
           <div class="pl-board-body">
@@ -1128,7 +1132,7 @@ onAuthStateChanged(auth, async user => {
           </div>
         </div>
       </div>
-      <div style="font-size:11px;color:var(--g5);padding:10px 0;">3 of 5 seats used · <a style="color:var(--purple);cursor:pointer;" onclick="openModal('edit-org-modal')">Manage seats</a></div>
+      <div style="font-size:11px;color:var(--g5);padding:10px 0;">3 of 5 seats used · <a style="color:var(--purple);cursor:pointer;" onclick="openEditOrg('crestline','Crestline SaaS','crestline.io','Essential',5,'Active')">Manage seats</a></div>
     </div>
 
     <!-- ── PANEL: Openings ── -->
@@ -1142,11 +1146,11 @@ onAuthStateChanged(auth, async user => {
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
             <div>
               <div style="font-size:14px;font-weight:700;color:var(--black);">Customer Success Manager</div>
-              <div style="font-size:10px;color:var(--g4);font-family:monospace;">NW-CSM-4X8B · Byron Giraldo</div>
+              <div style="font-size:10px;color:var(--g4);font-family:monospace;">PL-CSM-4X8B · Byron Giraldo</div>
             </div>
             <div style="display:flex;align-items:center;gap:8px;">
               <span class="badge b-green">Active</span>
-              <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();window.open('opening-detail.html?id=NW-CSM-4X8B','_blank')">↗ Full view</button>
+              <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();window.open('opening-detail.html?id=PL-CSM-4X8B','_blank')">↗ Full view</button>
             </div>
           </div>
           <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
@@ -1160,11 +1164,11 @@ onAuthStateChanged(auth, async user => {
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
             <div>
               <div style="font-size:14px;font-weight:700;color:var(--black);">Technical Support Specialist</div>
-              <div style="font-size:10px;color:var(--g4);font-family:monospace;">NW-SUP-3B7R · Nany Salcedo</div>
+              <div style="font-size:10px;color:var(--g4);font-family:monospace;">PL-SUP-3B7R · Nany Salcedo</div>
             </div>
             <div style="display:flex;align-items:center;gap:8px;">
               <span class="badge b-amber">Paused</span>
-              <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();window.open('opening-detail.html?id=NW-SUP-3B7R','_blank')">↗ Full view</button>
+              <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();window.open('opening-detail.html?id=PL-SUP-3B7R','_blank')">↗ Full view</button>
             </div>
           </div>
           <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
@@ -1194,13 +1198,13 @@ onAuthStateChanged(auth, async user => {
         <div class="card">
           <div class="od-section-title">Package &amp; limits</div>
           <div style="display:flex;flex-direction:column;gap:0;">
-            <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:9px 0;border-bottom:1px solid var(--g2);"><span style="color:var(--g5);">Plan</span><span class="badge b-purple" id="oi-plan">Essential</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:9px 0;border-bottom:1px solid var(--g2);"><span style="color:var(--g5);">Plan</span><span class="badge b-plan-essential" id="oi-plan">Essential</span></div>
             <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:9px 0;border-bottom:1px solid var(--g2);"><span style="color:var(--g5);">Portal seats</span><strong>3 / 5</strong></div>
             <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:9px 0;border-bottom:1px solid var(--g2);"><span style="color:var(--g5);">Max candidates / opening</span><strong>5</strong></div>
             <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:9px 0;border-bottom:1px solid var(--g2);"><span style="color:var(--g5);">Active openings</span><strong>2 / 3</strong></div>
             <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:9px 0;"><span style="color:var(--g5);">Guarantee</span><strong>6 months</strong></div>
           </div>
-          <button class="btn btn-ghost btn-sm" style="margin-top:14px;width:100%;justify-content:center;" onclick="openModal('edit-org-modal')">Edit plan &amp; seats</button>
+          <button class="btn btn-ghost btn-sm" style="margin-top:14px;width:100%;justify-content:center;" onclick="openEditOrg('crestline','Crestline SaaS','crestline.io','Essential',5,'Active')">Edit plan &amp; seats</button>
         </div>
         <div class="card">
           <div class="od-section-title">Billing &amp; integrations</div>
@@ -1252,7 +1256,7 @@ onAuthStateChanged(auth, async user => {
         <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;">
           <div>
             <div style="font-size:15px;font-weight:700;color:var(--black);margin-bottom:2px;">Customer Success Manager</div>
-            <div style="font-size:11px;color:var(--g5);">Crestline SaaS · NW-CSM-4X8B · Recruiter: Byron Giraldo</div>
+            <div style="font-size:11px;color:var(--g5);">Crestline SaaS · PL-CSM-4X8B · Recruiter: Byron Giraldo</div>
           </div>
           <div style="display:flex;gap:6px;align-items:center;">
             <span class="badge b-green">Active</span>
@@ -1298,7 +1302,7 @@ onAuthStateChanged(auth, async user => {
         <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;">
           <div>
             <div style="font-size:15px;font-weight:700;color:var(--black);margin-bottom:2px;">SDR / Sales Development Rep</div>
-            <div style="font-size:11px;color:var(--g5);">Axiom Tech · NW-SDR-9K2M · Recruiter: Nany Salcedo</div>
+            <div style="font-size:11px;color:var(--g5);">Axiom Tech · PL-SDR-9K2M · Recruiter: Nany Salcedo</div>
           </div>
           <div style="display:flex;gap:6px;align-items:center;">
             <span class="badge b-green">Active</span>
@@ -1352,7 +1356,7 @@ onAuthStateChanged(auth, async user => {
     <div class="cand-table">
       <div class="ct-hdr"><div>Candidate</div><div>Score</div><div>Stage</div><div>Opening</div><div>Status</div><div>Actions</div></div>
       <div class="ct-row" onclick="openModal('cand-detail-modal')">
-        <div class="ct-cand"><div class="ct-av" style="background:linear-gradient(135deg,#EC4899,#BE185D);">DH</div><div><div class="ct-name">David Herrera</div><div class="ct-code">NW-C-2N6Q8</div></div></div>
+        <div class="ct-cand"><div class="ct-av" style="background:linear-gradient(135deg,#EC4899,#BE185D);">DH</div><div><div class="ct-name">David Herrera</div><div class="ct-code">CAND-2N6Q8</div></div></div>
         <div><span class="score-pill sp-g">91</span></div>
         <div><span class="badge b-green">Client Review</span></div>
         <div style="font-size:11px;">CSM · Crestline</div>
@@ -1363,7 +1367,7 @@ onAuthStateChanged(auth, async user => {
         </div>
       </div>
       <div class="ct-row" onclick="openModal('cand-detail-modal')">
-        <div class="ct-cand"><div class="ct-av" style="background:linear-gradient(135deg,#F59E0B,#D97706);">ML</div><div><div class="ct-name">María López</div><div class="ct-code">NW-C-5B9W3</div></div></div>
+        <div class="ct-cand"><div class="ct-av" style="background:linear-gradient(135deg,#F59E0B,#D97706);">ML</div><div><div class="ct-name">María López</div><div class="ct-code">CAND-5B9W3</div></div></div>
         <div><span class="score-pill sp-g">85</span></div>
         <div><span class="badge b-green">Client Review</span></div>
         <div style="font-size:11px;">CSM · Crestline</div>
@@ -1371,7 +1375,7 @@ onAuthStateChanged(auth, async user => {
         <div onclick="event.stopPropagation()" style="display:flex;gap:4px;"><button class="btn btn-ghost btn-sm" onclick="openModal('cand-detail-modal')">View</button><button class="btn btn-danger btn-sm" onclick="toast('Candidate banned.','ok')">Ban</button></div>
       </div>
       <div class="ct-row" onclick="openModal('cand-detail-modal')">
-        <div class="ct-cand"><div class="ct-av" style="background:linear-gradient(135deg,#8B5CF6,#6C3CE1);">SM</div><div><div class="ct-name">Sofía Moreno</div><div class="ct-code">NW-C-7T2R5</div></div></div>
+        <div class="ct-cand"><div class="ct-av" style="background:linear-gradient(135deg,#8B5CF6,#6C3CE1);">SM</div><div><div class="ct-name">Sofía Moreno</div><div class="ct-code">CAND-7T2R5</div></div></div>
         <div><span class="score-pill sp-a">79</span></div>
         <div><span class="badge b-purple">Profile Review</span></div>
         <div style="font-size:11px;">CSM · Crestline</div>
@@ -1379,7 +1383,7 @@ onAuthStateChanged(auth, async user => {
         <div onclick="event.stopPropagation()" style="display:flex;gap:4px;"><button class="btn btn-ghost btn-sm">View</button><button class="btn btn-danger btn-sm" onclick="toast('Candidate banned.','ok')">Ban</button></div>
       </div>
       <div class="ct-row" onclick="openModal('cand-detail-modal')">
-        <div class="ct-cand"><div class="ct-av" style="background:linear-gradient(135deg,#6C3CE1,#8B5CF6);">IG</div><div><div class="ct-name">Isabella Gómez</div><div class="ct-code">NW-C-8X4K2</div></div></div>
+        <div class="ct-cand"><div class="ct-av" style="background:linear-gradient(135deg,#6C3CE1,#8B5CF6);">IG</div><div><div class="ct-name">Isabella Gómez</div><div class="ct-code">CAND-8X4K2</div></div></div>
         <div><span class="score-pill sp-a">72</span></div>
         <div><span class="badge b-gray">Applied</span></div>
         <div style="font-size:11px;">CSM · Crestline</div>
@@ -1387,7 +1391,7 @@ onAuthStateChanged(auth, async user => {
         <div onclick="event.stopPropagation()" style="display:flex;gap:4px;"><button class="btn btn-ghost btn-sm">View</button><button class="btn btn-danger btn-sm" onclick="toast('Candidate banned.','ok')">Ban</button></div>
       </div>
       <div class="ct-row" onclick="openModal('cand-detail-modal')">
-        <div class="ct-cand"><div class="ct-av" style="background:linear-gradient(135deg,#6B7280,#9CA3AF);">JM</div><div><div class="ct-name">Jorge Méndez</div><div class="ct-code">NW-C-1A3F7</div></div></div>
+        <div class="ct-cand"><div class="ct-av" style="background:linear-gradient(135deg,#6B7280,#9CA3AF);">JM</div><div><div class="ct-name">Jorge Méndez</div><div class="ct-code">CAND-1A3F7</div></div></div>
         <div><span class="score-pill sp-r">44</span></div>
         <div><span class="badge b-red">Did Not Continue</span></div>
         <div style="font-size:11px;">CSM · Crestline</div>
@@ -1414,23 +1418,23 @@ onAuthStateChanged(auth, async user => {
     <div class="openings-table">
       <div class="ot-hdr"><div>Opening</div><div>Organization</div><div>Recruiter</div><div>Candidates</div><div>Status</div><div>Public</div></div>
       <div class="ot-row" onclick="openModal('edit-opening-modal')">
-        <div><div class="ot-role">Customer Success Manager</div><div class="ot-code">NW-CSM-4X8B</div></div>
+        <div><div class="ot-role">Customer Success Manager</div><div class="ot-code">PL-CSM-4X8B</div></div>
         <div style="font-size:12px;font-weight:600;">Crestline SaaS</div>
         <div style="font-size:12px;">Byron Giraldo</div>
-        <div><span class="badge b-purple">8 active</span></div>
+        <div><span class="badge b-gray">8 active</span></div>
         <div><span class="badge b-green">Active</span></div>
         <div onclick="event.stopPropagation()"><div class="pub-toggle"><button class="toggle on" onclick="this.classList.toggle('on')"></button><span style="color:var(--green);font-size:11px;">Published</span></div></div>
       </div>
       <div class="ot-row" onclick="openModal('edit-opening-modal')">
-        <div><div class="ot-role">SDR / Sales Development Rep</div><div class="ot-code">NW-SDR-9K2M</div></div>
+        <div><div class="ot-role">SDR / Sales Development Rep</div><div class="ot-code">PL-SDR-9K2M</div></div>
         <div style="font-size:12px;font-weight:600;">Crestline SaaS</div>
         <div style="font-size:12px;">Byron Giraldo</div>
-        <div><span class="badge b-purple">5 active</span></div>
+        <div><span class="badge b-gray">5 active</span></div>
         <div><span class="badge b-green">Active</span></div>
         <div onclick="event.stopPropagation()"><div class="pub-toggle"><button class="toggle on" onclick="this.classList.toggle('on')"></button><span style="color:var(--green);font-size:11px;">Published</span></div></div>
       </div>
       <div class="ot-row" onclick="openModal('edit-opening-modal')">
-        <div><div class="ot-role">Technical Support Specialist</div><div class="ot-code">NW-SUP-3B7R</div></div>
+        <div><div class="ot-role">Technical Support Specialist</div><div class="ot-code">PL-SUP-3B7R</div></div>
         <div style="font-size:12px;font-weight:600;">Axiom Tech</div>
         <div style="font-size:12px;">Nany Salcedo</div>
         <div><span class="badge b-amber">4 active</span></div>
@@ -1470,7 +1474,7 @@ onAuthStateChanged(auth, async user => {
         <div class="assess-top">
           <div>
             <div class="assess-role">Customer Success Manager</div>
-            <div class="assess-meta">For: David Herrera (NW-C-2N6Q8) · Crestline SaaS · Generated by AI Apr 10, 2026</div>
+            <div class="assess-meta">For: David Herrera (CAND-2N6Q8) · Crestline SaaS · Generated by AI Apr 10, 2026</div>
           </div>
           <span class="badge b-amber">⏳ Awaiting your review</span>
         </div>
@@ -1521,7 +1525,7 @@ onAuthStateChanged(auth, async user => {
     <div class="hired-table">
       <div class="ht-hdr"><div>Candidate</div><div>Company · Role</div><div>Hire date</div><div>Time at company</div><div>Guarantee</div><div>Referral</div></div>
       <div class="ht-row">
-        <div class="ct-cand"><div class="ct-av" style="background:linear-gradient(135deg,#10B981,#059669);">VR</div><div><div class="ct-name">Valentina Ríos</div><div class="ct-code">NW-C-9A2K1</div></div></div>
+        <div class="ct-cand"><div class="ct-av" style="background:linear-gradient(135deg,#10B981,#059669);">VR</div><div><div class="ct-name">Valentina Ríos</div><div class="ct-code">CAND-9A2K1</div></div></div>
         <div><div style="font-size:12px;font-weight:600;">Crestline SaaS</div><div style="font-size:10px;color:var(--g5);">Customer Success Manager</div></div>
         <div style="font-size:12px;">Jan 12, 2026</div>
         <div>
@@ -1532,7 +1536,7 @@ onAuthStateChanged(auth, async user => {
         <div><span class="badge b-gray">None</span></div>
       </div>
       <div class="ht-row">
-        <div class="ct-cand"><div class="ct-av" style="background:linear-gradient(135deg,#6C3CE1,#8B5CF6);">JP</div><div><div class="ct-name">Jorge Pérez</div><div class="ct-code">NW-C-4M8R2</div></div></div>
+        <div class="ct-cand"><div class="ct-av" style="background:linear-gradient(135deg,#6C3CE1,#8B5CF6);">JP</div><div><div class="ct-name">Jorge Pérez</div><div class="ct-code">CAND-4M8R2</div></div></div>
         <div><div style="font-size:12px;font-weight:600;">Axiom Tech</div><div style="font-size:10px;color:var(--g5);">SDR / Sales Development Rep</div></div>
         <div style="font-size:12px;">Feb 1, 2026</div>
         <div>
@@ -1696,10 +1700,10 @@ onAuthStateChanged(auth, async user => {
     </div>
     <div class="audit-table">
       <div class="au-hdr"><div>Who</div><div>Action</div><div>Target</div><div>Timestamp</div></div>
-      <div class="au-row"><div><div class="au-who">Byron Giraldo</div><div class="au-behalf">Super Admin</div></div><div class="au-action">Moved <strong>David Herrera</strong> from Stage 4 → Stage 5 (Presented)</div><div style="font-size:11px;color:var(--g6);">Crestline SaaS · NW-CSM-4X8B</div><div class="au-time">Apr 12, 2026 · 10:42am</div></div>
-      <div class="au-row"><div><div class="au-who">Alex Chen</div><div class="au-behalf">Crestline SaaS · Admin</div></div><div class="au-action">Left a note on <strong>David Herrera's</strong> profile</div><div style="font-size:11px;color:var(--g6);">Crestline SaaS · NW-C-2N6Q8</div><div class="au-time">Apr 12, 2026 · 9:42am</div></div>
-      <div class="au-row"><div><div class="au-who">Byron Giraldo</div><div class="au-behalf">Super Admin</div></div><div class="au-action">Approved and launched assessment for <strong>David Herrera</strong></div><div style="font-size:11px;color:var(--g6);">Crestline SaaS · NW-CSM-4X8B</div><div class="au-time">Apr 11, 2026 · 3:30pm</div></div>
-      <div class="au-row"><div><div class="au-who">Sarah Kim</div><div class="au-behalf">Crestline SaaS · Hiring Manager</div></div><div class="au-action">Downloaded CV of <strong>María López</strong></div><div style="font-size:11px;color:var(--g6);">Crestline SaaS · NW-C-5B9W3</div><div class="au-time">Apr 11, 2026 · 2:15pm</div></div>
+      <div class="au-row"><div><div class="au-who">Byron Giraldo</div><div class="au-behalf">Super Admin</div></div><div class="au-action">Moved <strong>David Herrera</strong> from Stage 4 → Stage 5 (Presented)</div><div style="font-size:11px;color:var(--g6);">Crestline SaaS · PL-CSM-4X8B</div><div class="au-time">Apr 12, 2026 · 10:42am</div></div>
+      <div class="au-row"><div><div class="au-who">Alex Chen</div><div class="au-behalf">Crestline SaaS · Admin</div></div><div class="au-action">Left a note on <strong>David Herrera's</strong> profile</div><div style="font-size:11px;color:var(--g6);">Crestline SaaS · CAND-2N6Q8</div><div class="au-time">Apr 12, 2026 · 9:42am</div></div>
+      <div class="au-row"><div><div class="au-who">Byron Giraldo</div><div class="au-behalf">Super Admin</div></div><div class="au-action">Approved and launched assessment for <strong>David Herrera</strong></div><div style="font-size:11px;color:var(--g6);">Crestline SaaS · PL-CSM-4X8B</div><div class="au-time">Apr 11, 2026 · 3:30pm</div></div>
+      <div class="au-row"><div><div class="au-who">Sarah Kim</div><div class="au-behalf">Crestline SaaS · Hiring Manager</div></div><div class="au-action">Downloaded CV of <strong>María López</strong></div><div style="font-size:11px;color:var(--g6);">Crestline SaaS · CAND-5B9W3</div><div class="au-time">Apr 11, 2026 · 2:15pm</div></div>
       <div class="au-row"><div><div class="au-who">Byron Giraldo</div><div class="au-behalf">on behalf of Crestline SaaS</div></div><div class="au-action">Switched into Crestline SaaS environment (impersonate mode)</div><div style="font-size:11px;color:var(--g6);">Organization view</div><div class="au-time">Apr 10, 2026 · 4:00pm</div></div>
       <div class="au-row"><div><div class="au-who">Byron Giraldo</div><div class="au-behalf">Super Admin</div></div><div class="au-action">Created new organization <strong>Axiom Tech</strong> · Essential plan</div><div style="font-size:11px;color:var(--g6);">NW-ORG-3B7F</div><div class="au-time">Apr 9, 2026 · 11:20am</div></div>
     </div>
@@ -1867,18 +1871,47 @@ onAuthStateChanged(auth, async user => {
 
 <!-- Edit Org -->
 <div class="modal-bg" id="edit-org-modal" onclick="if(event.target===this)closeModal('edit-org-modal')">
-  <div class="modal sm">
-    <div class="modal-hdr"><div class="modal-title">Edit organization — Crestline SaaS</div><button class="modal-close" onclick="closeModal('edit-org-modal')">✕</button></div>
+  <div class="modal">
+    <div class="modal-hdr"><div class="modal-title" id="edit-org-modal-title">Edit organization</div><button class="modal-close" onclick="closeModal('edit-org-modal')">✕</button></div>
     <div class="modal-body">
-      <div class="field"><label>Company name</label><input type="text" value="Crestline SaaS"></div>
-      <div class="field"><label>Domain</label><input type="text" value="crestline.io"></div>
-      <div class="field"><label>Plan</label><select><option>Standard</option><option>Lite</option><option selected>Essential</option><option>Elite</option></select></div>
-      <div class="field"><label>Seats</label><input type="number" value="3" min="1"></div>
-      <div class="field"><label>Status</label><select><option>Active</option><option>On hold</option><option>Suspended</option></select></div>
-      <div class="field"><label>Primary color (branding)</label><input type="color" value="#6C3CE1" style="height:40px;cursor:pointer;"></div>
-      <div class="field"><label>Reset admin password</label><input type="email" placeholder="Enter user email to send reset link..."></div>
+
+      <!-- Logo upload -->
+      <div class="field">
+        <label>Company logo</label>
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div id="edit-org-logo-preview" style="width:52px;height:52px;border-radius:10px;background:var(--g1);border:1.5px solid var(--g3);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:var(--purple);overflow:hidden;flex-shrink:0;cursor:pointer;" onclick="document.getElementById('edit-org-logo-file').click()">
+            <span id="edit-org-logo-initials">CS</span>
+          </div>
+          <div style="flex:1;">
+            <input type="file" id="edit-org-logo-file" accept="image/png,image/jpeg,image/svg+xml,image/webp" style="display:none;" onchange="handleEditOrgLogo(this)">
+            <button class="btn btn-ghost btn-sm" onclick="document.getElementById('edit-org-logo-file').click()" type="button">📁 Choose file</button>
+            <div id="edit-org-logo-status" style="font-size:10px;color:var(--g4);margin-top:4px;">PNG, JPG, SVG or WebP · max 500 KB · saved to Firebase Storage so all admins see it</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field"><label>Company name</label><input type="text" id="edit-org-name" value="Crestline SaaS"></div>
+        <div class="field"><label>Domain</label><input type="text" id="edit-org-domain" value="crestline.io"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Plan</label>
+          <select id="edit-org-plan">
+            <option>Standard</option><option>Lite</option><option selected>Essential</option><option>Elite</option>
+          </select>
+        </div>
+        <div class="field"><label>Seats</label><input type="number" id="edit-org-seats" value="5" min="1"></div>
+      </div>
+      <div class="field"><label>Status</label>
+        <select id="edit-org-status"><option>Active</option><option>On hold</option><option>Suspended</option></select>
+      </div>
+      <div class="field"><label>Reset admin password</label><input type="email" placeholder="Enter user email to send reset link..." id="edit-org-reset-email"></div>
+      <div id="edit-org-err" style="display:none;font-size:11px;color:var(--red);margin-top:4px;"></div>
     </div>
-    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('edit-org-modal')">Cancel</button><button class="btn btn-p" onclick="closeModal('edit-org-modal');toast('Organization updated.','ok')">Save changes</button></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('edit-org-modal')">Cancel</button>
+      <button class="btn btn-p" id="edit-org-save-btn" onclick="saveEditOrg()">Save changes</button>
+    </div>
   </div>
 </div>
 
@@ -1908,7 +1941,7 @@ onAuthStateChanged(auth, async user => {
       <div class="field"><label>Kick-off call notes</label><textarea placeholder="What we discussed with the client — salary budget, culture, team size, tools, start date..."></textarea></div>
       <div class="field-row">
         <div class="field"><label>Publish to nearwork.co/jobs?</label><select><option>Yes — publish immediately</option><option>No — keep internal</option></select></div>
-        <div class="field"><label>Opening code (auto-generated)</label><input type="text" value="NW-CSM-8P4Q" readonly style="background:var(--g1);color:var(--g5);cursor:not-allowed;font-family:monospace;"></div>
+        <div class="field"><label>Opening code (auto-generated)</label><input type="text" value="PL-CSM-8P4Q" readonly style="background:var(--g1);color:var(--g5);cursor:not-allowed;font-family:monospace;"></div>
       </div>
     </div>
     <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('new-opening-modal')">Cancel</button><button class="btn btn-p" onclick="closeModal('new-opening-modal');toast('Opening created and published!','ok')">Create opening →</button></div>
@@ -1918,7 +1951,7 @@ onAuthStateChanged(auth, async user => {
 <!-- Edit Opening -->
 <div class="modal-bg" id="edit-opening-modal" onclick="if(event.target===this)closeModal('edit-opening-modal')">
   <div class="modal">
-    <div class="modal-hdr"><div class="modal-title">Edit opening — NW-CSM-4X8B</div><button class="modal-close" onclick="closeModal('edit-opening-modal')">✕</button></div>
+    <div class="modal-hdr"><div class="modal-title">Edit opening — PL-CSM-4X8B</div><button class="modal-close" onclick="closeModal('edit-opening-modal')">✕</button></div>
     <div class="modal-body">
       <div class="field-row">
         <div class="field"><label>Organization</label><select><option selected>Crestline SaaS</option><option>Axiom Tech</option><option>NovaDash</option></select></div>
@@ -1933,7 +1966,7 @@ onAuthStateChanged(auth, async user => {
       <div class="field"><label>Kick-off notes</label><textarea>Looking for a senior CSM to own 25-40 accounts in the $10K-$50K ARR range. Must have SaaS experience...</textarea></div>
       <div class="field-row">
         <div class="field"><label>Publish to nearwork.co/jobs?</label><select><option selected>Yes — published</option><option>No — unpublish</option></select></div>
-        <div class="field"><label>Opening code</label><input type="text" value="NW-CSM-4X8B" readonly style="background:var(--g1);color:var(--g5);cursor:not-allowed;font-family:monospace;"></div>
+        <div class="field"><label>Opening code</label><input type="text" value="PL-CSM-4X8B" readonly style="background:var(--g1);color:var(--g5);cursor:not-allowed;font-family:monospace;"></div>
       </div>
     </div>
     <div class="modal-footer">
@@ -1992,7 +2025,7 @@ onAuthStateChanged(auth, async user => {
     <div class="modal-hdr">
       <div style="display:flex;align-items:center;gap:12px;">
         <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#EC4899,#BE185D);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;">DH</div>
-        <div><div style="font-size:15px;font-weight:800;color:var(--black);">David Herrera</div><div style="font-size:10px;color:var(--g4);font-family:monospace;">NW-C-2N6Q8</div></div>
+        <div><div style="font-size:15px;font-weight:800;color:var(--black);">David Herrera</div><div style="font-size:10px;color:var(--g4);font-family:monospace;">CAND-2N6Q8</div></div>
         <span class="badge b-green" style="margin-left:6px;">Stage 6 — Client Review</span>
       </div>
       <button class="modal-close" onclick="closeModal('cand-detail-modal')">✕</button>
@@ -2216,10 +2249,11 @@ function filterOrgs() {
   document.querySelectorAll('.org-row').forEach(row => {
     const name   = (row.dataset.name   || '').toLowerCase();
     const domain = (row.dataset.domain || '').toLowerCase();
+    const code   = (row.dataset.code   || '').toLowerCase();
     const rPlan  = (row.dataset.plan   || '').toLowerCase();
     const rStat  = (row.dataset.status || '').toLowerCase();
 
-    const matchSearch = !q      || name.includes(q) || domain.includes(q);
+    const matchSearch = !q      || name.includes(q) || domain.includes(q) || code.includes(q);
     const matchPlan   = !plan   || rPlan === plan;
     const matchStatus = !status || rStat.includes(status.replace(' ','').toLowerCase()) || rStat === status;
 
@@ -2914,7 +2948,7 @@ document.addEventListener('dragend', function() {
       <div style="font-size:11px;color:var(--g5);margin-bottom:16px;line-height:1.6;">A pipeline links an opening to a candidate flow. Each pipeline gets the 8 standard stages (Applied → Denied) automatically.</div>
       <div class="field-row">
         <div class="field"><label>Organization</label><select id="pl-org"><option>Crestline SaaS</option><option>Axiom Tech</option><option>NovaDash</option></select></div>
-        <div class="field"><label>Opening</label><select id="pl-opening"><option>Customer Success Manager (NW-CSM-4X8B)</option><option>Technical Support Specialist (NW-SUP-3B7R)</option><option>— Create new opening —</option></select></div>
+        <div class="field"><label>Opening</label><select id="pl-opening"><option>Customer Success Manager (PL-CSM-4X8B)</option><option>Technical Support Specialist (PL-SUP-3B7R)</option><option>— Create new opening —</option></select></div>
       </div>
       <div class="field-row">
         <div class="field"><label>Recruiter assigned</label><select id="pl-recruiter"><option>Byron Giraldo</option><option>Nany Salcedo</option><option>Andres García</option></select></div>
@@ -2978,7 +3012,109 @@ window.triggerLogoUpload = function(orgKey) {
 // Restore logos immediately on load
 restoreLogos();
 
-/* ── Denied modal ── */
+/* ── Edit Org modal ── */
+let _editOrgKey = null;
+let _editOrgLogoFile = null;
+
+// Call this when clicking Edit on a specific org row or org detail
+window.openEditOrg = function(orgKey, name, domain, plan, seats, status) {
+  _editOrgKey = orgKey || 'crestline';
+  _editOrgLogoFile = null;
+  document.getElementById('edit-org-modal-title').textContent = 'Edit organization — ' + (name || 'Organization');
+  document.getElementById('edit-org-name').value    = name   || '';
+  document.getElementById('edit-org-domain').value  = domain || '';
+  document.getElementById('edit-org-plan').value    = plan   || 'Essential';
+  document.getElementById('edit-org-seats').value   = seats  || 5;
+  document.getElementById('edit-org-status').value  = status || 'Active';
+  document.getElementById('edit-org-reset-email').value = '';
+  document.getElementById('edit-org-err').style.display = 'none';
+  document.getElementById('edit-org-logo-status').textContent = 'PNG, JPG, SVG or WebP · max 500 KB · saved to Firebase Storage so all admins see it';
+
+  // Show current logo in preview
+  const initials = (name || 'OR').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  const preview = document.getElementById('edit-org-logo-preview');
+  const initialsEl = document.getElementById('edit-org-logo-initials');
+  // Check localStorage first, then show initials
+  const stored = localStorage.getItem('nw_logo_' + _editOrgKey);
+  let existingImg = preview.querySelector('img');
+  if (stored) {
+    initialsEl.style.display = 'none';
+    if (!existingImg) { existingImg = document.createElement('img'); existingImg.style.cssText='width:100%;height:100%;object-fit:contain;'; preview.appendChild(existingImg); }
+    existingImg.src = stored;
+  } else {
+    initialsEl.style.display = '';
+    initialsEl.textContent = initials;
+    if (existingImg) existingImg.remove();
+  }
+  openModal('edit-org-modal');
+};
+
+window.handleEditOrgLogo = function(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 500 * 1024) { toast('Image too large — max 500 KB', 'bad'); return; }
+  _editOrgLogoFile = file;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    const preview = document.getElementById('edit-org-logo-preview');
+    document.getElementById('edit-org-logo-initials').style.display = 'none';
+    let img = preview.querySelector('img');
+    if (!img) { img = document.createElement('img'); img.style.cssText='width:100%;height:100%;object-fit:contain;'; preview.appendChild(img); }
+    img.src = ev.target.result;
+    document.getElementById('edit-org-logo-status').textContent = '✓ ' + file.name + ' selected — will upload on save';
+  };
+  reader.readAsDataURL(file);
+};
+
+window.saveEditOrg = function() {
+  const btn = document.getElementById('edit-org-save-btn');
+  btn.textContent = 'Saving...'; btn.disabled = true;
+
+  // If a logo file was selected, upload to Firebase Storage
+  if (_editOrgLogoFile && _editOrgKey) {
+    import('./firebase-config.js').then(({ storage }) => {
+      import('https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js').then(({ ref, uploadBytes, getDownloadURL }) => {
+        const storageRef = ref(storage, 'org-logos/' + _editOrgKey + '.' + _editOrgLogoFile.name.split('.').pop());
+        uploadBytes(storageRef, _editOrgLogoFile).then(snapshot => {
+          return getDownloadURL(snapshot.ref);
+        }).then(url => {
+          // Save URL to Firestore org record too
+          applyLogoUrl(_editOrgKey, url);
+          finishSaveEditOrg(btn);
+        }).catch(() => {
+          // Firebase not connected — fall back to localStorage
+          const reader = new FileReader();
+          reader.onload = ev => {
+            applyLogo(_editOrgKey, ev.target.result);
+            finishSaveEditOrg(btn);
+          };
+          reader.readAsDataURL(_editOrgLogoFile);
+        });
+      });
+    }).catch(() => {
+      // No firebase-config — localStorage fallback
+      const reader = new FileReader();
+      reader.onload = ev => {
+        applyLogo(_editOrgKey, ev.target.result);
+        finishSaveEditOrg(btn);
+      };
+      reader.readAsDataURL(_editOrgLogoFile);
+    });
+  } else {
+    finishSaveEditOrg(btn);
+  }
+};
+
+function applyLogoUrl(orgKey, url) {
+  try { localStorage.setItem('nw_logo_' + orgKey, url); } catch(e) {}
+  applyLogo(orgKey, url);
+}
+
+function finishSaveEditOrg(btn) {
+  btn.textContent = 'Save changes'; btn.disabled = false;
+  closeModal('edit-org-modal');
+  toast('Organization updated.', 'ok');
+}
 window.openDeniedModal = function() { openModal('denied-modal'); };
 window.toggleDeniedOther = function() {
   const val = document.getElementById('denied-reason-sel').value;
@@ -3002,41 +3138,76 @@ window.doCreatePipeline = function() {
   toast('Pipeline created for ' + org + ' — ' + opening.split('(')[0].trim(), 'ok');
 };
 
-/* ── Pipeline external link ── */
-window.openPipelineLink = function() {
-  const saved = localStorage.getItem('nw_pipeline_url') || '';
+/* ── Pipeline external link (per pipeline code, with inline iframe option) ── */
+let _activePipelineCode = null;
+
+window.openPipelineLink = function(plCode) {
+  _activePipelineCode = plCode || 'unknown';
+  const storageKey = 'nw_pipeline_url_' + _activePipelineCode;
+  const saved = localStorage.getItem(storageKey) || '';
   document.getElementById('pipeline-url-input').value = saved;
+  document.getElementById('pipeline-link-code').textContent = _activePipelineCode;
+  document.getElementById('pipeline-iframe-wrap').style.display = 'none';
+  document.getElementById('pipeline-iframe-el').src = '';
   openModal('pipeline-link-modal');
 };
+
 window.savePipelineLink = function() {
   const url = document.getElementById('pipeline-url-input').value.trim();
   if (!url) { toast('Enter a URL first', 'bad'); return; }
-  localStorage.setItem('nw_pipeline_url', url);
-  closeModal('pipeline-link-modal');
-  window.open(url, '_blank');
-  toast('Pipeline link saved & opened', 'ok');
+  const storageKey = 'nw_pipeline_url_' + _activePipelineCode;
+  localStorage.setItem(storageKey, url);
+  toast('Link saved for ' + _activePipelineCode, 'ok');
+  // Try loading inline first
+  loadPipelineInline(url);
 };
+
+window.openPipelinNewTab = function() {
+  const url = document.getElementById('pipeline-url-input').value.trim()
+    || localStorage.getItem('nw_pipeline_url_' + _activePipelineCode) || '';
+  if (!url) { toast('Save a URL first', 'bad'); return; }
+  window.open(url, '_blank');
+};
+
+function loadPipelineInline(url) {
+  const wrap = document.getElementById('pipeline-iframe-wrap');
+  const iframe = document.getElementById('pipeline-iframe-el');
+  wrap.style.display = 'block';
+  iframe.src = url;
+  iframe.onerror = function() {
+    wrap.innerHTML = '<div style="padding:32px;text-align:center;font-size:12px;color:var(--g5);line-height:1.7;">' +
+      '⚠️ This page can\'t be embedded (X-Frame-Options restriction).<br>' +
+      '<button class="btn btn-p btn-sm" style="margin-top:12px;" onclick="openPipelinNewTab()">Open in new tab ↗</button></div>';
+  };
+}
 </script>
 
-<!-- Pipeline Link Modal -->
+<!-- Pipeline Link Modal — inline iframe drawer -->
 <div class="modal-bg" id="pipeline-link-modal" onclick="if(event.target===this)closeModal('pipeline-link-modal')">
-  <div class="modal sm">
-    <div class="modal-hdr">
-      <div class="modal-title">Full pipeline URL</div>
+  <div class="modal lg" style="max-width:900px;max-height:95vh;display:flex;flex-direction:column;">
+    <div class="modal-hdr" style="flex-shrink:0;">
+      <div>
+        <div class="modal-title">Full pipeline — <span id="pipeline-link-code" style="font-family:monospace;color:var(--purple);">PL-???</span></div>
+        <div style="font-size:10px;color:var(--g4);margin-top:2px;">Set the URL for this pipeline's real tool. Opens inline below or in a new tab.</div>
+      </div>
       <button class="modal-close" onclick="closeModal('pipeline-link-modal')">✕</button>
     </div>
-    <div class="modal-body">
-      <div style="font-size:11px;color:var(--g5);margin-bottom:14px;line-height:1.6;">
-        Paste the URL for your real pipeline tool (Monday.com, Notion, Airtable, etc). Saved to this browser — opens in a new tab every time.
-      </div>
-      <div class="field">
-        <label>Pipeline URL</label>
-        <input type="url" id="pipeline-url-input" placeholder="https://your-pipeline-tool.com/board/..." style="font-family:monospace;font-size:12px;">
+    <div class="modal-body" style="flex-shrink:0;padding-bottom:12px;">
+      <div style="display:flex;gap:8px;align-items:flex-end;">
+        <div class="field" style="flex:1;margin-bottom:0;">
+          <label>Pipeline URL</label>
+          <input type="url" id="pipeline-url-input" placeholder="https://your-tool.com/board/..." style="font-family:monospace;font-size:12px;">
+        </div>
+        <button class="btn btn-p btn-sm" onclick="savePipelineLink()" style="flex-shrink:0;">Load inline ↓</button>
+        <button class="btn btn-ghost btn-sm" onclick="openPipelinNewTab()" style="flex-shrink:0;">New tab ↗</button>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('pipeline-link-modal')">Cancel</button>
-      <button class="btn btn-p" onclick="savePipelineLink()">Save &amp; open ↗</button>
+    <!-- Inline iframe -->
+    <div id="pipeline-iframe-wrap" style="display:none;flex:1;min-height:500px;border-top:1px solid var(--g2);overflow:hidden;border-radius:0 0 16px 16px;">
+      <iframe id="pipeline-iframe-el" src="" style="width:100%;height:100%;min-height:500px;border:none;" allowfullscreen></iframe>
+    </div>
+    <div class="modal-footer" style="flex-shrink:0;border-top:1px solid var(--g2);">
+      <button class="btn btn-ghost" onclick="closeModal('pipeline-link-modal')">Close</button>
     </div>
   </div>
 </div>
