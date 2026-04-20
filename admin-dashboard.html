@@ -472,6 +472,9 @@ body{font-family:'Poppins',sans-serif;background:var(--g1);color:var(--black);mi
 .osb-title{font-size:11px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px;}
 .osb-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:8px 0;border-bottom:1px solid var(--g2);}
 .osb-label{color:var(--g5);}
+.osb-inp-sel{font-size:11px;font-family:'Poppins',sans-serif;padding:3px 20px 3px 6px;border:1.5px solid var(--g3);border-radius:6px;background:#fff;outline:none;cursor:pointer;appearance:none;color:var(--black);}
+.osb-inp-sel:focus{border-color:var(--purple);}
+.od-sel{width:100%;font-size:12px;font-family:'Poppins',sans-serif;padding:7px 10px;border:1.5px solid rgba(255,255,255,0.2);border-radius:8px;background:rgba(255,255,255,0.1);color:#fff;outline:none;cursor:pointer;}
 
 @media(max-width:900px){
   .opening-body{grid-template-columns:1fr;}
@@ -1527,46 +1530,86 @@ onAuthStateChanged(auth, async user => {
        OPENING DETAIL / EDIT
   ══════════════════════════════ -->
   <div class="page" id="page-opening-detail">
-    <div style="margin-bottom:20px;">
-      <button class="btn btn-ghost btn-sm" onclick="navTo('openings','Openings')" style="margin-bottom:16px;">← Back to openings</button>
+
+    <!-- Top bar -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+      <button class="btn btn-ghost btn-sm" onclick="leaveOpeningPage()">← Back to openings</button>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <span id="od-draft-chip" style="display:none;font-size:10px;font-weight:700;color:var(--amber);background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);padding:3px 10px;border-radius:99px;">● Unsaved draft</span>
+        <button class="btn btn-ghost btn-sm" id="od-edit-btn" onclick="toggleOpeningEdit()">✏️ Edit</button>
+        <button class="btn btn-ghost btn-sm" id="od-visibility-btn" onclick="toggleOpeningVisibility()">👁 Set private</button>
+        <button class="btn btn-p btn-sm" id="od-save-btn" style="display:none;" onclick="saveOpening()">Save opening</button>
+      </div>
     </div>
 
     <!-- Header band -->
     <div class="opening-header" id="od-header-band">
       <div class="opening-header-top">
         <div style="flex:1;">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap;">
-            <span class="badge b-green" id="od-status-badge">Active</span>
-            <span class="badge b-gray" id="od-code-badge" style="font-family:monospace;">OPEN-CSM-4X8B</span>
-            <span class="badge b-gray" id="od-wfh-badge">🏠 Remote (Colombia-wide)</span>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+            <span class="badge" id="od-status-badge">Active</span>
+            <span class="badge b-gray" id="od-code-badge" style="font-family:monospace;font-size:10px;">OPEN-CSM-4X8B</span>
+            <span class="badge b-gray" id="od-wfh-badge">🏠 Remote · Colombia-wide</span>
+            <span style="font-size:11px;color:rgba(255,255,255,0.4);" id="od-posted-date">Posted Apr 10, 2026</span>
           </div>
-          <h1 class="opening-title" id="od-title">Customer Success Manager</h1>
-          <div class="opening-skills-row" id="od-skills-row">
+
+          <!-- Title — view/edit -->
+          <div id="view-title">
+            <h1 class="opening-title" id="od-title">Customer Success Manager</h1>
+          </div>
+          <div id="edit-title" style="display:none;margin-bottom:10px;">
+            <input id="inp-title" type="text" value="Customer Success Manager" style="width:100%;font-size:22px;font-weight:800;letter-spacing:-1px;background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.2);border-radius:9px;padding:10px 14px;color:#fff;font-family:'Poppins',sans-serif;outline:none;" placeholder="Position title..." oninput="markDirty()">
+          </div>
+
+          <!-- Skills chips — view/edit -->
+          <div id="view-skills-chips" class="opening-skills-row">
             <span class="skill-chip">SaaS</span><span class="skill-chip">CRM</span><span class="skill-chip">Customer Retention</span><span class="skill-chip">Salesforce</span><span class="skill-chip">English C1+</span>
           </div>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start;">
-          <div id="od-admin-bar" style="display:flex;gap:8px;">
-            <button class="btn btn-ghost btn-sm" id="od-edit-btn" onclick="toggleOpeningEdit()">✏️ Edit</button>
-            <button class="btn btn-ghost btn-sm" id="od-visibility-btn" onclick="toggleOpeningVisibility()">👁 Set private</button>
+          <div id="edit-skills-chips" style="display:none;margin-top:8px;">
+            <input id="inp-skills-chips" type="text" value="SaaS, CRM, Customer Retention, Salesforce, English C1+" style="width:100%;background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.2);border-radius:9px;padding:8px 12px;color:#fff;font-family:'Poppins',sans-serif;font-size:12px;outline:none;" placeholder="Comma-separated skills..." oninput="markDirty()">
+            <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:4px;">Separate with commas — these show as chips on the opening</div>
           </div>
         </div>
       </div>
-      <div class="opening-meta-row">
+
+      <!-- Meta row — view/edit -->
+      <div class="opening-meta-row" id="view-meta">
         <span>Recruiter: <strong id="od-recruiter">Byron Giraldo</strong></span>
         <span>·</span>
-        <span id="od-recruiter-label">Posted via Nearwork</span>
-        <span>·</span>
-        <span>English: <strong>C1 Advanced minimum</strong></span>
+        <span>English: <strong id="od-english-label">C1 Advanced min.</strong></span>
         <span>·</span>
         <span>Experience: <strong id="od-exp">Mid (2–5 yrs)</strong></span>
+        <span>·</span>
+        <span id="od-tz-label">EST / CST alignment</span>
+      </div>
+      <div id="edit-meta" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.1);display:none;">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+          <div>
+            <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;">Recruiter</div>
+            <select id="inp-recruiter" class="od-sel" onchange="markDirty()">
+              <option>Byron Giraldo</option><option>Nany Salcedo</option><option>Andres García</option>
+            </select>
+          </div>
+          <div>
+            <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;">English required</div>
+            <select id="inp-english" class="od-sel" onchange="markDirty()">
+              <option>B2 Professional</option><option selected>C1 Advanced</option><option>Native only</option>
+            </select>
+          </div>
+          <div>
+            <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;">Experience</div>
+            <select id="inp-exp" class="od-sel" onchange="markDirty()">
+              <option>Junior (0–2 yrs)</option><option selected>Mid (2–5 yrs)</option><option>Senior (5+ yrs)</option>
+            </select>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Body: two-column on wide screens -->
+    <!-- Body: two-column -->
     <div class="opening-body">
 
-      <!-- Left: all the content sections -->
+      <!-- Left: content sections -->
       <div class="opening-content">
 
         <!-- About the Job -->
@@ -1580,7 +1623,7 @@ onAuthStateChanged(auth, async user => {
             <p>This is a high-ownership role inside a fast-growing nearshore model. You won't be a middleman — you'll be the expert your clients rely on every day.</p>
           </div>
           <div class="opening-edit-area" id="edit-about" style="display:none;">
-            <textarea class="opening-textarea" id="ta-about" rows="6">We're looking for a driven Customer Success Manager to own relationships with a portfolio of US SaaS clients from Colombia. You'll work directly with decision-makers, drive product adoption, reduce churn, and expand accounts — all in English, fully remote, on US time zones.
+            <textarea class="opening-textarea" id="ta-about" rows="6" oninput="markDirty()">We're looking for a driven Customer Success Manager to own relationships with a portfolio of US SaaS clients from Colombia. You'll work directly with decision-makers, drive product adoption, reduce churn, and expand accounts — all in English, fully remote, on US time zones.
 
 This is a high-ownership role inside a fast-growing nearshore model. You won't be a middleman — you'll be the expert your clients rely on every day.</textarea>
             <div class="opening-edit-actions">
@@ -1608,7 +1651,7 @@ This is a high-ownership role inside a fast-growing nearshore model. You won't b
             </ul>
           </div>
           <div class="opening-edit-area" id="edit-responsibilities" style="display:none;">
-            <textarea class="opening-textarea" id="ta-responsibilities" rows="8">- Own a portfolio of 25–40 US SaaS accounts, serving as the primary point of contact
+            <textarea class="opening-textarea" id="ta-responsibilities" rows="8" oninput="markDirty()">- Own a portfolio of 25–40 US SaaS accounts, serving as the primary point of contact
 - Drive onboarding, product adoption, and renewal conversations in English
 - Identify expansion opportunities and coordinate with the sales team
 - Monitor account health metrics and proactively intervene before churn
@@ -1631,17 +1674,17 @@ This is a high-ownership role inside a fast-growing nearshore model. You won't b
           <div class="opening-section-body" id="view-skills">
             <div class="skill-grid">
               <div class="skill-item"><span class="skill-dot"></span>CRM proficiency (Salesforce, HubSpot, or similar)</div>
-              <div class="skill-item"><span class="skill-dot"></span>English C1 Advanced or higher (written & spoken)</div>
+              <div class="skill-item"><span class="skill-dot"></span>English C1 Advanced or higher (written &amp; spoken)</div>
               <div class="skill-item"><span class="skill-dot"></span>SaaS business model understanding</div>
-              <div class="skill-item"><span class="skill-dot"></span>Data analysis & reporting (Excel, Google Sheets)</div>
+              <div class="skill-item"><span class="skill-dot"></span>Data analysis &amp; reporting (Excel, Google Sheets)</div>
               <div class="skill-item"><span class="skill-dot"></span>Strong verbal and written communication</div>
               <div class="skill-item"><span class="skill-dot"></span>Problem-solving under pressure</div>
               <div class="skill-item"><span class="skill-dot"></span>US business culture awareness</div>
-              <div class="skill-item"><span class="skill-dot"></span>Project coordination & time management</div>
+              <div class="skill-item"><span class="skill-dot"></span>Project coordination &amp; time management</div>
             </div>
           </div>
           <div class="opening-edit-area" id="edit-skills" style="display:none;">
-            <textarea class="opening-textarea" id="ta-skills" rows="8">CRM proficiency (Salesforce, HubSpot, or similar)
+            <textarea class="opening-textarea" id="ta-skills" rows="8" oninput="markDirty()">CRM proficiency (Salesforce, HubSpot, or similar)
 English C1 Advanced or higher (written & spoken)
 SaaS business model understanding
 Data analysis & reporting (Excel, Google Sheets)
@@ -1674,7 +1717,7 @@ Project coordination & time management</textarea>
             </ul>
           </div>
           <div class="opening-edit-area" id="edit-qualifications" style="display:none;">
-            <textarea class="opening-textarea" id="ta-qualifications" rows="7">- 2–5 years of experience in a Customer Success, Account Management, or client-facing SaaS role
+            <textarea class="opening-textarea" id="ta-qualifications" rows="7" oninput="markDirty()">- 2–5 years of experience in a Customer Success, Account Management, or client-facing SaaS role
 - Demonstrated ability to manage a book of business independently
 - Experience working with US-based teams or clients (preferred)
 - Professional English level — you'll be on calls with US stakeholders daily
@@ -1687,7 +1730,7 @@ Project coordination & time management</textarea>
           </div>
         </div>
 
-        <!-- About Nearwork — fixed, not editable by default -->
+        <!-- About Nearwork — fixed -->
         <div class="opening-section opening-section-nearwork">
           <div class="opening-section-hdr">
             <div class="opening-section-title" style="color:var(--purple);">About Nearwork</div>
@@ -1708,39 +1751,108 @@ Project coordination & time management</textarea>
 
       </div><!-- /opening-content -->
 
-      <!-- Right: sidebar -->
+      <!-- Right sidebar -->
       <div class="opening-sidebar">
+
+        <!-- Position details — fully editable -->
         <div class="opening-sidebar-card">
           <div class="osb-title">Position details</div>
-          <div class="osb-row"><span class="osb-label">Work type</span><span id="osb-wfh">Remote</span></div>
-          <div class="osb-row"><span class="osb-label">Location</span><span id="osb-city">Colombia (any city)</span></div>
-          <div class="osb-row"><span class="osb-label">Experience</span><span id="osb-exp2">Mid (2–5 yrs)</span></div>
-          <div class="osb-row"><span class="osb-label">English</span><span>C1 Advanced min.</span></div>
-          <div class="osb-row"><span class="osb-label">Salary</span><span id="osb-salary">$2,000–$2,600 / mo</span></div>
-          <div class="osb-row"><span class="osb-label">Time zone</span><span>EST / CST alignment</span></div>
-          <div class="osb-row" style="border-bottom:none;"><span class="osb-label">Recruiter</span><strong id="osb-recruiter">Byron Giraldo</strong></div>
+
+          <div class="osb-row">
+            <span class="osb-label">Work type</span>
+            <span id="view-osb-wfh">Remote</span>
+            <select id="inp-wfh" class="osb-inp-sel" style="display:none;" onchange="markDirty();updateWfhBadge()">
+              <option selected>Remote</option><option>On-site</option><option>Hybrid</option>
+            </select>
+          </div>
+          <div class="osb-row">
+            <span class="osb-label">City / Location</span>
+            <span id="view-osb-city">Colombia-wide</span>
+            <select id="inp-city" class="osb-inp-sel" style="display:none;" onchange="markDirty()">
+              <option selected>Colombia-wide</option><option>Medellín</option><option>Bogotá</option><option>Cali</option><option>Barranquilla</option><option>Cartagena</option><option>Remote only</option>
+            </select>
+          </div>
+          <div class="osb-row">
+            <span class="osb-label">Experience</span>
+            <span id="view-osb-exp">Mid (2–5 yrs)</span>
+            <select id="inp-exp2" class="osb-inp-sel" style="display:none;" onchange="markDirty()">
+              <option>Junior (0–2 yrs)</option><option selected>Mid (2–5 yrs)</option><option>Senior (5+ yrs)</option>
+            </select>
+          </div>
+          <div class="osb-row">
+            <span class="osb-label">English</span>
+            <span id="view-osb-english">C1 Advanced min.</span>
+            <select id="inp-english2" class="osb-inp-sel" style="display:none;" onchange="markDirty()">
+              <option>B2 Professional</option><option selected>C1 Advanced</option><option>Native only</option>
+            </select>
+          </div>
+          <div class="osb-row">
+            <span class="osb-label">Salary (USD/mo)</span>
+            <span id="view-osb-salary">$2,000 – $2,600</span>
+            <div id="inp-salary-wrap" style="display:none;display:none;flex:1;justify-content:flex-end;gap:4px;">
+              <input type="number" id="inp-sal-min" value="2000" min="0" step="100" style="width:70px;padding:3px 6px;border:1.5px solid var(--g3);border-radius:6px;font-size:11px;font-family:'Poppins',sans-serif;text-align:center;" oninput="markDirty()">
+              <span style="font-size:11px;color:var(--g4);align-self:center;">–</span>
+              <input type="number" id="inp-sal-max" value="2600" min="0" step="100" style="width:70px;padding:3px 6px;border:1.5px solid var(--g3);border-radius:6px;font-size:11px;font-family:'Poppins',sans-serif;text-align:center;" oninput="markDirty()">
+            </div>
+          </div>
+          <div class="osb-row">
+            <span class="osb-label">Time zone</span>
+            <span id="view-osb-tz">EST / CST</span>
+            <select id="inp-tz" class="osb-inp-sel" style="display:none;" onchange="markDirty()">
+              <option selected>EST / CST</option><option>PST / MST</option><option>Flexible</option>
+            </select>
+          </div>
+          <div class="osb-row" style="border-bottom:none;">
+            <span class="osb-label">Announced</span>
+            <span id="view-osb-date">Apr 10, 2026</span>
+            <input type="date" id="inp-date" value="2026-04-10" class="osb-inp-sel" style="display:none;font-size:11px;" oninput="markDirty()">
+          </div>
         </div>
 
-        <!-- Admin-only sidebar card -->
+        <!-- Admin controls card -->
         <div class="opening-sidebar-card" id="od-admin-card">
           <div class="osb-title" style="color:var(--purple);">Admin controls</div>
-          <div class="osb-row"><span class="osb-label">Opening code</span><span style="font-family:monospace;font-size:11px;color:var(--purple);" id="osb-code">OPEN-CSM-4X8B</span></div>
-          <div class="osb-row"><span class="osb-label">Org</span><span id="osb-org">Crestline SaaS</span></div>
-          <div class="osb-row"><span class="osb-label">Status</span><select class="fsel" style="font-size:11px;padding:4px 22px 4px 8px;" id="osb-status-sel" onchange="toast('Status updated.','ok')"><option>Active</option><option>On hold</option><option>Closed</option></select></div>
+          <div class="osb-row">
+            <span class="osb-label">Opening code</span>
+            <span style="font-family:monospace;font-size:11px;color:var(--purple);" id="osb-code">OPEN-CSM-4X8B</span>
+          </div>
+          <div class="osb-row">
+            <span class="osb-label">Client org</span>
+            <span id="view-osb-org">Crestline SaaS</span>
+            <select id="inp-org" class="osb-inp-sel" style="display:none;" onchange="markDirty()">
+              <option selected>Crestline SaaS</option><option>Axiom Tech</option><option>NovaDash</option>
+            </select>
+          </div>
+          <div class="osb-row">
+            <span class="osb-label">Status</span>
+            <span id="view-osb-status">Active</span>
+            <select id="inp-status" class="osb-inp-sel" style="display:none;" onchange="markDirty()">
+              <option selected>Active</option><option>On hold</option><option>Closed</option><option>Cancelled</option><option>Finished</option>
+            </select>
+          </div>
           <div class="osb-row" style="border-bottom:none;">
             <span class="osb-label">Visibility</span>
             <div class="pub-toggle">
-              <button class="toggle on" id="osb-pub-toggle" onclick="this.classList.toggle('on');document.getElementById('osb-pub-label').textContent=this.classList.contains('on')?'Published':'Private';toast(this.classList.contains('on')?'Opening published.':'Opening set to private.','ok')"></button>
+              <button class="toggle on" id="osb-pub-toggle" onclick="togglePubVisibility()"></button>
               <span id="osb-pub-label" style="font-size:11px;color:var(--green);">Published</span>
             </div>
           </div>
           <div style="margin-top:12px;display:flex;flex-direction:column;gap:6px;">
-            <button class="btn btn-ghost btn-sm" style="justify-content:center;" onclick="toast('Opening link copied to clipboard.','ok')">🔗 Copy candidate link</button>
+            <button class="btn btn-ghost btn-sm" style="justify-content:center;" onclick="copyOpeningLink()">🔗 Copy candidate link</button>
             <button class="btn btn-ghost btn-sm" style="justify-content:center;" onclick="navTo('pipeline','Pipelines')">🔄 View pipeline</button>
+          </div>
+
+          <!-- Important note about applications -->
+          <div style="margin-top:14px;padding:10px 12px;background:rgba(108,60,225,0.06);border-radius:8px;border:1px solid rgba(108,60,225,0.12);font-size:10px;color:var(--g6);line-height:1.65;">
+            ⚠️ <strong>Candidates who apply are NOT added to the pipeline automatically.</strong> Pipeline additions are always manual. Application volume visible here is internal only — clients see only what's in their pipeline.
           </div>
         </div>
 
-        <button class="btn btn-p" style="width:100%;justify-content:center;margin-top:4px;" onclick="toast('Application submitted! Candidate will be notified.','ok')">Apply for this position →</button>
+        <!-- Apply button — visible to candidates, not wired yet -->
+        <button class="btn btn-p" style="width:100%;justify-content:center;padding:14px;" onclick="handleApplyClick()">
+          Apply for this position →
+        </button>
+        <div style="font-size:10px;color:var(--g4);text-align:center;margin-top:4px;">Applications are reviewed by Nearwork — not sent directly to the client.</div>
       </div>
     </div>
   </div>
@@ -2465,107 +2577,232 @@ window.openCandDetail = function(name) {
 /* ══ OPENING DETAIL ══ */
 let _currentOpening = {};
 let _openingEditMode = false;
+let _openingDirty = false;
+const SIDEBAR_FIELDS = ['wfh','city','exp','english','tz','date','org','status'];
+
+window.markDirty = function() {
+  _openingDirty = true;
+  const chip = document.getElementById('od-draft-chip');
+  const btn  = document.getElementById('od-save-btn');
+  if (chip) chip.style.display = 'inline-flex';
+  if (btn)  btn.style.display  = 'inline-flex';
+};
 
 window.openOpeningDetail = function(code, title, status, published, recruiter, editMode) {
   _currentOpening = { code, title, status, published, recruiter };
-  _openingEditMode = !!editMode;
+  _openingEditMode = false;
+  _openingDirty = false;
 
-  // Populate header
   document.getElementById('od-title').textContent = title;
+  document.getElementById('inp-title').value = title;
   document.getElementById('od-code-badge').textContent = code;
-  const sb = document.getElementById('od-status-badge');
-  sb.textContent = status === 'active' ? 'Active' : status === 'on hold' ? 'On hold' : 'Closed';
-  sb.className = 'badge ' + (status === 'active' ? 'b-green' : 'b-amber');
-
-  // Sidebar
   document.getElementById('osb-code').textContent = code;
-  document.getElementById('osb-recruiter').textContent = recruiter;
-  document.getElementById('od-recruiter').textContent = recruiter;
-  const pubToggle = document.getElementById('osb-pub-toggle');
-  const pubLabel  = document.getElementById('osb-pub-label');
-  if (pubToggle && pubLabel) {
-    pubToggle.className = 'toggle' + (published ? ' on' : '');
-    pubLabel.textContent = published ? 'Published' : 'Private';
-    pubLabel.style.color  = published ? 'var(--green)' : 'var(--g4)';
-  }
 
-  // Edit buttons visibility
-  document.querySelectorAll('.opening-edit-btn').forEach(b => {
-    b.style.display = _openingEditMode ? 'inline-block' : 'none';
+  const statusMap = { active:['Active','b-green'], 'on hold':['On hold','b-amber'], closed:['Closed','b-gray'], draft:['Draft','b-gray'], cancelled:['Cancelled','b-red'], finished:['Finished','b-blue'] };
+  const [slabel, scls] = statusMap[status] || ['Draft','b-gray'];
+  const sb = document.getElementById('od-status-badge');
+  sb.textContent = slabel; sb.className = 'badge ' + scls;
+
+  document.getElementById('od-recruiter').textContent = recruiter;
+  const ri = document.getElementById('inp-recruiter');
+  if (ri) ri.value = recruiter;
+  document.getElementById('view-osb-org').textContent = 'Crestline SaaS';
+  document.getElementById('view-osb-status').textContent = slabel;
+
+  const pt = document.getElementById('osb-pub-toggle');
+  const pl = document.getElementById('osb-pub-label');
+  if (pt) { pt.className = 'toggle' + (published ? ' on' : ''); }
+  if (pl) { pl.textContent = published ? 'Published' : 'Private'; pl.style.color = published ? 'var(--green)' : 'var(--g4)'; }
+
+  document.querySelectorAll('.opening-edit-btn').forEach(b => b.style.display = 'none');
+  document.getElementById('od-edit-btn').textContent = '✏️ Edit';
+  document.getElementById('od-draft-chip').style.display = 'none';
+  document.getElementById('od-save-btn').style.display = 'none';
+  setSidebarEditMode(false);
+  // Reset header to view mode
+  ['title','skills-chips','meta'].forEach(id => {
+    const v = document.getElementById('view-' + id); const e = document.getElementById('edit-' + id);
+    if (v) v.style.display = 'block'; if (e) e.style.display = 'none';
   });
-  document.getElementById('od-admin-card').style.display = 'block';
+
+  if (editMode) setTimeout(toggleOpeningEdit, 50);
 
   navTo('opening-detail', title);
-  history.replaceState({ page: 'opening-detail', code }, '', '/admin-dashboard/openings/' + code.toLowerCase());
+  history.replaceState({ page:'opening-detail', code }, '', '/admin-dashboard/openings/' + code.toLowerCase());
 };
 
 window.openNewOpening = function() {
-  // Navigate to the opening detail page in "new" create mode
-  _currentOpening = { code: 'OPEN-NEW', title: 'New Opening', status: 'active', published: false, recruiter: 'Byron Giraldo' };
-  _openingEditMode = true;
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const rand = Array.from({length:4}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
+  const newCode = 'OPEN-NEW-' + rand;
+  _currentOpening = { code:newCode, title:'', status:'draft', published:false, recruiter:'Byron Giraldo' };
+  _openingDirty = true;
+
   document.getElementById('od-title').textContent = 'New Opening';
-  document.getElementById('od-code-badge').textContent = 'OPEN-' + Math.random().toString(36).slice(2,6).toUpperCase();
+  document.getElementById('inp-title').value = '';
+  document.getElementById('od-code-badge').textContent = newCode;
+  document.getElementById('osb-code').textContent = newCode;
   document.getElementById('od-status-badge').textContent = 'Draft';
   document.getElementById('od-status-badge').className = 'badge b-gray';
+  document.getElementById('od-posted-date').textContent = 'Created ' + new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  document.getElementById('view-osb-org').textContent = '— select org —';
+  document.getElementById('view-osb-status').textContent = 'Draft';
+  document.getElementById('od-draft-chip').style.display = 'inline-flex';
+  document.getElementById('od-save-btn').style.display = 'inline-flex';
+
+  _openingEditMode = true;
+  document.getElementById('od-edit-btn').textContent = '✓ Done editing';
   document.querySelectorAll('.opening-edit-btn').forEach(b => b.style.display = 'inline-block');
-  // Auto-open all sections in edit mode
+  setSidebarEditMode(true);
+  ['title','skills-chips','meta'].forEach(id => {
+    const v = document.getElementById('view-' + id); const e = document.getElementById('edit-' + id);
+    if (v) v.style.display = 'none'; if (e) e.style.display = 'block';
+  });
   ['about','responsibilities','skills','qualifications'].forEach(s => editSection(s));
   navTo('opening-detail', 'New Opening');
+  history.replaceState({ page:'opening-detail', code:newCode }, '', '/admin-dashboard/openings/' + newCode.toLowerCase());
 };
 
 window.toggleOpeningEdit = function() {
   _openingEditMode = !_openingEditMode;
-  document.querySelectorAll('.opening-edit-btn').forEach(b => {
-    b.style.display = _openingEditMode ? 'inline-block' : 'none';
-  });
   document.getElementById('od-edit-btn').textContent = _openingEditMode ? '✓ Done editing' : '✏️ Edit';
+  document.querySelectorAll('.opening-edit-btn').forEach(b => { b.style.display = _openingEditMode ? 'inline-block' : 'none'; });
+  setSidebarEditMode(_openingEditMode);
+  ['title','skills-chips','meta'].forEach(id => {
+    const v = document.getElementById('view-' + id); const e = document.getElementById('edit-' + id);
+    if (v) v.style.display = _openingEditMode ? 'none' : 'block';
+    if (e) e.style.display = _openingEditMode ? 'block' : 'none';
+  });
   if (!_openingEditMode) {
-    // Close all open edit areas
-    ['about','responsibilities','skills','qualifications'].forEach(s => cancelSection(s));
+    const titleVal = document.getElementById('inp-title')?.value.trim();
+    if (titleVal) { document.getElementById('od-title').textContent = titleVal; _currentOpening.title = titleVal; markDirty(); }
+    const chips = (document.getElementById('inp-skills-chips')?.value || '').split(',').map(s=>s.trim()).filter(Boolean);
+    document.getElementById('view-skills-chips').innerHTML = chips.map(c=>'<span class="skill-chip">'+c+'</span>').join('');
+    const recr = document.getElementById('inp-recruiter')?.value;
+    if (recr) document.getElementById('od-recruiter').textContent = recr;
+    const eng  = document.getElementById('inp-english')?.value;
+    if (eng)  { document.getElementById('od-english-label').textContent = eng; }
+    const exp  = document.getElementById('inp-exp')?.value;
+    if (exp)  { document.getElementById('od-exp').textContent = exp; }
+    ['about','responsibilities','skills','qualifications'].forEach(s => {
+      const e = document.getElementById('edit-' + s);
+      if (e && e.style.display !== 'none') cancelSection(s);
+    });
   }
 };
 
-window.toggleOpeningVisibility = function() {
-  const btn = document.getElementById('od-visibility-btn');
-  const isPublic = btn.textContent.includes('private');
-  btn.textContent = isPublic ? '🔒 Set public' : '👁 Set private';
-  toast(isPublic ? 'Opening set to private — hidden from candidates.' : 'Opening published — visible to candidates.', 'ok');
+function setSidebarEditMode(on) {
+  SIDEBAR_FIELDS.forEach(field => {
+    const view = document.getElementById('view-osb-' + field);
+    const inp  = document.getElementById('inp-' + field);
+    const wrap = document.getElementById('inp-' + field + '-wrap');
+    if (view) view.style.display = on ? 'none' : '';
+    if (inp && field !== 'salary')  inp.style.display  = on ? '' : 'none';
+    if (wrap) { wrap.style.display = on ? 'flex' : 'none'; if(view) view.style.display = on ? 'none' : ''; }
+  });
+  const vs = document.getElementById('view-osb-salary');
+  const sw = document.getElementById('inp-salary-wrap');
+  if (vs) vs.style.display = on ? 'none' : '';
+  if (sw) sw.style.display = on ? 'flex' : 'none';
+}
+
+window.updateWfhBadge = function() {
+  const wfh  = document.getElementById('inp-wfh')?.value  || 'Remote';
+  const city = document.getElementById('inp-city')?.value || 'Colombia-wide';
+  const icon = wfh === 'Remote' ? '🏠' : wfh === 'On-site' ? '🏢' : '🔄';
+  const badge = document.getElementById('od-wfh-badge');
+  if (badge) badge.textContent = icon + ' ' + wfh + ' · ' + city;
+};
+
+window.saveOpening = function() {
+  const reads = { wfh:'inp-wfh', city:'inp-city', exp:'inp-exp2', english:'inp-english2', tz:'inp-tz', date:'inp-date', org:'inp-org', status:'inp-status' };
+  Object.entries(reads).forEach(([field, id]) => {
+    const inp = document.getElementById(id); const view = document.getElementById('view-osb-' + field);
+    if (inp && view) view.textContent = field === 'date' ? formatDate(inp.value) : inp.value;
+  });
+  const mn = document.getElementById('inp-sal-min')?.value;
+  const mx = document.getElementById('inp-sal-max')?.value;
+  const sv = document.getElementById('view-osb-salary');
+  if (mn && mx && sv) sv.textContent = '$' + parseInt(mn).toLocaleString() + ' – $' + parseInt(mx).toLocaleString();
+  updateWfhBadge();
+  _openingDirty = false;
+  document.getElementById('od-draft-chip').style.display = 'none';
+  document.getElementById('od-save-btn').style.display = 'none';
+  toast('Opening saved.', 'ok');
+};
+
+function formatDate(val) {
+  if (!val) return '—';
+  const d = new Date(val + 'T12:00:00');
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+
+window.leaveOpeningPage = function() {
+  if (_openingDirty) {
+    toast('Draft saved — find it in Openings.', 'ok');
+    _openingDirty = false;
+  }
+  navTo('openings','Openings');
+};
+
+window.toggleOpeningVisibility = function() { togglePubVisibility(); };
+
+window.togglePubVisibility = function() {
+  const btn = document.getElementById('osb-pub-toggle');
+  const lbl = document.getElementById('osb-pub-label');
+  if (!btn) return;
+  btn.classList.toggle('on');
+  const on = btn.classList.contains('on');
+  lbl.textContent = on ? 'Published' : 'Private';
+  lbl.style.color  = on ? 'var(--green)' : 'var(--g4)';
+  toast(on ? 'Opening published.' : 'Opening set to private.', 'ok');
+  markDirty();
+};
+
+window.copyOpeningLink = function() {
+  const code = _currentOpening.code || 'OPEN-???';
+  const url  = window.location.origin + '/apply/' + code.toLowerCase();
+  navigator.clipboard?.writeText(url).then(() => toast('Link copied: ' + url,'ok')).catch(() => toast('Link: ' + url,'ok'));
+};
+
+window.handleApplyClick = function() {
+  const code = _currentOpening.code || 'OPEN-???';
+  toast('Apply page coming soon — URL: /apply/' + code.toLowerCase(), 'ok');
 };
 
 window.editSection = function(section) {
-  document.getElementById('view-' + section).style.display = 'none';
-  document.getElementById('edit-' + section).style.display = 'block';
-  document.getElementById('edit-btn-' + section).textContent = 'Cancel';
-  document.getElementById('edit-btn-' + section).onclick = () => cancelSection(section);
+  const v = document.getElementById('view-' + section);
+  const e = document.getElementById('edit-' + section);
+  const btn = document.getElementById('edit-btn-' + section);
+  if (v) v.style.display = 'none'; if (e) e.style.display = 'block';
+  if (btn) { btn.textContent = 'Cancel'; btn.onclick = () => cancelSection(section); }
 };
 
 window.cancelSection = function(section) {
-  document.getElementById('view-' + section).style.display = 'block';
-  document.getElementById('edit-' + section).style.display = 'none';
-  document.getElementById('edit-btn-' + section).textContent = 'Edit';
-  document.getElementById('edit-btn-' + section).onclick = () => editSection(section);
+  const v = document.getElementById('view-' + section);
+  const e = document.getElementById('edit-' + section);
+  const btn = document.getElementById('edit-btn-' + section);
+  if (v) v.style.display = 'block'; if (e) e.style.display = 'none';
+  if (btn) { btn.textContent = 'Edit'; btn.onclick = () => editSection(section); }
 };
 
 window.saveSection = function(section) {
-  const ta = document.getElementById('ta-' + section);
+  const ta   = document.getElementById('ta-' + section);
   const view = document.getElementById('view-' + section);
   if (!ta || !view) return;
   const raw = ta.value.trim();
-
   if (section === 'about') {
-    view.innerHTML = raw.split('\n\n').map(p => '<p>' + p.replace(/\n/g,'<br>') + '</p>').join('');
+    view.innerHTML = raw.split('\n\n').map(p=>'<p>'+p.replace(/\n/g,'<br>')+'</p>').join('');
   } else if (section === 'skills') {
     const items = raw.split('\n').filter(Boolean);
-    view.innerHTML = '<div class="skill-grid">' + items.map(s => '<div class="skill-item"><span class="skill-dot"></span>' + s.replace(/^[-•]\s*/,'') + '</div>').join('') + '</div>';
+    view.innerHTML = '<div class="skill-grid">' + items.map(s=>'<div class="skill-item"><span class="skill-dot"></span>'+s.replace(/^[-•]\s*/,'')+'</div>').join('') + '</div>';
   } else {
-    // responsibilities / qualifications — bullet list
     const items = raw.split('\n').filter(Boolean);
-    view.innerHTML = '<ul>' + items.map(s => '<li>' + s.replace(/^[-•]\s*/,'') + '</li>').join('') + '</ul>';
+    view.innerHTML = '<ul>' + items.map(s=>'<li>'+s.replace(/^[-•]\s*/,'')+'</li>').join('') + '</ul>';
   }
-
   cancelSection(section);
-  toast('Section saved.', 'ok');
-  // In production: write to Firestore here
+  markDirty();
+  toast('Section saved.','ok');
 };
 
 /* ══ OPENING FILTER ══ */
