@@ -628,7 +628,7 @@ onAuthStateChanged(auth, async user => {
     <div class="ham-line"></div>
     <div class="ham-line"></div>
   </div>
-  <a class="nav-logo" onclick="showPage('dashboard')">Near<span>work</span></a>
+  <a class="nav-logo" onclick="navTo('dashboard','Dashboard')">Near<span>work</span></a>
   <div class="nav-admin-chip">Admin HQ</div>
   <!-- Current page label -->
   <div class="nav-current" id="nav-current-label">Dashboard</div>
@@ -652,7 +652,7 @@ onAuthStateChanged(auth, async user => {
       <div class="av" onclick="toggleDrop('av-menu')">BG</div>
       <div class="av-menu" id="av-menu">
         <div class="av-info"><div class="av-name">Byron Giraldo</div><div class="av-role">Super Admin · Nearwork</div></div>
-        <div class="av-item" onclick="showPage('team')">⚙️ Team settings</div>
+        <div class="av-item" onclick="navTo('team','Team settings')">⚙️ Team settings</div>
         <div class="av-div"></div>
         <div class="av-item danger" onclick="signOut()">Sign out</div>
       </div>
@@ -729,7 +729,7 @@ onAuthStateChanged(auth, async user => {
   <div class="page show" id="page-dashboard">
     <div class="ph">
       <div><div class="ph-title">Good morning, Byron 👋</div><div class="ph-sub">Here's your Nearwork HQ overview for today.</div></div>
-      <div style="display:flex;gap:8px;"><button class="btn btn-ghost btn-sm" onclick="showPage('audit')">View audit log</button><button class="btn btn-p btn-sm" onclick="openModal('new-opening-modal')">+ New opening</button></div>
+      <div style="display:flex;gap:8px;"><button class="btn btn-ghost btn-sm" onclick="navTo('audit','Audit Log')">View audit log</button><button class="btn btn-p btn-sm" onclick="openNewOpening()">+ New opening</button></div>
     </div>
 
     <div class="metric-grid">
@@ -841,7 +841,7 @@ onAuthStateChanged(auth, async user => {
           <div class="org-name">Crestline SaaS</div>
           <div class="org-domain">crestline.io</div>
         </div>
-        <div class="org-code-mono">ORG-CS01</div>
+        <div class="org-code-mono copyable" data-copy="ORG-CS01" onclick="event.stopPropagation();copyCode(this)" title="Click to copy">ORG-CS01</div>
         <div><span class="badge b-plan-essential">Essential</span></div>
         <div><span class="badge b-green" id="status-crestline">Active</span></div>
         <div class="org-row-actions" onclick="event.stopPropagation()">
@@ -860,7 +860,7 @@ onAuthStateChanged(auth, async user => {
           <div class="org-name">Axiom Tech</div>
           <div class="org-domain">axiomtech.io</div>
         </div>
-        <div class="org-code-mono">ORG-AT02</div>
+        <div class="org-code-mono copyable" data-copy="ORG-AT02" onclick="event.stopPropagation();copyCode(this)" title="Click to copy">ORG-AT02</div>
         <div><span class="badge b-plan-lite">Lite</span></div>
         <div><span class="badge b-green" id="status-axiom">Active</span></div>
         <div class="org-row-actions" onclick="event.stopPropagation()">
@@ -879,7 +879,7 @@ onAuthStateChanged(auth, async user => {
           <div class="org-name">NovaDash</div>
           <div class="org-domain">novadash.com</div>
         </div>
-        <div class="org-code-mono">ORG-ND03</div>
+        <div class="org-code-mono copyable" data-copy="ORG-ND03" onclick="event.stopPropagation();copyCode(this)" title="Click to copy">ORG-ND03</div>
         <div><span class="badge b-plan-essential">Essential</span></div>
         <div><span class="badge b-amber" id="status-novadash">On hold</span></div>
         <div class="org-row-actions" onclick="event.stopPropagation()">
@@ -1184,7 +1184,7 @@ onAuthStateChanged(auth, async user => {
     <div class="od-panel" id="od-panel-openings">
       <div class="od-section-title">
         Active openings
-        <button class="btn btn-p btn-sm" onclick="openModal('new-opening-modal')">+ New opening</button>
+        <button class="btn btn-p btn-sm" onclick="openNewOpening()">+ New opening</button>
       </div>
       <div style="display:flex;flex-direction:column;gap:10px;max-width:820px;" id="od-openings-list">
         <div class="card" style="padding:16px;cursor:pointer;" onclick="openModal('edit-opening-modal')">
@@ -1374,7 +1374,7 @@ onAuthStateChanged(auth, async user => {
   <div class="page" id="page-candidates">
     <div class="ph">
       <div><div class="ph-title">Candidates</div><div class="ph-sub">Full ATS — all candidates across all openings.</div></div>
-      <button class="btn btn-ghost btn-sm" onclick="showPage('audit')">Export</button>
+      <button class="btn btn-ghost btn-sm" onclick="navTo('audit','Audit Log')">Export</button>
     </div>
 
     <!-- Smart match -->
@@ -1401,7 +1401,7 @@ onAuthStateChanged(auth, async user => {
     <div class="cand-table">
       <div class="ct-hdr"><div>Candidate</div><div>Score</div><div>Stage</div><div>Opening</div><div>Status</div><div>Actions</div></div>
       <div class="ct-row" onclick="openModal('cand-detail-modal')">
-        <div class="ct-cand"><div class="ct-av" style="background:linear-gradient(135deg,#EC4899,#BE185D);">DH</div><div><div class="ct-name">David Herrera</div><div class="ct-code">CAND-2N6Q8</div></div></div>
+        <div class="ct-cand"><div class="ct-av" style="background:linear-gradient(135deg,#EC4899,#BE185D);">DH</div><div><div class="ct-name">David Herrera</div><div class="ct-code copyable" data-copy="CAND-2N6Q8" onclick="event.stopPropagation();copyCode(this)" title="Click to copy">CAND-2N6Q8</div></div></div>
         <div><span class="score-pill sp-g">91</span></div>
         <div><span class="badge b-green">Client Review</span></div>
         <div style="font-size:11px;">CSM · Crestline</div>
@@ -1412,7 +1412,7 @@ onAuthStateChanged(auth, async user => {
         </div>
       </div>
       <div class="ct-row" onclick="openModal('cand-detail-modal')">
-        <div class="ct-cand"><div class="ct-av" style="background:linear-gradient(135deg,#F59E0B,#D97706);">ML</div><div><div class="ct-name">María López</div><div class="ct-code">CAND-5B9W3</div></div></div>
+        <div class="ct-cand"><div class="ct-av" style="background:linear-gradient(135deg,#F59E0B,#D97706);">ML</div><div><div class="ct-name">María López</div><div class="ct-code copyable" data-copy="CAND-5B9W3" onclick="event.stopPropagation();copyCode(this)" title="Click to copy">CAND-5B9W3</div></div></div>
         <div><span class="score-pill sp-g">85</span></div>
         <div><span class="badge b-green">Client Review</span></div>
         <div style="font-size:11px;">CSM · Crestline</div>
@@ -1420,7 +1420,7 @@ onAuthStateChanged(auth, async user => {
         <div onclick="event.stopPropagation()" style="display:flex;gap:4px;"><button class="btn btn-ghost btn-sm" onclick="openModal('cand-detail-modal')">View</button><button class="btn btn-danger btn-sm" onclick="toast('Candidate banned.','ok')">Ban</button></div>
       </div>
       <div class="ct-row" onclick="openModal('cand-detail-modal')">
-        <div class="ct-cand"><div class="ct-av" style="background:linear-gradient(135deg,#8B5CF6,#6C3CE1);">SM</div><div><div class="ct-name">Sofía Moreno</div><div class="ct-code">CAND-7T2R5</div></div></div>
+        <div class="ct-cand"><div class="ct-av" style="background:linear-gradient(135deg,#8B5CF6,#6C3CE1);">SM</div><div><div class="ct-name">Sofía Moreno</div><div class="ct-code copyable" data-copy="CAND-7T2R5" onclick="event.stopPropagation();copyCode(this)" title="Click to copy">CAND-7T2R5</div></div></div>
         <div><span class="score-pill sp-a">79</span></div>
         <div><span class="badge b-purple">Profile Review</span></div>
         <div style="font-size:11px;">CSM · Crestline</div>
@@ -1428,7 +1428,7 @@ onAuthStateChanged(auth, async user => {
         <div onclick="event.stopPropagation()" style="display:flex;gap:4px;"><button class="btn btn-ghost btn-sm">View</button><button class="btn btn-danger btn-sm" onclick="toast('Candidate banned.','ok')">Ban</button></div>
       </div>
       <div class="ct-row" onclick="openModal('cand-detail-modal')">
-        <div class="ct-cand"><div class="ct-av" style="background:linear-gradient(135deg,#6C3CE1,#8B5CF6);">IG</div><div><div class="ct-name">Isabella Gómez</div><div class="ct-code">CAND-8X4K2</div></div></div>
+        <div class="ct-cand"><div class="ct-av" style="background:linear-gradient(135deg,#6C3CE1,#8B5CF6);">IG</div><div><div class="ct-name">Isabella Gómez</div><div class="ct-code copyable" data-copy="CAND-8X4K2" onclick="event.stopPropagation();copyCode(this)" title="Click to copy">CAND-8X4K2</div></div></div>
         <div><span class="score-pill sp-a">72</span></div>
         <div><span class="badge b-gray">Applied</span></div>
         <div style="font-size:11px;">CSM · Crestline</div>
@@ -1436,7 +1436,7 @@ onAuthStateChanged(auth, async user => {
         <div onclick="event.stopPropagation()" style="display:flex;gap:4px;"><button class="btn btn-ghost btn-sm">View</button><button class="btn btn-danger btn-sm" onclick="toast('Candidate banned.','ok')">Ban</button></div>
       </div>
       <div class="ct-row" onclick="openModal('cand-detail-modal')">
-        <div class="ct-cand"><div class="ct-av" style="background:linear-gradient(135deg,#6B7280,#9CA3AF);">JM</div><div><div class="ct-name">Jorge Méndez</div><div class="ct-code">CAND-1A3F7</div></div></div>
+        <div class="ct-cand"><div class="ct-av" style="background:linear-gradient(135deg,#6B7280,#9CA3AF);">JM</div><div><div class="ct-name">Jorge Méndez</div><div class="ct-code copyable" data-copy="CAND-1A3F7" onclick="event.stopPropagation();copyCode(this)" title="Click to copy">CAND-1A3F7</div></div></div>
         <div><span class="score-pill sp-r">44</span></div>
         <div><span class="badge b-red">Did Not Continue</span></div>
         <div style="font-size:11px;">CSM · Crestline</div>
@@ -1463,7 +1463,7 @@ onAuthStateChanged(auth, async user => {
       <div class="ot-hdr"><div>Position</div><div>Code</div><div>Recruiter</div><div>Status</div><div>Published</div><div>Actions</div></div>
 
       <div class="ot-row" data-title="customer success manager" data-code="open-csm-4x8b" data-status="active" data-recruiter="byron giraldo" onclick="openOpeningDetail('OPEN-CSM-4X8B','Customer Success Manager','active',true,'Byron Giraldo')">
-        <div><div class="ot-role">Customer Success Manager</div><div class="ot-code">OPEN-CSM-4X8B</div></div>
+        <div><div class="ot-role">Customer Success Manager</div><div class="ot-code copyable" data-copy="OPEN-CSM-4X8B" onclick="event.stopPropagation();copyCode(this)" title="Click to copy">OPEN-CSM-4X8B</div></div>
         <div class="ot-code">OPEN-CSM-4X8B</div>
         <div style="font-size:12px;">Byron Giraldo</div>
         <div><span class="badge b-green">Active</span></div>
@@ -1471,11 +1471,11 @@ onAuthStateChanged(auth, async user => {
         <div onclick="event.stopPropagation()" style="display:flex;gap:5px;">
           <button class="btn btn-p btn-sm" onclick="openOpeningDetail('OPEN-CSM-4X8B','Customer Success Manager','active',true,'Byron Giraldo')">View</button>
           <button class="btn btn-ghost btn-sm" onclick="openOpeningDetail('OPEN-CSM-4X8B','Customer Success Manager','active',true,'Byron Giraldo',true)">Edit</button>
-        </div>
+        <button class="btn btn-danger btn-sm" onclick="archiveOpening('OPEN-CSM-4X8B')" title="Archive (soft delete)">Archive</button></div>
       </div>
 
       <div class="ot-row" data-title="sdr sales development rep" data-code="open-sdr-9k2m" data-status="active" data-recruiter="byron giraldo" onclick="openOpeningDetail('OPEN-SDR-9K2M','SDR / Sales Development Rep','active',true,'Byron Giraldo')">
-        <div><div class="ot-role">SDR / Sales Development Rep</div><div class="ot-code">OPEN-SDR-9K2M</div></div>
+        <div><div class="ot-role">SDR / Sales Development Rep</div><div class="ot-code copyable" data-copy="OPEN-SDR-9K2M" onclick="event.stopPropagation();copyCode(this)" title="Click to copy">OPEN-SDR-9K2M</div></div>
         <div class="ot-code">OPEN-SDR-9K2M</div>
         <div style="font-size:12px;">Byron Giraldo</div>
         <div><span class="badge b-green">Active</span></div>
@@ -1483,11 +1483,11 @@ onAuthStateChanged(auth, async user => {
         <div onclick="event.stopPropagation()" style="display:flex;gap:5px;">
           <button class="btn btn-p btn-sm" onclick="openOpeningDetail('OPEN-SDR-9K2M','SDR / Sales Development Rep','active',true,'Byron Giraldo')">View</button>
           <button class="btn btn-ghost btn-sm" onclick="openOpeningDetail('OPEN-SDR-9K2M','SDR / Sales Development Rep','active',true,'Byron Giraldo',true)">Edit</button>
-        </div>
+        <button class="btn btn-danger btn-sm" onclick="archiveOpening('OPEN-SDR-9K2M')" title="Archive (soft delete)">Archive</button></div>
       </div>
 
       <div class="ot-row" data-title="technical support specialist" data-code="open-sup-3b7r" data-status="on hold" data-recruiter="nany salcedo" onclick="openOpeningDetail('OPEN-SUP-3B7R','Technical Support Specialist','on hold',false,'Nany Salcedo')">
-        <div><div class="ot-role">Technical Support Specialist</div><div class="ot-code">OPEN-SUP-3B7R</div></div>
+        <div><div class="ot-role">Technical Support Specialist</div><div class="ot-code copyable" data-copy="OPEN-SUP-3B7R" onclick="event.stopPropagation();copyCode(this)" title="Click to copy">OPEN-SUP-3B7R</div></div>
         <div class="ot-code">OPEN-SUP-3B7R</div>
         <div style="font-size:12px;">Nany Salcedo</div>
         <div><span class="badge b-amber">On hold</span></div>
@@ -1495,11 +1495,11 @@ onAuthStateChanged(auth, async user => {
         <div onclick="event.stopPropagation()" style="display:flex;gap:5px;">
           <button class="btn btn-p btn-sm" onclick="openOpeningDetail('OPEN-SUP-3B7R','Technical Support Specialist','on hold',false,'Nany Salcedo')">View</button>
           <button class="btn btn-ghost btn-sm" onclick="openOpeningDetail('OPEN-SUP-3B7R','Technical Support Specialist','on hold',false,'Nany Salcedo',true)">Edit</button>
-        </div>
+        <button class="btn btn-danger btn-sm" onclick="archiveOpening('OPEN-SUP-3B7R')" title="Archive (soft delete)">Archive</button></div>
       </div>
 
       <div class="ot-row" data-title="operations manager" data-code="open-ops-5p2w" data-status="active" data-recruiter="andres garcia" onclick="openOpeningDetail('OPEN-OPS-5P2W','Operations Manager','active',true,'Andres García')">
-        <div><div class="ot-role">Operations Manager</div><div class="ot-code">OPEN-OPS-5P2W</div></div>
+        <div><div class="ot-role">Operations Manager</div><div class="ot-code copyable" data-copy="OPEN-OPS-5P2W" onclick="event.stopPropagation();copyCode(this)" title="Click to copy">OPEN-OPS-5P2W</div></div>
         <div class="ot-code">OPEN-OPS-5P2W</div>
         <div style="font-size:12px;">Andres García</div>
         <div><span class="badge b-green">Active</span></div>
@@ -1507,11 +1507,11 @@ onAuthStateChanged(auth, async user => {
         <div onclick="event.stopPropagation()" style="display:flex;gap:5px;">
           <button class="btn btn-p btn-sm" onclick="openOpeningDetail('OPEN-OPS-5P2W','Operations Manager','active',true,'Andres García')">View</button>
           <button class="btn btn-ghost btn-sm" onclick="openOpeningDetail('OPEN-OPS-5P2W','Operations Manager','active',true,'Andres García',true)">Edit</button>
-        </div>
+        <button class="btn btn-danger btn-sm" onclick="archiveOpening('OPEN-OPS-5P2W')" title="Archive (soft delete)">Archive</button></div>
       </div>
 
       <div class="ot-row" data-title="marketing ops specialist" data-code="open-mkt-7q4n" data-status="on hold" data-recruiter="byron giraldo" onclick="openOpeningDetail('OPEN-MKT-7Q4N','Marketing Ops Specialist','on hold',false,'Byron Giraldo')">
-        <div><div class="ot-role">Marketing Ops Specialist</div><div class="ot-code">OPEN-MKT-7Q4N</div></div>
+        <div><div class="ot-role">Marketing Ops Specialist</div><div class="ot-code copyable" data-copy="OPEN-MKT-7Q4N" onclick="event.stopPropagation();copyCode(this)" title="Click to copy">OPEN-MKT-7Q4N</div></div>
         <div class="ot-code">OPEN-MKT-7Q4N</div>
         <div style="font-size:12px;">Byron Giraldo</div>
         <div><span class="badge b-amber">On hold</span></div>
@@ -1519,7 +1519,7 @@ onAuthStateChanged(auth, async user => {
         <div onclick="event.stopPropagation()" style="display:flex;gap:5px;">
           <button class="btn btn-p btn-sm" onclick="openOpeningDetail('OPEN-MKT-7Q4N','Marketing Ops Specialist','on hold',false,'Byron Giraldo')">View</button>
           <button class="btn btn-ghost btn-sm" onclick="openOpeningDetail('OPEN-MKT-7Q4N','Marketing Ops Specialist','on hold',false,'Byron Giraldo',true)">Edit</button>
-        </div>
+        <button class="btn btn-danger btn-sm" onclick="archiveOpening('OPEN-MKT-7Q4N')" title="Archive (soft delete)">Archive</button></div>
       </div>
 
       <div id="openings-empty" style="display:none;padding:32px;text-align:center;font-size:13px;color:var(--g4);">No openings match your filters.</div>
@@ -1802,10 +1802,36 @@ Project coordination & time management</textarea>
               <option selected>EST / CST</option><option>PST / MST</option><option>Flexible</option>
             </select>
           </div>
-          <div class="osb-row" style="border-bottom:none;">
+          <div class="osb-row">
             <span class="osb-label">Announced</span>
             <span id="view-osb-date">Apr 10, 2026</span>
             <input type="date" id="inp-date" value="2026-04-10" class="osb-inp-sel" style="display:none;font-size:11px;" oninput="markDirty()">
+          </div>
+          <div class="osb-row">
+            <span class="osb-label">Industry</span>
+            <span id="view-osb-industry">SaaS / B2B Tech</span>
+            <select id="inp-industry" class="osb-inp-sel" style="display:none;" onchange="markDirty()">
+              <option selected>SaaS / B2B Tech</option><option>FinTech</option><option>HealthTech</option><option>EdTech</option><option>E-commerce</option><option>MarTech</option><option>HR Tech</option><option>CyberSecurity</option><option>Other</option>
+            </select>
+          </div>
+          <div class="osb-row">
+            <span class="osb-label">Contract type</span>
+            <span id="view-osb-contract">Full-time</span>
+            <select id="inp-contract" class="osb-inp-sel" style="display:none;" onchange="markDirty()">
+              <option selected>Full-time</option><option>Part-time</option><option>Contract</option><option>Project-based</option>
+            </select>
+          </div>
+          <div class="osb-row">
+            <span class="osb-label">Start date</span>
+            <span id="view-osb-start">ASAP</span>
+            <select id="inp-start" class="osb-inp-sel" style="display:none;" onchange="markDirty()">
+              <option selected>ASAP</option><option>2 weeks</option><option>1 month</option><option>Flexible</option>
+            </select>
+          </div>
+          <div class="osb-row" style="border-bottom:none;">
+            <span class="osb-label">Tools / Stack</span>
+            <span id="view-osb-tools">Salesforce, HubSpot</span>
+            <input type="text" id="inp-tools" class="osb-inp-sel" style="display:none;font-size:11px;" placeholder="e.g. Salesforce, Gong" value="Salesforce, HubSpot" oninput="markDirty()">
           </div>
         </div>
 
@@ -1814,7 +1840,7 @@ Project coordination & time management</textarea>
           <div class="osb-title" style="color:var(--purple);">Admin controls</div>
           <div class="osb-row">
             <span class="osb-label">Opening code</span>
-            <span style="font-family:monospace;font-size:11px;color:var(--purple);" id="osb-code">OPEN-CSM-4X8B</span>
+            <span style="font-family:monospace;font-size:11px;color:var(--purple);" id="osb-code" class="copyable" data-copy="OPEN-CSM-4X8B" onclick="copyCode(this)" title="Click to copy">OPEN-CSM-4X8B</span>
           </div>
           <div class="osb-row">
             <span class="osb-label">Client org</span>
@@ -1840,6 +1866,7 @@ Project coordination & time management</textarea>
           <div style="margin-top:12px;display:flex;flex-direction:column;gap:6px;">
             <button class="btn btn-ghost btn-sm" style="justify-content:center;" onclick="copyOpeningLink()">🔗 Copy candidate link</button>
             <button class="btn btn-ghost btn-sm" style="justify-content:center;" onclick="navTo('pipeline','Pipelines')">🔄 View pipeline</button>
+            <button class="btn btn-danger btn-sm" style="justify-content:center;" id="od-archive-btn" onclick="archiveCurrentOpening()">Archive opening</button>
           </div>
 
           <!-- Important note about applications -->
@@ -1922,7 +1949,7 @@ Project coordination & time management</textarea>
     <div class="hired-table">
       <div class="ht-hdr"><div>Candidate</div><div>Company · Role</div><div>Hire date</div><div>Time at company</div><div>Guarantee</div><div>Referral</div></div>
       <div class="ht-row">
-        <div class="ct-cand"><div class="ct-av" style="background:linear-gradient(135deg,#10B981,#059669);">VR</div><div><div class="ct-name">Valentina Ríos</div><div class="ct-code">CAND-9A2K1</div></div></div>
+        <div class="ct-cand"><div class="ct-av" style="background:linear-gradient(135deg,#10B981,#059669);">VR</div><div><div class="ct-name">Valentina Ríos</div><div class="ct-code copyable" data-copy="CAND-9A2K1" onclick="event.stopPropagation();copyCode(this)" title="Click to copy">CAND-9A2K1</div></div></div>
         <div><div style="font-size:12px;font-weight:600;">Crestline SaaS</div><div style="font-size:10px;color:var(--g5);">Customer Success Manager</div></div>
         <div style="font-size:12px;">Jan 12, 2026</div>
         <div>
@@ -1933,7 +1960,7 @@ Project coordination & time management</textarea>
         <div><span class="badge b-gray">None</span></div>
       </div>
       <div class="ht-row">
-        <div class="ct-cand"><div class="ct-av" style="background:linear-gradient(135deg,#6C3CE1,#8B5CF6);">JP</div><div><div class="ct-name">Jorge Pérez</div><div class="ct-code">CAND-4M8R2</div></div></div>
+        <div class="ct-cand"><div class="ct-av" style="background:linear-gradient(135deg,#6C3CE1,#8B5CF6);">JP</div><div><div class="ct-name">Jorge Pérez</div><div class="ct-code copyable" data-copy="CAND-4M8R2" onclick="event.stopPropagation();copyCode(this)" title="Click to copy">CAND-4M8R2</div></div></div>
         <div><div style="font-size:12px;font-weight:600;">Axiom Tech</div><div style="font-size:10px;color:var(--g5);">SDR / Sales Development Rep</div></div>
         <div style="font-size:12px;">Feb 1, 2026</div>
         <div>
@@ -2694,15 +2721,19 @@ window.toggleOpeningEdit = function() {
 function setSidebarEditMode(on) {
   // [view-span-id, input-id] pairs
   const pairs = [
-    ['view-osb-wfh',     'inp-wfh'],
-    ['view-osb-city',    'inp-city'],
-    ['view-osb-exp',     'inp-sb-exp'],
-    ['view-osb-english', 'inp-sb-english'],
-    ['view-osb-tz',      'inp-tz'],
-    ['view-osb-date',    'inp-date'],
-    ['view-osb-org',     'inp-org'],
-    ['view-osb-status',  'inp-status'],
-    ['view-osb-salary',  null],  // handled separately
+    ['view-osb-wfh',      'inp-wfh'],
+    ['view-osb-city',     'inp-city'],
+    ['view-osb-exp',      'inp-sb-exp'],
+    ['view-osb-english',  'inp-sb-english'],
+    ['view-osb-tz',       'inp-tz'],
+    ['view-osb-date',     'inp-date'],
+    ['view-osb-org',      'inp-org'],
+    ['view-osb-status',   'inp-status'],
+    ['view-osb-industry', 'inp-industry'],
+    ['view-osb-contract', 'inp-contract'],
+    ['view-osb-start',    'inp-start'],
+    ['view-osb-tools',    'inp-tools'],
+    ['view-osb-salary',   null],  // handled separately
   ];
   pairs.forEach(([viewId, inpId]) => {
     const view = document.getElementById(viewId);
@@ -2777,6 +2808,194 @@ window.handleApplyClick = function() {
   const code = _currentOpening.code || 'OPEN-???';
   toast('Apply page coming soon — URL: /apply/' + code.toLowerCase(), 'ok');
 };
+
+// ── Click-to-copy any code ──────────────────────────────────────────────────
+window.copyCode = function(el) {
+  const text = el.dataset.copy || el.textContent.trim();
+  navigator.clipboard?.writeText(text).catch(() => {});
+  let tip = document.getElementById('copy-tip');
+  if (!tip) {
+    tip = document.createElement('div');
+    tip.id = 'copy-tip';
+    tip.style.cssText = 'position:fixed;z-index:9999;background:#0D0D0D;color:#fff;font-size:11px;font-weight:600;padding:5px 12px;border-radius:8px;pointer-events:none;transition:opacity .3s;white-space:nowrap;';
+    document.body.appendChild(tip);
+  }
+  const r = el.getBoundingClientRect();
+  tip.textContent = '✓ Copied: ' + text;
+  tip.style.opacity = '1';
+  tip.style.top = (r.top - 34 + window.scrollY) + 'px';
+  tip.style.left = (r.left + r.width / 2 + window.scrollX) + 'px';
+  tip.style.transform = 'translateX(-50%)';
+  clearTimeout(tip._t);
+  tip._t = setTimeout(() => { tip.style.opacity = '0'; }, 1800);
+};
+
+// ── Archive (soft-delete) ───────────────────────────────────────────────────
+window.archiveOpening = async function(code) {
+  if (!confirm('Archive ' + code + '? It will stay visible but marked archived. Only master admin can permanently delete.')) return;
+  const row = document.querySelector('.ot-row[data-code="' + code.toLowerCase() + '"]');
+  if (row) { row.style.opacity = '.45'; row.style.pointerEvents = 'none'; }
+  try {
+    const { db, doc, setDoc, serverTimestamp } = await import('./firebase-config.js');
+    await setDoc(doc(db, 'openings', code), { status: 'archived', archivedAt: serverTimestamp() }, { merge: true });
+    toast('Opening archived in Firebase.', 'ok');
+  } catch(e) {
+    const key = 'nw_opening_' + code;
+    const ex  = JSON.parse(localStorage.getItem(key) || '{}');
+    localStorage.setItem(key, JSON.stringify({ ...ex, status: 'archived' }));
+    toast('Opening archived locally.', 'ok');
+  }
+};
+
+window.archiveCurrentOpening = function() {
+  if (_currentOpening.code) {
+    archiveOpening(_currentOpening.code).then(() => navTo('openings','Openings'));
+  }
+};
+
+// ── Firebase + localStorage save for opening ────────────────────────────────
+window.saveOpening = async function() {
+  const data = { updatedAt: new Date().toISOString(), code: _currentOpening.code };
+
+  // Sidebar fields
+  const fieldMap = {
+    wfh:'inp-wfh', city:'inp-city', 'sb-exp':'inp-sb-exp',
+    'sb-english':'inp-sb-english', tz:'inp-tz', date:'inp-date',
+    org:'inp-org', status:'inp-status',
+    industry:'inp-industry', contract:'inp-contract',
+    start:'inp-start', tools:'inp-tools'
+  };
+  Object.entries(fieldMap).forEach(([field, id]) => {
+    const inp = document.getElementById(id);
+    if (!inp) return;
+    const val = inp.value;
+    data[field] = val;
+    const vEl = document.getElementById('view-osb-' + field);
+    if (vEl) vEl.textContent = field === 'date' ? formatDate(val) : val;
+  });
+
+  const mn = document.getElementById('inp-sal-min')?.value;
+  const mx = document.getElementById('inp-sal-max')?.value;
+  if (mn && mx) {
+    data.salaryMin = parseInt(mn); data.salaryMax = parseInt(mx);
+    const sv = document.getElementById('view-osb-salary');
+    if (sv) sv.textContent = '$' + parseInt(mn).toLocaleString() + ' – $' + parseInt(mx).toLocaleString();
+  }
+
+  // Header fields
+  const titleVal = document.getElementById('inp-title')?.value.trim();
+  if (titleVal) { data.title = titleVal; document.getElementById('od-title').textContent = titleVal; }
+  const recVal = document.getElementById('inp-recruiter')?.value;
+  if (recVal) { data.recruiter = recVal; document.getElementById('od-recruiter').textContent = recVal; }
+  const chipsVal = document.getElementById('inp-skills-chips')?.value || '';
+  data.skills = chipsVal;
+  const chips = chipsVal.split(',').map(s => s.trim()).filter(Boolean);
+  const vcEl = document.getElementById('view-skills-chips');
+  if (vcEl) vcEl.innerHTML = chips.map(c => '<span class="skill-chip">' + c + '</span>').join('');
+
+  // Content sections
+  ['about','responsibilities','skills','qualifications'].forEach(s => {
+    const ta = document.getElementById('ta-' + s);
+    if (ta) data['content_' + s] = ta.value;
+  });
+
+  data.published = document.getElementById('osb-pub-toggle')?.classList.contains('on') || false;
+  updateWfhBadge();
+
+  const code = _currentOpening.code;
+
+  // Try Firebase, fall back to localStorage
+  let savedToFirebase = false;
+  try {
+    const { db, doc, setDoc, serverTimestamp } = await import('./firebase-config.js');
+    await setDoc(doc(db, 'openings', code), { ...data, savedAt: serverTimestamp() }, { merge: true });
+    savedToFirebase = true;
+  } catch(e) { /* Firebase not configured in this file — expected */ }
+
+  localStorage.setItem('nw_opening_' + code, JSON.stringify(data));
+  toast(savedToFirebase ? 'Opening saved to Firebase ✓' : 'Opening saved locally ✓', 'ok');
+
+  // Update/create row in openings list
+  upsertOpeningRow(code, data);
+
+  _openingDirty = false;
+  document.getElementById('od-draft-chip').style.display = 'none';
+  document.getElementById('od-save-btn').style.display = 'none';
+  if (_openingEditMode) toggleOpeningEdit();
+};
+
+// ── Upsert opening row in the list table ────────────────────────────────────
+function upsertOpeningRow(code, data) {
+  const list = document.getElementById('openings-list');
+  if (!list) return;
+  const codeLower = code.toLowerCase();
+  let row = list.querySelector('.ot-row[data-code="' + codeLower + '"]');
+  const title    = data.title || code;
+  const status   = data['sb-status'] || data.status || 'active';
+  const recruiter = data.recruiter || 'Byron Giraldo';
+  const published = data.published;
+  const statusBadge = status === 'active'   ? '<span class="badge b-green">Active</span>'
+                    : status === 'archived'  ? '<span class="badge b-gray">Archived</span>'
+                    : '<span class="badge b-amber">' + status.charAt(0).toUpperCase() + status.slice(1) + '</span>';
+
+  if (!row) {
+    row = document.createElement('div');
+    row.className = 'ot-row';
+    list.insertBefore(row, document.getElementById('openings-empty'));
+  }
+  row.dataset.title     = title.toLowerCase();
+  row.dataset.code      = codeLower;
+  row.dataset.status    = status;
+  row.dataset.recruiter = recruiter.toLowerCase();
+  row.onclick = () => openOpeningDetail(code, title, status, published, recruiter);
+  row.innerHTML = `
+    <div>
+      <div class="ot-role">${title}</div>
+      <div class="ot-code copyable" data-copy="${code}" onclick="event.stopPropagation();copyCode(this)" title="Click to copy">${code}</div>
+    </div>
+    <div class="ot-code copyable" data-copy="${code}" onclick="event.stopPropagation();copyCode(this)" title="Click to copy">${code}</div>
+    <div style="font-size:12px;">${recruiter}</div>
+    <div>${statusBadge}</div>
+    <div onclick="event.stopPropagation()">
+      <div class="pub-toggle">
+        <button class="toggle${published ? ' on' : ''}" onclick="this.classList.toggle('on');this.nextElementSibling.textContent=this.classList.contains('on')?'Published':'Draft';this.nextElementSibling.style.color=this.classList.contains('on')?'var(--green)':'var(--g4)'"></button>
+        <span style="color:${published ? 'var(--green)' : 'var(--g4)'};font-size:11px;">${published ? 'Published' : 'Draft'}</span>
+      </div>
+    </div>
+    <div onclick="event.stopPropagation()" style="display:flex;gap:5px;">
+      <button class="btn btn-p btn-sm" onclick="openOpeningDetail('${code}','${title.replace(/'/g,'\\'')}','${status}',${published},'${recruiter.replace(/'/g,'\\'')}')">View</button>
+      <button class="btn btn-ghost btn-sm" onclick="openOpeningDetail('${code}','${title.replace(/'/g,'\\'')}','${status}',${published},'${recruiter.replace(/'/g,'\\'')}',true)">Edit</button>
+      <button class="btn btn-danger btn-sm" onclick="archiveOpening('${code}')">Archive</button>
+    </div>`;
+}
+
+// ── Load saved openings from localStorage on page load ──────────────────────
+(function loadSavedOpenings() {
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key?.startsWith('nw_opening_')) continue;
+      const data = JSON.parse(localStorage.getItem(key));
+      if (data?.code && data?.title) {
+        // Only add if it's a new opening (not pre-existing in HTML)
+        const existing = document.querySelector('.ot-row[data-code="' + data.code.toLowerCase() + '"]');
+        if (!existing) upsertOpeningRow(data.code, data);
+        else {
+          // Update existing row title/status in case it changed
+          const roleEl = existing.querySelector('.ot-role');
+          if (roleEl) roleEl.textContent = data.title;
+        }
+      }
+    }
+  } catch(e) {}
+})();
+
+// ── CSS for copyable codes ───────────────────────────────────────────────────
+(function addCopyableCSS() {
+  const style = document.createElement('style');
+  style.textContent = `.copyable{cursor:pointer;transition:color .15s;} .copyable:hover{color:var(--purple)!important;}`;
+  document.head.appendChild(style);
+})();
 
 window.editSection = function(section) {
   const v = document.getElementById('view-' + section);
