@@ -1582,7 +1582,7 @@ onAuthStateChanged(auth, async user => {
         <span>·</span>
         <span id="od-tz-label">EST / CST alignment</span>
       </div>
-      <div id="edit-meta" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.1);display:none;">
+      <div id="edit-meta" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.1);">
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
           <div>
             <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;">Recruiter</div>
@@ -1775,21 +1775,21 @@ Project coordination & time management</textarea>
           <div class="osb-row">
             <span class="osb-label">Experience</span>
             <span id="view-osb-exp">Mid (2–5 yrs)</span>
-            <select id="inp-exp2" class="osb-inp-sel" style="display:none;" onchange="markDirty()">
+            <select id="inp-sb-exp" class="osb-inp-sel" style="display:none;" onchange="markDirty()">
               <option>Junior (0–2 yrs)</option><option selected>Mid (2–5 yrs)</option><option>Senior (5+ yrs)</option>
             </select>
           </div>
           <div class="osb-row">
             <span class="osb-label">English</span>
             <span id="view-osb-english">C1 Advanced min.</span>
-            <select id="inp-english2" class="osb-inp-sel" style="display:none;" onchange="markDirty()">
+            <select id="inp-sb-english" class="osb-inp-sel" style="display:none;" onchange="markDirty()">
               <option>B2 Professional</option><option selected>C1 Advanced</option><option>Native only</option>
             </select>
           </div>
           <div class="osb-row">
             <span class="osb-label">Salary (USD/mo)</span>
             <span id="view-osb-salary">$2,000 – $2,600</span>
-            <div id="inp-salary-wrap" style="display:none;display:none;flex:1;justify-content:flex-end;gap:4px;">
+            <div id="inp-salary-wrap" style="display:none;flex:1;justify-content:flex-end;gap:4px;">
               <input type="number" id="inp-sal-min" value="2000" min="0" step="100" style="width:70px;padding:3px 6px;border:1.5px solid var(--g3);border-radius:6px;font-size:11px;font-family:'Poppins',sans-serif;text-align:center;" oninput="markDirty()">
               <span style="font-size:11px;color:var(--g4);align-self:center;">–</span>
               <input type="number" id="inp-sal-max" value="2600" min="0" step="100" style="width:70px;padding:3px 6px;border:1.5px solid var(--g3);border-radius:6px;font-size:11px;font-family:'Poppins',sans-serif;text-align:center;" oninput="markDirty()">
@@ -2578,7 +2578,7 @@ window.openCandDetail = function(name) {
 let _currentOpening = {};
 let _openingEditMode = false;
 let _openingDirty = false;
-const SIDEBAR_FIELDS = ['wfh','city','exp','english','tz','date','org','status'];
+const SIDEBAR_FIELDS = []; // handled directly in setSidebarEditMode
 
 window.markDirty = function() {
   _openingDirty = true;
@@ -2692,17 +2692,25 @@ window.toggleOpeningEdit = function() {
 };
 
 function setSidebarEditMode(on) {
-  SIDEBAR_FIELDS.forEach(field => {
-    const view = document.getElementById('view-osb-' + field);
-    const inp  = document.getElementById('inp-' + field);
-    const wrap = document.getElementById('inp-' + field + '-wrap');
+  // [view-span-id, input-id] pairs
+  const pairs = [
+    ['view-osb-wfh',     'inp-wfh'],
+    ['view-osb-city',    'inp-city'],
+    ['view-osb-exp',     'inp-sb-exp'],
+    ['view-osb-english', 'inp-sb-english'],
+    ['view-osb-tz',      'inp-tz'],
+    ['view-osb-date',    'inp-date'],
+    ['view-osb-org',     'inp-org'],
+    ['view-osb-status',  'inp-status'],
+    ['view-osb-salary',  null],  // handled separately
+  ];
+  pairs.forEach(([viewId, inpId]) => {
+    const view = document.getElementById(viewId);
+    const inp  = inpId ? document.getElementById(inpId) : null;
     if (view) view.style.display = on ? 'none' : '';
-    if (inp && field !== 'salary')  inp.style.display  = on ? '' : 'none';
-    if (wrap) { wrap.style.display = on ? 'flex' : 'none'; if(view) view.style.display = on ? 'none' : ''; }
+    if (inp)  inp.style.display  = on ? '' : 'none';
   });
-  const vs = document.getElementById('view-osb-salary');
   const sw = document.getElementById('inp-salary-wrap');
-  if (vs) vs.style.display = on ? 'none' : '';
   if (sw) sw.style.display = on ? 'flex' : 'none';
 }
 
@@ -2715,7 +2723,7 @@ window.updateWfhBadge = function() {
 };
 
 window.saveOpening = function() {
-  const reads = { wfh:'inp-wfh', city:'inp-city', exp:'inp-exp2', english:'inp-english2', tz:'inp-tz', date:'inp-date', org:'inp-org', status:'inp-status' };
+  const reads = { wfh:'inp-wfh', city:'inp-city', 'sb-exp':'inp-sb-exp', 'sb-english':'inp-sb-english', tz:'inp-tz', date:'inp-date', org:'inp-org', status:'inp-status' };
   Object.entries(reads).forEach(([field, id]) => {
     const inp = document.getElementById(id); const view = document.getElementById('view-osb-' + field);
     if (inp && view) view.textContent = field === 'date' ? formatDate(inp.value) : inp.value;
