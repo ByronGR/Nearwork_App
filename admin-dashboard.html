@@ -2419,6 +2419,8 @@ Project coordination & time management</textarea>
 <div class="toast" id="toast"></div>
 
 <script>
+
+
 /* ══ PAGES ══ */
 const PAGES=['dashboard','orgs','org-detail','pipeline','candidates','openings','opening-detail','assessments','hired','blog','team','audit'];
 const PAGE_LABELS={
@@ -2947,7 +2949,14 @@ function upsertOpeningRow(code, data) {
   row.dataset.code      = codeLower;
   row.dataset.status    = status;
   row.dataset.recruiter = recruiter.toLowerCase();
-  row.onclick = () => openOpeningDetail(code, title, status, published, recruiter);
+  row.dataset.openTitle = title;
+  row.dataset.openPublished = published ? '1' : '0';
+  row.dataset.openRecruiter = recruiter;
+  // Use data attributes for click — avoids quote escaping hell in template literals
+  row.onclick = (e) => {
+    if (e.target.closest('button') || e.target.closest('.pub-toggle')) return;
+    openOpeningDetail(code, title, status, published, recruiter);
+  };
   row.innerHTML = `
     <div>
       <div class="ot-role">${title}</div>
@@ -2963,8 +2972,8 @@ function upsertOpeningRow(code, data) {
       </div>
     </div>
     <div onclick="event.stopPropagation()" style="display:flex;gap:5px;">
-      <button class="btn btn-p btn-sm" onclick="openOpeningDetail('${code}','${title.replace(/'/g,'\\'')}','${status}',${published},'${recruiter.replace(/'/g,'\\'')}')">View</button>
-      <button class="btn btn-ghost btn-sm" onclick="openOpeningDetail('${code}','${title.replace(/'/g,'\\'')}','${status}',${published},'${recruiter.replace(/'/g,'\\'')}',true)">Edit</button>
+      <button class="btn btn-p btn-sm" onclick="(function(r){var d=r.dataset;openOpeningDetail(d.code,d.openTitle,d.status,d.openPublished==='1',d.openRecruiter)})(this.closest('.ot-row'))">View</button>
+      <button class="btn btn-ghost btn-sm" onclick="(function(r){var d=r.dataset;openOpeningDetail(d.code,d.openTitle,d.status,d.openPublished==='1',d.openRecruiter,true)})(this.closest('.ot-row'))">Edit</button>
       <button class="btn btn-danger btn-sm" onclick="archiveOpening('${code}')">Archive</button>
     </div>`;
 }
@@ -3101,6 +3110,8 @@ function toast(msg,t){
   el.textContent=msg; el.className='toast show '+(t||'');
   setTimeout(()=>el.classList.remove('show'),3500);
 }
+
+
 </script>
 
 <script type="module">
