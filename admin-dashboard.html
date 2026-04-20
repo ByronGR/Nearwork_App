@@ -591,11 +591,12 @@ onAuthStateChanged(auth, async user => {
     return;
   }
   const profile = await getUserProfile(user.uid);
-  if (profile?.role !== 'admin') {
-    // Signed in but not admin — redirect to appropriate place
+  if (!profile || !['admin','super_admin'].includes(profile.role)) {
     window.location.href = profile?.role === 'client' ? 'client-dashboard.html' : 'admin-login.html';
     return;
   }
+  // Set super admin flag globally — controls archive/restore and hard-delete visibility
+  window._isSuperAdmin = (profile.role === 'super_admin');
   // Confirmed admin — remove the guard and show the page
   document.getElementById('auth-guard').remove();
   // Update the nav avatar with their name
@@ -1140,7 +1141,7 @@ onAuthStateChanged(auth, async user => {
               <option selected>Admin</option><option>Viewer</option>
             </select>
           </div>
-          <div><span class="badge" style="background:rgba(16,185,129,0.12);color:#059669;font-weight:700;">Active</span></div>
+          <div><span style="background:rgba(16,185,129,0.12);color:#059669;font-weight:700;padding:3px 9px;border-radius:99px;font-size:10px;">Active</span></div>
           <div style="display:flex;gap:5px;flex-wrap:wrap;">
             <button class="btn btn-ghost btn-sm" onclick="toast('Password reset email sent.','ok')">🔑 Reset pw</button>
             <button class="btn btn-danger btn-sm" onclick="toast('User removed.','ok')">Remove</button>
@@ -1156,7 +1157,7 @@ onAuthStateChanged(auth, async user => {
               <option>Admin</option><option selected>Viewer</option>
             </select>
           </div>
-          <div><span class="badge" style="background:rgba(16,185,129,0.12);color:#059669;font-weight:700;">Active</span></div>
+          <div><span style="background:rgba(16,185,129,0.12);color:#059669;font-weight:700;padding:3px 9px;border-radius:99px;font-size:10px;">Active</span></div>
           <div style="display:flex;gap:5px;flex-wrap:wrap;">
             <button class="btn btn-ghost btn-sm" onclick="toast('Password reset email sent.','ok')">🔑 Reset pw</button>
             <button class="btn btn-danger btn-sm" onclick="toast('User removed.','ok')">Remove</button>
@@ -1407,7 +1408,7 @@ onAuthStateChanged(auth, async user => {
         <div><span class="score-pill sp-g">91</span></div>
         <div><span class="badge b-green">Client Review</span></div>
         <div style="font-size:11px;">CSM · Crestline</div>
-        <div><span class="badge" style="background:rgba(16,185,129,0.12);color:#059669;font-weight:700;">Active</span></div>
+        <div><span style="background:rgba(16,185,129,0.12);color:#059669;font-weight:700;padding:3px 9px;border-radius:99px;font-size:10px;">Active</span></div>
         <div onclick="event.stopPropagation()" style="display:flex;gap:4px;">
           <button class="btn btn-ghost btn-sm" onclick="openModal('cand-detail-modal')">View</button>
           <button class="btn btn-danger btn-sm" onclick="toast('Candidate banned from future openings.','ok')">Ban</button>
@@ -1418,7 +1419,7 @@ onAuthStateChanged(auth, async user => {
         <div><span class="score-pill sp-g">85</span></div>
         <div><span class="badge b-green">Client Review</span></div>
         <div style="font-size:11px;">CSM · Crestline</div>
-        <div><span class="badge" style="background:rgba(16,185,129,0.12);color:#059669;font-weight:700;">Active</span></div>
+        <div><span style="background:rgba(16,185,129,0.12);color:#059669;font-weight:700;padding:3px 9px;border-radius:99px;font-size:10px;">Active</span></div>
         <div onclick="event.stopPropagation()" style="display:flex;gap:4px;"><button class="btn btn-ghost btn-sm" onclick="openModal('cand-detail-modal')">View</button><button class="btn btn-danger btn-sm" onclick="toast('Candidate banned.','ok')">Ban</button></div>
       </div>
       <div class="ct-row" onclick="openModal('cand-detail-modal')">
@@ -1426,7 +1427,7 @@ onAuthStateChanged(auth, async user => {
         <div><span class="score-pill sp-a">79</span></div>
         <div><span class="badge b-purple">Profile Review</span></div>
         <div style="font-size:11px;">CSM · Crestline</div>
-        <div><span class="badge" style="background:rgba(16,185,129,0.12);color:#059669;font-weight:700;">Active</span></div>
+        <div><span style="background:rgba(16,185,129,0.12);color:#059669;font-weight:700;padding:3px 9px;border-radius:99px;font-size:10px;">Active</span></div>
         <div onclick="event.stopPropagation()" style="display:flex;gap:4px;"><button class="btn btn-ghost btn-sm">View</button><button class="btn btn-danger btn-sm" onclick="toast('Candidate banned.','ok')">Ban</button></div>
       </div>
       <div class="ct-row" onclick="openModal('cand-detail-modal')">
@@ -1434,7 +1435,7 @@ onAuthStateChanged(auth, async user => {
         <div><span class="score-pill sp-a">72</span></div>
         <div><span class="badge b-gray">Applied</span></div>
         <div style="font-size:11px;">CSM · Crestline</div>
-        <div><span class="badge" style="background:rgba(16,185,129,0.12);color:#059669;font-weight:700;">Active</span></div>
+        <div><span style="background:rgba(16,185,129,0.12);color:#059669;font-weight:700;padding:3px 9px;border-radius:99px;font-size:10px;">Active</span></div>
         <div onclick="event.stopPropagation()" style="display:flex;gap:4px;"><button class="btn btn-ghost btn-sm">View</button><button class="btn btn-danger btn-sm" onclick="toast('Candidate banned.','ok')">Ban</button></div>
       </div>
       <div class="ct-row" onclick="openModal('cand-detail-modal')">
@@ -1468,7 +1469,7 @@ onAuthStateChanged(auth, async user => {
         <div><div class="ot-role">Customer Success Manager</div><div class="ot-code copyable" data-copy="OPEN-CSM-4X8B" onclick="event.stopPropagation();copyCode(this)" title="Click to copy">OPEN-CSM-4X8B</div></div>
         <div class="ot-code">OPEN-CSM-4X8B</div>
         <div style="font-size:12px;">Byron Giraldo</div>
-        <div><span class="badge" style="background:rgba(16,185,129,0.12);color:#059669;font-weight:700;">Active</span></div>
+        <div><span style="background:rgba(16,185,129,0.12);color:#059669;font-weight:700;padding:3px 9px;border-radius:99px;font-size:10px;">Active</span></div>
         <div onclick="event.stopPropagation()"><div class="pub-toggle"><button class="toggle on" onclick="this.classList.toggle('on');this.nextElementSibling.textContent=this.classList.contains('on')?'Published':'Draft';this.nextElementSibling.style.color=this.classList.contains('on')?'var(--green)':'var(--g4)'"></button><span style="color:var(--green);font-size:11px;">Published</span></div></div>
         <div onclick="event.stopPropagation()" style="display:flex;gap:5px;">
           <button class="btn btn-p btn-sm" onclick="openOpeningDetail('OPEN-CSM-4X8B','Customer Success Manager','active',true,'Byron Giraldo')">View</button>
@@ -1480,7 +1481,7 @@ onAuthStateChanged(auth, async user => {
         <div><div class="ot-role">SDR / Sales Development Rep</div><div class="ot-code copyable" data-copy="OPEN-SDR-9K2M" onclick="event.stopPropagation();copyCode(this)" title="Click to copy">OPEN-SDR-9K2M</div></div>
         <div class="ot-code">OPEN-SDR-9K2M</div>
         <div style="font-size:12px;">Byron Giraldo</div>
-        <div><span class="badge" style="background:rgba(16,185,129,0.12);color:#059669;font-weight:700;">Active</span></div>
+        <div><span style="background:rgba(16,185,129,0.12);color:#059669;font-weight:700;padding:3px 9px;border-radius:99px;font-size:10px;">Active</span></div>
         <div onclick="event.stopPropagation()"><div class="pub-toggle"><button class="toggle on" onclick="this.classList.toggle('on');this.nextElementSibling.textContent=this.classList.contains('on')?'Published':'Draft';this.nextElementSibling.style.color=this.classList.contains('on')?'var(--green)':'var(--g4)'"></button><span style="color:var(--green);font-size:11px;">Published</span></div></div>
         <div onclick="event.stopPropagation()" style="display:flex;gap:5px;">
           <button class="btn btn-p btn-sm" onclick="openOpeningDetail('OPEN-SDR-9K2M','SDR / Sales Development Rep','active',true,'Byron Giraldo')">View</button>
@@ -1492,7 +1493,7 @@ onAuthStateChanged(auth, async user => {
         <div><div class="ot-role">Technical Support Specialist</div><div class="ot-code copyable" data-copy="OPEN-SUP-3B7R" onclick="event.stopPropagation();copyCode(this)" title="Click to copy">OPEN-SUP-3B7R</div></div>
         <div class="ot-code">OPEN-SUP-3B7R</div>
         <div style="font-size:12px;">Nany Salcedo</div>
-        <div><span class="badge" style="background:rgba(245,158,11,0.12);color:#D97706;font-weight:700;">On hold</span></div>
+        <div><span style="background:rgba(245,158,11,0.12);color:#D97706;font-weight:700;padding:3px 9px;border-radius:99px;font-size:10px;">On hold</span></div>
         <div onclick="event.stopPropagation()"><div class="pub-toggle"><button class="toggle" onclick="this.classList.toggle('on');this.nextElementSibling.textContent=this.classList.contains('on')?'Published':'Draft';this.nextElementSibling.style.color=this.classList.contains('on')?'var(--green)':'var(--g4)'"></button><span style="color:var(--g4);font-size:11px;">Draft</span></div></div>
         <div onclick="event.stopPropagation()" style="display:flex;gap:5px;">
           <button class="btn btn-p btn-sm" onclick="openOpeningDetail('OPEN-SUP-3B7R','Technical Support Specialist','on hold',false,'Nany Salcedo')">View</button>
@@ -1504,7 +1505,7 @@ onAuthStateChanged(auth, async user => {
         <div><div class="ot-role">Operations Manager</div><div class="ot-code copyable" data-copy="OPEN-OPS-5P2W" onclick="event.stopPropagation();copyCode(this)" title="Click to copy">OPEN-OPS-5P2W</div></div>
         <div class="ot-code">OPEN-OPS-5P2W</div>
         <div style="font-size:12px;">Andres García</div>
-        <div><span class="badge" style="background:rgba(16,185,129,0.12);color:#059669;font-weight:700;">Active</span></div>
+        <div><span style="background:rgba(16,185,129,0.12);color:#059669;font-weight:700;padding:3px 9px;border-radius:99px;font-size:10px;">Active</span></div>
         <div onclick="event.stopPropagation()"><div class="pub-toggle"><button class="toggle on" onclick="this.classList.toggle('on');this.nextElementSibling.textContent=this.classList.contains('on')?'Published':'Draft';this.nextElementSibling.style.color=this.classList.contains('on')?'var(--green)':'var(--g4)'"></button><span style="color:var(--green);font-size:11px;">Published</span></div></div>
         <div onclick="event.stopPropagation()" style="display:flex;gap:5px;">
           <button class="btn btn-p btn-sm" onclick="openOpeningDetail('OPEN-OPS-5P2W','Operations Manager','active',true,'Andres García')">View</button>
@@ -1516,7 +1517,7 @@ onAuthStateChanged(auth, async user => {
         <div><div class="ot-role">Marketing Ops Specialist</div><div class="ot-code copyable" data-copy="OPEN-MKT-7Q4N" onclick="event.stopPropagation();copyCode(this)" title="Click to copy">OPEN-MKT-7Q4N</div></div>
         <div class="ot-code">OPEN-MKT-7Q4N</div>
         <div style="font-size:12px;">Byron Giraldo</div>
-        <div><span class="badge" style="background:rgba(245,158,11,0.12);color:#D97706;font-weight:700;">On hold</span></div>
+        <div><span style="background:rgba(245,158,11,0.12);color:#D97706;font-weight:700;padding:3px 9px;border-radius:99px;font-size:10px;">On hold</span></div>
         <div onclick="event.stopPropagation()"><div class="pub-toggle"><button class="toggle" onclick="this.classList.toggle('on');this.nextElementSibling.textContent=this.classList.contains('on')?'Published':'Draft';this.nextElementSibling.style.color=this.classList.contains('on')?'var(--green)':'var(--g4)'"></button><span style="color:var(--g4);font-size:11px;">Draft</span></div></div>
         <div onclick="event.stopPropagation()" style="display:flex;gap:5px;">
           <button class="btn btn-p btn-sm" onclick="openOpeningDetail('OPEN-MKT-7Q4N','Marketing Ops Specialist','on hold',false,'Byron Giraldo')">View</button>
@@ -2644,10 +2645,20 @@ window.openOpeningDetail = function(code, title, status, published, recruiter, e
   document.getElementById('od-code-badge').textContent = code;
   document.getElementById('osb-code').textContent = code;
 
-  const statusMap = { active:['Active','b-green'], 'on hold':['On hold','b-amber'], closed:['Closed','b-gray'], draft:['Draft','b-gray'], cancelled:['Cancelled','b-red'], finished:['Finished','b-blue'] };
-  const [slabel, scls] = statusMap[status] || ['Draft','b-gray'];
+  const statusStyles = {
+    active:     ['Active',   'rgba(16,185,129,0.12)', '#059669'],
+    'on hold':  ['On hold',  'rgba(245,158,11,0.12)', '#D97706'],
+    closed:     ['Closed',   'rgba(107,114,128,0.1)', '#6B7280'],
+    draft:      ['Draft',    'rgba(107,114,128,0.1)', '#6B7280'],
+    cancelled:  ['Cancelled','rgba(239,68,68,0.1)',   '#DC2626'],
+    finished:   ['Finished', 'rgba(37,99,235,0.1)',   '#2563EB'],
+    private:    ['Private',  'rgba(107,114,128,0.1)', '#6B7280'],
+    archived:   ['Archived', 'rgba(107,114,128,0.08)','#9CA3AF'],
+  };
+  const [slabel, sbg, scolor] = statusStyles[status] || statusStyles.draft;
   const sb = document.getElementById('od-status-badge');
-  sb.textContent = slabel; sb.className = 'badge ' + scls;
+  sb.textContent = slabel;
+  sb.style.cssText = 'background:' + sbg + ';color:' + scolor + ';font-weight:700;padding:3px 9px;border-radius:99px;font-size:10px;display:inline-flex;align-items:center;';
 
   document.getElementById('od-recruiter').textContent = recruiter;
   const ri = document.getElementById('inp-recruiter');
@@ -2773,22 +2784,7 @@ window.updateWfhBadge = function() {
   if (badge) badge.textContent = icon + ' ' + wfh + ' · ' + city;
 };
 
-window.saveOpening = function() {
-  const reads = { wfh:'inp-wfh', city:'inp-city', 'sb-exp':'inp-sb-exp', 'sb-english':'inp-sb-english', tz:'inp-tz', date:'inp-date', org:'inp-org', status:'inp-status' };
-  Object.entries(reads).forEach(([field, id]) => {
-    const inp = document.getElementById(id); const view = document.getElementById('view-osb-' + field);
-    if (inp && view) view.textContent = field === 'date' ? formatDate(inp.value) : inp.value;
-  });
-  const mn = document.getElementById('inp-sal-min')?.value;
-  const mx = document.getElementById('inp-sal-max')?.value;
-  const sv = document.getElementById('view-osb-salary');
-  if (mn && mx && sv) sv.textContent = '$' + parseInt(mn).toLocaleString() + ' – $' + parseInt(mx).toLocaleString();
-  updateWfhBadge();
-  _openingDirty = false;
-  document.getElementById('od-draft-chip').style.display = 'none';
-  document.getElementById('od-save-btn').style.display = 'none';
-  toast('Opening saved.', 'ok');
-};
+// saveOpening defined below (async Firebase version)
 
 function formatDate(val) {
   if (!val) return '—';
@@ -2796,9 +2792,29 @@ function formatDate(val) {
   return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
 }
 
-window.leaveOpeningPage = function() {
+window.leaveOpeningPage = async function() {
   if (_openingDirty) {
-    toast('Draft saved — find it in Openings.', 'ok');
+    // Auto-save as draft before leaving — never lose work
+    const code = _currentOpening.code;
+    if (code) {
+      const draftData = {
+        code,
+        title: document.getElementById('inp-title')?.value.trim() || _currentOpening.title || 'Untitled',
+        status: document.getElementById('inp-status')?.value || _currentOpening.status || 'draft',
+        published: document.getElementById('osb-pub-toggle')?.classList.contains('on') || false,
+        recruiter: document.getElementById('inp-recruiter')?.value || _currentOpening.recruiter || '',
+        isDraft: true,
+        updatedAt: new Date().toISOString()
+      };
+      localStorage.setItem('nw_opening_' + code, JSON.stringify(draftData));
+      try {
+        const { db, doc, setDoc, serverTimestamp } = await import('./firebase-config.js');
+        await setDoc(doc(db, 'openings', code), { ...draftData, savedAt: serverTimestamp() }, { merge: true });
+      } catch(e) {}
+      // Make sure the row appears in the list
+      upsertOpeningRow(code, draftData);
+    }
+    toast('Draft saved automatically.', 'ok');
     _openingDirty = false;
   }
   navTo('openings','Openings');
@@ -2806,7 +2822,7 @@ window.leaveOpeningPage = function() {
 
 window.toggleOpeningVisibility = function() { togglePubVisibility(); };
 
-window.togglePubVisibility = function() {
+window.togglePubVisibility = async function() {
   const btn = document.getElementById('osb-pub-toggle');
   const lbl = document.getElementById('osb-pub-label');
   if (!btn) return;
@@ -2814,7 +2830,48 @@ window.togglePubVisibility = function() {
   const on = btn.classList.contains('on');
   lbl.textContent = on ? 'Published' : 'Private';
   lbl.style.color  = on ? 'var(--green)' : 'var(--g4)';
-  toast(on ? 'Opening published.' : 'Opening set to private.', 'ok');
+
+  // Immediately update the status badge in header
+  const statusBadge = document.getElementById('od-status-badge');
+  if (statusBadge) {
+    if (!on) {
+      statusBadge.textContent = 'Private';
+      statusBadge.style.cssText = 'background:rgba(107,114,128,0.12);color:#6B7280;font-weight:700;';
+    } else {
+      // Restore to current operational status
+      const opStatus = document.getElementById('inp-status')?.value || 'active';
+      const statusMap = { Active:['Active','rgba(16,185,129,0.12)','#059669'], 'On hold':['On hold','rgba(245,158,11,0.12)','#D97706'], Closed:['Closed','rgba(107,114,128,0.12)','#6B7280'], Cancelled:['Cancelled','rgba(239,68,68,0.1)','#DC2626'] };
+      const [txt, bg, color] = statusMap[opStatus] || statusMap['Active'];
+      statusBadge.textContent = txt;
+      statusBadge.style.cssText = 'background:' + bg + ';color:' + color + ';font-weight:700;';
+    }
+  }
+
+  // Update the row in the openings list immediately
+  const code = _currentOpening.code;
+  if (code) {
+    const row = document.querySelector('.ot-row[data-code="' + code.toLowerCase() + '"]');
+    if (row) {
+      const rowToggle = row.querySelector('.toggle');
+      const rowLabel  = row.querySelector('.pub-toggle span');
+      if (rowToggle) { rowToggle.classList.toggle('on', on); }
+      if (rowLabel)  { rowLabel.textContent = on ? 'Published' : 'Private'; rowLabel.style.color = on ? 'var(--green)' : 'var(--g4)'; }
+    }
+    // Persist to localStorage immediately (Firebase in saveOpening)
+    const key = 'nw_opening_' + code;
+    try {
+      const ex = JSON.parse(localStorage.getItem(key) || '{}');
+      ex.published = on;
+      localStorage.setItem(key, JSON.stringify(ex));
+    } catch(e) {}
+    // Write to Firebase immediately without waiting for full save
+    try {
+      const { db, doc, setDoc, serverTimestamp } = await import('./firebase-config.js');
+      await setDoc(doc(db, 'openings', code), { published: on, updatedAt: serverTimestamp() }, { merge: true });
+    } catch(e) { /* Firebase not wired yet — localStorage handled above */ }
+  }
+
+  toast(on ? 'Opening published.' : 'Opening set to private — saved.', 'ok');
   markDirty();
 };
 
@@ -2862,20 +2919,52 @@ window.copyCode = function(el) {
   tip._t = setTimeout(() => { tip.style.opacity = '0'; }, 1800);
 };
 
-// ── Archive (soft-delete) ───────────────────────────────────────────────────
+// ── Super admin flag — set based on Firebase profile, or force true for Byron ──
+// In production this comes from the user's Firestore profile role field
+window._isSuperAdmin = true; // Will be set to false for non-super-admin users after auth
+
+// ── Archive / Unarchive (soft-delete, super admin can restore) ──────────────
 window.archiveOpening = async function(code) {
-  if (!confirm('Archive ' + code + '? It will stay visible but marked archived. Only master admin can permanently delete.')) return;
   const row = document.querySelector('.ot-row[data-code="' + code.toLowerCase() + '"]');
-  if (row) { row.style.opacity = '.45'; row.style.pointerEvents = 'none'; }
+  const isArchived = row?.dataset.status === 'archived';
+
+  if (isArchived) {
+    // UNARCHIVE — only super admin
+    if (!window._isSuperAdmin) { toast('Only super admins can restore archived openings.', 'bad'); return; }
+    if (!confirm('Restore opening ' + code + '? It will be set back to On hold.')) return;
+    if (row) { row.style.opacity = '1'; row.style.pointerEvents = ''; row.dataset.status = 'on hold'; }
+    const newData = { status: 'on hold', archivedAt: null };
+    localStorage.setItem('nw_opening_' + code, JSON.stringify({ ...(JSON.parse(localStorage.getItem('nw_opening_' + code) || '{}')), ...newData }));
+    try {
+      const { db, doc, setDoc, serverTimestamp } = await import('./firebase-config.js');
+      await setDoc(doc(db, 'openings', code), { ...newData, updatedAt: serverTimestamp() }, { merge: true });
+    } catch(e) {}
+    // Update the button text in the row
+    const archBtn = row?.querySelector('.btn-danger');
+    if (archBtn) archBtn.textContent = 'Archive';
+    toast('Opening restored to On hold.', 'ok');
+    return;
+  }
+
+  // ARCHIVE
+  if (!confirm('Archive ' + code + '? It stays visible but is marked archived.\nSuper admin can restore it later. Only master admin can permanently delete.')) return;
+  if (row) {
+    row.style.opacity = '.45';
+    row.dataset.status = 'archived';
+    const archBtn = row.querySelector('.btn-danger');
+    if (archBtn) archBtn.textContent = 'Restore';
+    const statusCell = row.children[3];
+    if (statusCell) statusCell.innerHTML = '<span style="background:rgba(107,114,128,0.08);color:#9CA3AF;font-weight:700;padding:3px 9px;border-radius:99px;font-size:10px;">Archived</span>';
+  }
+  const key = 'nw_opening_' + code;
+  const ex  = JSON.parse(localStorage.getItem(key) || '{}');
+  localStorage.setItem(key, JSON.stringify({ ...ex, status: 'archived', archivedAt: new Date().toISOString() }));
   try {
     const { db, doc, setDoc, serverTimestamp } = await import('./firebase-config.js');
     await setDoc(doc(db, 'openings', code), { status: 'archived', archivedAt: serverTimestamp() }, { merge: true });
-    toast('Opening archived in Firebase.', 'ok');
+    toast('Opening archived in Firebase. Click "Restore" to undo.', 'ok');
   } catch(e) {
-    const key = 'nw_opening_' + code;
-    const ex  = JSON.parse(localStorage.getItem(key) || '{}');
-    localStorage.setItem(key, JSON.stringify({ ...ex, status: 'archived' }));
-    toast('Opening archived locally.', 'ok');
+    toast('Opening archived locally. Click "Restore" to undo.', 'ok');
   }
 };
 
@@ -2968,9 +3057,17 @@ function upsertOpeningRow(code, data) {
   const status   = data['sb-status'] || data.status || 'active';
   const recruiter = data.recruiter || 'Byron Giraldo';
   const published = data.published;
-  const statusBadge = status === 'active'   ? '<span class="badge b-green">Active</span>'
-                    : status === 'archived'  ? '<span class="badge b-gray">Archived</span>'
-                    : '<span class="badge b-amber">' + status.charAt(0).toUpperCase() + status.slice(1) + '</span>';
+  const statusBadgeMap = {
+    active:    ['Active',   'rgba(16,185,129,0.12)', '#059669'],
+    'on hold': ['On hold',  'rgba(245,158,11,0.12)', '#D97706'],
+    closed:    ['Closed',   'rgba(107,114,128,0.1)', '#6B7280'],
+    draft:     ['Draft',    'rgba(107,114,128,0.1)', '#6B7280'],
+    cancelled: ['Cancelled','rgba(239,68,68,0.1)',   '#DC2626'],
+    finished:  ['Finished', 'rgba(37,99,235,0.1)',   '#2563EB'],
+    archived:  ['Archived', 'rgba(107,114,128,0.08)','#9CA3AF'],
+  };
+  const [sbTxt, sbBg, sbColor] = statusBadgeMap[status] || statusBadgeMap.draft;
+  const statusBadge = '<span style="background:' + sbBg + ';color:' + sbColor + ';font-weight:700;padding:3px 9px;border-radius:99px;font-size:10px;">' + sbTxt + '</span>';
 
   if (!row) {
     row = document.createElement('div');
@@ -3039,35 +3136,77 @@ function upsertOpeningRow(code, data) {
 })();
 
 // ── Route on load: read current URL and show the right page ─────────────────
-// This handles the case where someone refreshes mid-navigation.
-// The server (Vercel) must rewrite all /admin-dashboard/* paths to this HTML file.
 (function routeOnLoad() {
   const path = window.location.pathname;
-  if (path.includes('/openings/')) {
-    // e.g. /admin-dashboard/openings/open-csm-4x8b
-    const code = path.split('/openings/')[1]?.toUpperCase();
-    if (code) {
-      const stored = localStorage.getItem('nw_opening_' + code);
-      if (stored) {
-        try {
-          const d = JSON.parse(stored);
-          setTimeout(() => openOpeningDetail(d.code || code, d.title || code, d.status || 'active', !!d.published, d.recruiter || 'Byron Giraldo'), 100);
-          return;
-        } catch(e) {}
+
+  if (path.includes('/openings/open-')) {
+    // e.g. /admin-dashboard/openings/open-csm-4x8b — restore specific opening
+    const codeLower = path.split('/openings/')[1];
+    if (codeLower) {
+      const codeUpper = codeLower.toUpperCase();
+      // Try localStorage first (works offline and without Firebase)
+      const storedKeys = [
+        'nw_opening_' + codeUpper,
+        'nw_opening_OPEN-' + codeUpper.replace('OPEN-', '')
+      ];
+      let found = false;
+      for (const key of storedKeys) {
+        const raw = localStorage.getItem(key);
+        if (raw) {
+          try {
+            const d = JSON.parse(raw);
+            const code = d.code || codeUpper;
+            setTimeout(() => openOpeningDetail(
+              code,
+              d.title || 'Opening',
+              d.status || 'active',
+              !!d.published,
+              d.recruiter || 'Byron Giraldo'
+            ), 80);
+            found = true;
+            break;
+          } catch(e) {}
+        }
       }
-      // Code not in localStorage — show openings list
-      setTimeout(() => navTo('openings', 'Openings'), 100);
+      if (!found) {
+        // Not in localStorage — check if it's a known static opening
+        const staticOpenings = {
+          'OPEN-CSM-4X8B': ['Customer Success Manager', 'active', true, 'Byron Giraldo'],
+          'OPEN-SDR-9K2M': ['SDR / Sales Development Rep', 'active', true, 'Byron Giraldo'],
+          'OPEN-SUP-3B7R': ['Technical Support Specialist', 'on hold', false, 'Nany Salcedo'],
+          'OPEN-OPS-5P2W': ['Operations Manager', 'active', true, 'Andres García'],
+          'OPEN-MKT-7Q4N': ['Marketing Ops Specialist', 'on hold', false, 'Byron Giraldo'],
+        };
+        const match = staticOpenings[codeUpper];
+        if (match) {
+          setTimeout(() => openOpeningDetail(codeUpper, ...match), 80);
+        } else {
+          // Unknown code — show the openings list
+          setTimeout(() => navTo('openings', 'Openings'), 80);
+        }
+      }
+      return;
     }
-  } else if (path.includes('/openings')) {
-    setTimeout(() => navTo('openings', 'Openings'), 100);
-  } else if (path.includes('/org/')) {
-    setTimeout(() => navTo('orgs', 'Organizations'), 100);
-  } else if (path.includes('/candidates')) {
-    setTimeout(() => navTo('candidates', 'Candidates'), 100);
-  } else if (path.includes('/pipeline')) {
-    setTimeout(() => navTo('pipeline', 'Pipelines'), 100);
   }
-  // Default: stay on dashboard, push clean state
+
+  if (path.includes('/openings')) {
+    setTimeout(() => navTo('openings', 'Openings'), 80);
+    return;
+  }
+  if (path.includes('/org/')) {
+    setTimeout(() => navTo('orgs', 'Organizations'), 80);
+    return;
+  }
+  if (path.includes('/candidates')) {
+    setTimeout(() => navTo('candidates', 'Candidates'), 80);
+    return;
+  }
+  if (path.includes('/pipeline')) {
+    setTimeout(() => navTo('pipeline', 'Pipelines'), 80);
+    return;
+  }
+
+  // Default: dashboard — ensure clean state pushed
   history.replaceState({ page: 'dashboard' }, '', path);
 })();
 
