@@ -425,8 +425,8 @@ body{font-family:'Poppins',sans-serif;background:var(--g1);color:var(--black);mi
 
 /* ══ OPENINGS TABLE ══ */
 .openings-table{background:#fff;border-radius:13px;border:1px solid var(--g3);overflow:hidden;}
-.ot-hdr{display:grid;grid-template-columns:2fr 1.5fr 1fr 1fr 1fr 120px;padding:11px 18px;background:var(--g1);border-bottom:1px solid var(--g2);font-size:10px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.08em;gap:12px;}
-.ot-row{display:grid;grid-template-columns:2fr 1.5fr 1fr 1fr 1fr 120px;padding:13px 18px;border-bottom:1px solid var(--g2);font-size:12px;color:var(--g6);align-items:center;gap:12px;transition:background .15s;cursor:pointer;}
+.ot-hdr{display:grid;grid-template-columns:2fr 1.2fr 1fr 1fr 1fr 230px;padding:11px 18px;background:var(--g1);border-bottom:1px solid var(--g2);font-size:10px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.08em;gap:12px;}
+.ot-row{display:grid;grid-template-columns:2fr 1.2fr 1fr 1fr 1fr 230px;padding:13px 18px;border-bottom:1px solid var(--g2);font-size:12px;color:var(--g6);align-items:center;gap:12px;transition:background .15s;cursor:pointer;}
 .ot-row:last-child{border-bottom:none;}
 .ot-row:hover{background:var(--g1);}
 .ot-role{font-size:13px;font-weight:700;color:var(--black);margin-bottom:1px;}
@@ -458,7 +458,9 @@ body{font-family:'Poppins',sans-serif;background:var(--g1);color:var(--black);mi
 .opening-section-body p{margin-bottom:12px;}
 .opening-section-body p:last-child{margin-bottom:0;}
 .opening-section-body ul{padding-left:18px;display:flex;flex-direction:column;gap:6px;}
-.opening-section-body li{font-size:13px;color:var(--g6);}
+.opening-section-body ul{list-style:none;padding-left:0;display:flex;flex-direction:column;gap:6px;}
+.opening-section-body li{font-size:13px;color:var(--g6);display:flex;align-items:flex-start;gap:10px;}
+.opening-section-body li::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--purple);flex-shrink:0;margin-top:5px;}
 .skill-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
 .skill-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--g6);background:var(--g1);border-radius:8px;padding:9px 12px;}
 .skill-dot{width:6px;height:6px;border-radius:50%;background:var(--purple);flex-shrink:0;}
@@ -1138,7 +1140,7 @@ onAuthStateChanged(auth, async user => {
               <option selected>Admin</option><option>Viewer</option>
             </select>
           </div>
-          <div><span class="badge b-green">Active</span></div>
+          <div><span class="badge" style="background:rgba(16,185,129,0.12);color:#059669;font-weight:700;">Active</span></div>
           <div style="display:flex;gap:5px;flex-wrap:wrap;">
             <button class="btn btn-ghost btn-sm" onclick="toast('Password reset email sent.','ok')">🔑 Reset pw</button>
             <button class="btn btn-danger btn-sm" onclick="toast('User removed.','ok')">Remove</button>
@@ -1154,7 +1156,7 @@ onAuthStateChanged(auth, async user => {
               <option>Admin</option><option selected>Viewer</option>
             </select>
           </div>
-          <div><span class="badge b-green">Active</span></div>
+          <div><span class="badge" style="background:rgba(16,185,129,0.12);color:#059669;font-weight:700;">Active</span></div>
           <div style="display:flex;gap:5px;flex-wrap:wrap;">
             <button class="btn btn-ghost btn-sm" onclick="toast('Password reset email sent.','ok')">🔑 Reset pw</button>
             <button class="btn btn-danger btn-sm" onclick="toast('User removed.','ok')">Remove</button>
@@ -1405,7 +1407,7 @@ onAuthStateChanged(auth, async user => {
         <div><span class="score-pill sp-g">91</span></div>
         <div><span class="badge b-green">Client Review</span></div>
         <div style="font-size:11px;">CSM · Crestline</div>
-        <div><span class="badge b-green">Active</span></div>
+        <div><span class="badge" style="background:rgba(16,185,129,0.12);color:#059669;font-weight:700;">Active</span></div>
         <div onclick="event.stopPropagation()" style="display:flex;gap:4px;">
           <button class="btn btn-ghost btn-sm" onclick="openModal('cand-detail-modal')">View</button>
           <button class="btn btn-danger btn-sm" onclick="toast('Candidate banned from future openings.','ok')">Ban</button>
@@ -1416,7 +1418,7 @@ onAuthStateChanged(auth, async user => {
         <div><span class="score-pill sp-g">85</span></div>
         <div><span class="badge b-green">Client Review</span></div>
         <div style="font-size:11px;">CSM · Crestline</div>
-        <div><span class="badge b-green">Active</span></div>
+        <div><span class="badge" style="background:rgba(16,185,129,0.12);color:#059669;font-weight:700;">Active</span></div>
         <div onclick="event.stopPropagation()" style="display:flex;gap:4px;"><button class="btn btn-ghost btn-sm" onclick="openModal('cand-detail-modal')">View</button><button class="btn btn-danger btn-sm" onclick="toast('Candidate banned.','ok')">Ban</button></div>
       </div>
       <div class="ct-row" onclick="openModal('cand-detail-modal')">
@@ -1424,7 +1426,7 @@ onAuthStateChanged(auth, async user => {
         <div><span class="score-pill sp-a">79</span></div>
         <div><span class="badge b-purple">Profile Review</span></div>
         <div style="font-size:11px;">CSM · Crestline</div>
-        <div><span class="badge b-green">Active</span></div>
+        <div><span class="badge" style="background:rgba(16,185,129,0.12);color:#059669;font-weight:700;">Active</span></div>
         <div onclick="event.stopPropagation()" style="display:flex;gap:4px;"><button class="btn btn-ghost btn-sm">View</button><button class="btn btn-danger btn-sm" onclick="toast('Candidate banned.','ok')">Ban</button></div>
       </div>
       <div class="ct-row" onclick="openModal('cand-detail-modal')">
@@ -1432,7 +1434,7 @@ onAuthStateChanged(auth, async user => {
         <div><span class="score-pill sp-a">72</span></div>
         <div><span class="badge b-gray">Applied</span></div>
         <div style="font-size:11px;">CSM · Crestline</div>
-        <div><span class="badge b-green">Active</span></div>
+        <div><span class="badge" style="background:rgba(16,185,129,0.12);color:#059669;font-weight:700;">Active</span></div>
         <div onclick="event.stopPropagation()" style="display:flex;gap:4px;"><button class="btn btn-ghost btn-sm">View</button><button class="btn btn-danger btn-sm" onclick="toast('Candidate banned.','ok')">Ban</button></div>
       </div>
       <div class="ct-row" onclick="openModal('cand-detail-modal')">
@@ -1466,7 +1468,7 @@ onAuthStateChanged(auth, async user => {
         <div><div class="ot-role">Customer Success Manager</div><div class="ot-code copyable" data-copy="OPEN-CSM-4X8B" onclick="event.stopPropagation();copyCode(this)" title="Click to copy">OPEN-CSM-4X8B</div></div>
         <div class="ot-code">OPEN-CSM-4X8B</div>
         <div style="font-size:12px;">Byron Giraldo</div>
-        <div><span class="badge b-green">Active</span></div>
+        <div><span class="badge" style="background:rgba(16,185,129,0.12);color:#059669;font-weight:700;">Active</span></div>
         <div onclick="event.stopPropagation()"><div class="pub-toggle"><button class="toggle on" onclick="this.classList.toggle('on');this.nextElementSibling.textContent=this.classList.contains('on')?'Published':'Draft';this.nextElementSibling.style.color=this.classList.contains('on')?'var(--green)':'var(--g4)'"></button><span style="color:var(--green);font-size:11px;">Published</span></div></div>
         <div onclick="event.stopPropagation()" style="display:flex;gap:5px;">
           <button class="btn btn-p btn-sm" onclick="openOpeningDetail('OPEN-CSM-4X8B','Customer Success Manager','active',true,'Byron Giraldo')">View</button>
@@ -1478,7 +1480,7 @@ onAuthStateChanged(auth, async user => {
         <div><div class="ot-role">SDR / Sales Development Rep</div><div class="ot-code copyable" data-copy="OPEN-SDR-9K2M" onclick="event.stopPropagation();copyCode(this)" title="Click to copy">OPEN-SDR-9K2M</div></div>
         <div class="ot-code">OPEN-SDR-9K2M</div>
         <div style="font-size:12px;">Byron Giraldo</div>
-        <div><span class="badge b-green">Active</span></div>
+        <div><span class="badge" style="background:rgba(16,185,129,0.12);color:#059669;font-weight:700;">Active</span></div>
         <div onclick="event.stopPropagation()"><div class="pub-toggle"><button class="toggle on" onclick="this.classList.toggle('on');this.nextElementSibling.textContent=this.classList.contains('on')?'Published':'Draft';this.nextElementSibling.style.color=this.classList.contains('on')?'var(--green)':'var(--g4)'"></button><span style="color:var(--green);font-size:11px;">Published</span></div></div>
         <div onclick="event.stopPropagation()" style="display:flex;gap:5px;">
           <button class="btn btn-p btn-sm" onclick="openOpeningDetail('OPEN-SDR-9K2M','SDR / Sales Development Rep','active',true,'Byron Giraldo')">View</button>
@@ -1490,7 +1492,7 @@ onAuthStateChanged(auth, async user => {
         <div><div class="ot-role">Technical Support Specialist</div><div class="ot-code copyable" data-copy="OPEN-SUP-3B7R" onclick="event.stopPropagation();copyCode(this)" title="Click to copy">OPEN-SUP-3B7R</div></div>
         <div class="ot-code">OPEN-SUP-3B7R</div>
         <div style="font-size:12px;">Nany Salcedo</div>
-        <div><span class="badge b-amber">On hold</span></div>
+        <div><span class="badge" style="background:rgba(245,158,11,0.12);color:#D97706;font-weight:700;">On hold</span></div>
         <div onclick="event.stopPropagation()"><div class="pub-toggle"><button class="toggle" onclick="this.classList.toggle('on');this.nextElementSibling.textContent=this.classList.contains('on')?'Published':'Draft';this.nextElementSibling.style.color=this.classList.contains('on')?'var(--green)':'var(--g4)'"></button><span style="color:var(--g4);font-size:11px;">Draft</span></div></div>
         <div onclick="event.stopPropagation()" style="display:flex;gap:5px;">
           <button class="btn btn-p btn-sm" onclick="openOpeningDetail('OPEN-SUP-3B7R','Technical Support Specialist','on hold',false,'Nany Salcedo')">View</button>
@@ -1502,7 +1504,7 @@ onAuthStateChanged(auth, async user => {
         <div><div class="ot-role">Operations Manager</div><div class="ot-code copyable" data-copy="OPEN-OPS-5P2W" onclick="event.stopPropagation();copyCode(this)" title="Click to copy">OPEN-OPS-5P2W</div></div>
         <div class="ot-code">OPEN-OPS-5P2W</div>
         <div style="font-size:12px;">Andres García</div>
-        <div><span class="badge b-green">Active</span></div>
+        <div><span class="badge" style="background:rgba(16,185,129,0.12);color:#059669;font-weight:700;">Active</span></div>
         <div onclick="event.stopPropagation()"><div class="pub-toggle"><button class="toggle on" onclick="this.classList.toggle('on');this.nextElementSibling.textContent=this.classList.contains('on')?'Published':'Draft';this.nextElementSibling.style.color=this.classList.contains('on')?'var(--green)':'var(--g4)'"></button><span style="color:var(--green);font-size:11px;">Published</span></div></div>
         <div onclick="event.stopPropagation()" style="display:flex;gap:5px;">
           <button class="btn btn-p btn-sm" onclick="openOpeningDetail('OPEN-OPS-5P2W','Operations Manager','active',true,'Andres García')">View</button>
@@ -1514,7 +1516,7 @@ onAuthStateChanged(auth, async user => {
         <div><div class="ot-role">Marketing Ops Specialist</div><div class="ot-code copyable" data-copy="OPEN-MKT-7Q4N" onclick="event.stopPropagation();copyCode(this)" title="Click to copy">OPEN-MKT-7Q4N</div></div>
         <div class="ot-code">OPEN-MKT-7Q4N</div>
         <div style="font-size:12px;">Byron Giraldo</div>
-        <div><span class="badge b-amber">On hold</span></div>
+        <div><span class="badge" style="background:rgba(245,158,11,0.12);color:#D97706;font-weight:700;">On hold</span></div>
         <div onclick="event.stopPropagation()"><div class="pub-toggle"><button class="toggle" onclick="this.classList.toggle('on');this.nextElementSibling.textContent=this.classList.contains('on')?'Published':'Draft';this.nextElementSibling.style.color=this.classList.contains('on')?'var(--green)':'var(--g4)'"></button><span style="color:var(--g4);font-size:11px;">Draft</span></div></div>
         <div onclick="event.stopPropagation()" style="display:flex;gap:5px;">
           <button class="btn btn-p btn-sm" onclick="openOpeningDetail('OPEN-MKT-7Q4N','Marketing Ops Specialist','on hold',false,'Byron Giraldo')">View</button>
@@ -1787,11 +1789,15 @@ Project coordination & time management</textarea>
             </select>
           </div>
           <div class="osb-row">
-            <span class="osb-label">Salary (USD/mo)</span>
-            <span id="view-osb-salary">$2,000 – $2,600</span>
-            <div id="inp-salary-wrap" style="display:none;flex:1;justify-content:flex-end;gap:4px;">
+            <span class="osb-label">Salary</span>
+            <span id="view-osb-salary">USD $2,000 – $2,600</span>
+            <div id="inp-salary-wrap" style="display:none;flex:1;justify-content:flex-end;gap:4px;align-items:center;">
+              <select id="inp-currency" class="osb-inp-sel" style="padding:3px 6px;width:58px;" onchange="markDirty()">
+                <option value="USD" selected>USD</option>
+                <option value="COP">COP</option>
+              </select>
               <input type="number" id="inp-sal-min" value="2000" min="0" step="100" style="width:70px;padding:3px 6px;border:1.5px solid var(--g3);border-radius:6px;font-size:11px;font-family:'Poppins',sans-serif;text-align:center;" oninput="markDirty()">
-              <span style="font-size:11px;color:var(--g4);align-self:center;">–</span>
+              <span style="font-size:11px;color:var(--g4);">–</span>
               <input type="number" id="inp-sal-max" value="2600" min="0" step="100" style="width:70px;padding:3px 6px;border:1.5px solid var(--g3);border-radius:6px;font-size:11px;font-family:'Poppins',sans-serif;text-align:center;" oninput="markDirty()">
             </div>
           </div>
@@ -1862,6 +1868,17 @@ Project coordination & time management</textarea>
               <button class="toggle on" id="osb-pub-toggle" onclick="togglePubVisibility()"></button>
               <span id="osb-pub-label" style="font-size:11px;color:var(--green);">Published</span>
             </div>
+          </div>
+          <div class="osb-row" style="border-bottom:none;padding-top:10px;margin-top:2px;border-top:1px solid var(--g2);">
+            <span class="osb-label">Linked pipeline</span>
+            <span id="view-osb-pipeline" style="font-size:11px;font-family:monospace;color:var(--purple);">PL-CSM-4X8B</span>
+            <select id="inp-pipeline" class="osb-inp-sel" style="display:none;font-size:10px;" onchange="markDirty()">
+              <option value="">— None —</option>
+              <option value="PL-CSM-4X8B" selected>PL-CSM-4X8B · Customer Success Manager</option>
+              <option value="PL-SUP-3B7R">PL-SUP-3B7R · Technical Support Specialist</option>
+              <option value="PL-SDR-9K2M">PL-SDR-9K2M · SDR / Sales Dev Rep</option>
+              <option value="PL-OPS-5P2W">PL-OPS-5P2W · Operations Manager</option>
+            </select>
           </div>
           <div style="margin-top:12px;display:flex;flex-direction:column;gap:6px;">
             <button class="btn btn-ghost btn-sm" style="justify-content:center;" onclick="copyOpeningLink()">🔗 Copy candidate link</button>
@@ -2735,6 +2752,7 @@ function setSidebarEditMode(on) {
     ['view-osb-contract', 'inp-contract'],
     ['view-osb-start',    'inp-start'],
     ['view-osb-tools',    'inp-tools'],
+    ['view-osb-pipeline', 'inp-pipeline'],
     ['view-osb-salary',   null],  // handled separately
   ];
   pairs.forEach(([viewId, inpId]) => {
@@ -2814,7 +2832,19 @@ window.handleApplyClick = function() {
 // ── Click-to-copy any code ──────────────────────────────────────────────────
 window.copyCode = function(el) {
   const text = el.dataset.copy || el.textContent.trim();
-  navigator.clipboard?.writeText(text).catch(() => {});
+  // Try modern API first, fall back to execCommand for non-HTTPS / older browsers
+  function fallbackCopy(t) {
+    const ta = document.createElement('textarea');
+    ta.value = t; ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch(e) {}
+    document.body.removeChild(ta);
+  }
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
+  } else {
+    fallbackCopy(text);
+  }
   let tip = document.getElementById('copy-tip');
   if (!tip) {
     tip = document.createElement('div');
@@ -2865,7 +2895,7 @@ window.saveOpening = async function() {
     'sb-english':'inp-sb-english', tz:'inp-tz', date:'inp-date',
     org:'inp-org', status:'inp-status',
     industry:'inp-industry', contract:'inp-contract',
-    start:'inp-start', tools:'inp-tools'
+    start:'inp-start', tools:'inp-tools', pipeline:'inp-pipeline'
   };
   Object.entries(fieldMap).forEach(([field, id]) => {
     const inp = document.getElementById(id);
@@ -2876,12 +2906,14 @@ window.saveOpening = async function() {
     if (vEl) vEl.textContent = field === 'date' ? formatDate(val) : val;
   });
 
-  const mn = document.getElementById('inp-sal-min')?.value;
-  const mx = document.getElementById('inp-sal-max')?.value;
+  const mn  = document.getElementById('inp-sal-min')?.value;
+  const mx  = document.getElementById('inp-sal-max')?.value;
+  const cur = document.getElementById('inp-currency')?.value || 'USD';
   if (mn && mx) {
-    data.salaryMin = parseInt(mn); data.salaryMax = parseInt(mx);
+    data.salaryMin = parseInt(mn); data.salaryMax = parseInt(mx); data.currency = cur;
+    const sym = cur === 'COP' ? 'COP ' : '$';
     const sv = document.getElementById('view-osb-salary');
-    if (sv) sv.textContent = '$' + parseInt(mn).toLocaleString() + ' – $' + parseInt(mx).toLocaleString();
+    if (sv) sv.textContent = cur + ' ' + sym + parseInt(mn).toLocaleString() + ' – ' + sym + parseInt(mx).toLocaleString();
   }
 
   // Header fields
@@ -3004,6 +3036,39 @@ function upsertOpeningRow(code, data) {
   const style = document.createElement('style');
   style.textContent = `.copyable{cursor:pointer;transition:color .15s;} .copyable:hover{color:var(--purple)!important;}`;
   document.head.appendChild(style);
+})();
+
+// ── Route on load: read current URL and show the right page ─────────────────
+// This handles the case where someone refreshes mid-navigation.
+// The server (Vercel) must rewrite all /admin-dashboard/* paths to this HTML file.
+(function routeOnLoad() {
+  const path = window.location.pathname;
+  if (path.includes('/openings/')) {
+    // e.g. /admin-dashboard/openings/open-csm-4x8b
+    const code = path.split('/openings/')[1]?.toUpperCase();
+    if (code) {
+      const stored = localStorage.getItem('nw_opening_' + code);
+      if (stored) {
+        try {
+          const d = JSON.parse(stored);
+          setTimeout(() => openOpeningDetail(d.code || code, d.title || code, d.status || 'active', !!d.published, d.recruiter || 'Byron Giraldo'), 100);
+          return;
+        } catch(e) {}
+      }
+      // Code not in localStorage — show openings list
+      setTimeout(() => navTo('openings', 'Openings'), 100);
+    }
+  } else if (path.includes('/openings')) {
+    setTimeout(() => navTo('openings', 'Openings'), 100);
+  } else if (path.includes('/org/')) {
+    setTimeout(() => navTo('orgs', 'Organizations'), 100);
+  } else if (path.includes('/candidates')) {
+    setTimeout(() => navTo('candidates', 'Candidates'), 100);
+  } else if (path.includes('/pipeline')) {
+    setTimeout(() => navTo('pipeline', 'Pipelines'), 100);
+  }
+  // Default: stay on dashboard, push clean state
+  history.replaceState({ page: 'dashboard' }, '', path);
 })();
 
 window.editSection = function(section) {
