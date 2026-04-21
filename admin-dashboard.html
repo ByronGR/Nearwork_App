@@ -438,13 +438,15 @@ body{font-family:'Poppins',sans-serif;background:var(--g1);color:var(--black);mi
 .toggle.on::after{transform:translateX(16px);}
 
 /* ══ OPENING DETAIL PAGE ══ */
-.opening-header{background:var(--black);border-radius:16px;padding:32px;margin-bottom:24px;color:#fff;}
+.opening-header{background:linear-gradient(135deg,#2D1B69 0%,#4F28B8 50%,#6C3CE1 100%);border-radius:16px;padding:32px;margin-bottom:24px;color:#fff;position:relative;overflow:hidden;}
+.opening-header::before{content:'';position:absolute;top:-60px;right:-60px;width:240px;height:240px;border-radius:50%;background:rgba(255,255,255,0.05);pointer-events:none;}
+.opening-header::after{content:'';position:absolute;bottom:-40px;left:40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,0.04);pointer-events:none;}
 .opening-header-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px;flex-wrap:wrap;}
 .opening-title{font-size:28px;font-weight:900;color:#fff;letter-spacing:-1.5px;line-height:1.1;margin-bottom:12px;}
 .opening-skills-row{display:flex;flex-wrap:wrap;gap:6px;}
-.skill-chip{background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.85);font-size:11px;font-weight:600;padding:4px 10px;border-radius:99px;border:1px solid rgba(255,255,255,0.15);}
-.opening-meta-row{display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,0.5);flex-wrap:wrap;margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.1);}
-.opening-meta-row strong{color:rgba(255,255,255,0.85);}
+.skill-chip{background:rgba(255,255,255,0.15);color:#fff;font-size:11px;font-weight:600;padding:4px 12px;border-radius:99px;border:1px solid rgba(255,255,255,0.25);backdrop-filter:blur(4px);}
+.opening-meta-row{display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,0.65);flex-wrap:wrap;margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.15);}
+.opening-meta-row strong{color:#fff;font-weight:700;}
 
 .opening-body{display:grid;grid-template-columns:1fr 300px;gap:24px;align-items:start;}
 .opening-content{display:flex;flex-direction:column;gap:0;}
@@ -476,7 +478,8 @@ body{font-family:'Poppins',sans-serif;background:var(--g1);color:var(--black);mi
 .osb-label{color:var(--g5);}
 .osb-inp-sel{font-size:11px;font-family:'Poppins',sans-serif;padding:3px 20px 3px 6px;border:1.5px solid var(--g3);border-radius:6px;background:#fff;outline:none;cursor:pointer;appearance:none;color:var(--black);}
 .osb-inp-sel:focus{border-color:var(--purple);}
-.od-sel{width:100%;font-size:12px;font-family:'Poppins',sans-serif;padding:7px 10px;border:1.5px solid rgba(255,255,255,0.2);border-radius:8px;background:rgba(255,255,255,0.1);color:#fff;outline:none;cursor:pointer;}
+.od-sel{width:100%;font-size:12px;font-family:'Poppins',sans-serif;padding:7px 10px;border:1.5px solid rgba(255,255,255,0.3);border-radius:8px;background:rgba(255,255,255,0.15);color:#fff;outline:none;cursor:pointer;backdrop-filter:blur(4px);}
+.od-sel option{background:#4F28B8;color:#fff;}
 
 @media(max-width:900px){
   .opening-body{grid-template-columns:1fr;}
@@ -1550,10 +1553,10 @@ onAuthStateChanged(auth, async user => {
       <div class="opening-header-top">
         <div style="flex:1;">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
-            <span class="badge" id="od-status-badge">Active</span>
-            <span class="badge b-gray" id="od-code-badge" style="font-family:monospace;font-size:10px;">OPEN-CSM-4X8B</span>
-            <span class="badge b-gray" id="od-wfh-badge">🏠 Remote · Colombia-wide</span>
-            <span style="font-size:11px;color:rgba(255,255,255,0.4);" id="od-posted-date">Posted Apr 10, 2026</span>
+            <span id="od-status-badge" style="background:#fff;color:#059669;font-weight:700;padding:4px 14px;border-radius:99px;font-size:11px;display:inline-flex;align-items:center;border:2px solid #059669;">Active</span>
+            <span id="od-code-badge" style="background:rgba(255,255,255,0.15);color:#fff;font-family:monospace;font-size:10px;font-weight:700;padding:4px 10px;border-radius:99px;border:1px solid rgba(255,255,255,0.25);" class="copyable" onclick="copyCode(this)" title="Click to copy">OPEN-CSM-4X8B</span>
+            <span id="od-wfh-badge" style="background:rgba(255,255,255,0.15);color:#fff;font-size:11px;font-weight:600;padding:4px 12px;border-radius:99px;border:1px solid rgba(255,255,255,0.25);">🏠 Remote · Colombia-wide</span>
+            <span style="font-size:11px;color:rgba(255,255,255,0.55);" id="od-posted-date">Posted Apr 10, 2026</span>
           </div>
 
           <!-- Title — view/edit -->
@@ -2636,6 +2639,19 @@ window.markDirty = function() {
 };
 
 window.openOpeningDetail = function(code, title, status, published, recruiter, editMode) {
+  // Always check localStorage first — overrides the hardcoded HTML params
+  // This is what makes toggle changes survive refresh
+  const stored = localStorage.getItem('nw_opening_' + code);
+  if (stored) {
+    try {
+      const d = JSON.parse(stored);
+      if (d.title)     title     = d.title;
+      if (d.status)    status    = d.status;
+      if (typeof d.published === 'boolean') published = d.published;
+      if (d.recruiter) recruiter = d.recruiter;
+    } catch(e) {}
+  }
+
   _currentOpening = { code, title, status, published, recruiter };
   _openingEditMode = false;
   _openingDirty = false;
@@ -2644,42 +2660,60 @@ window.openOpeningDetail = function(code, title, status, published, recruiter, e
   document.getElementById('inp-title').value = title;
   document.getElementById('od-code-badge').textContent = code;
   document.getElementById('osb-code').textContent = code;
+  const osb = document.getElementById('osb-code');
+  if (osb) { osb.dataset.copy = code; }
 
   const statusStyles = {
-    active:     ['Active',   'rgba(16,185,129,0.12)', '#059669'],
-    'on hold':  ['On hold',  'rgba(245,158,11,0.12)', '#D97706'],
-    closed:     ['Closed',   'rgba(107,114,128,0.1)', '#6B7280'],
-    draft:      ['Draft',    'rgba(107,114,128,0.1)', '#6B7280'],
-    cancelled:  ['Cancelled','rgba(239,68,68,0.1)',   '#DC2626'],
-    finished:   ['Finished', 'rgba(37,99,235,0.1)',   '#2563EB'],
-    private:    ['Private',  'rgba(107,114,128,0.1)', '#6B7280'],
-    archived:   ['Archived', 'rgba(107,114,128,0.08)','#9CA3AF'],
+    active:    ['Active',   '#fff', '#059669', '2px solid #059669'],
+    'on hold': ['On hold',  '#fff', '#D97706', '2px solid #D97706'],
+    closed:    ['Closed',   'rgba(255,255,255,0.2)', '#fff', '1px solid rgba(255,255,255,0.3)'],
+    draft:     ['Draft',    'rgba(255,255,255,0.2)', '#fff', '1px solid rgba(255,255,255,0.3)'],
+    cancelled: ['Cancelled','#fff', '#DC2626', '2px solid #DC2626'],
+    finished:  ['Finished', '#fff', '#2563EB', '2px solid #2563EB'],
+    private:   ['Private',  'rgba(255,255,255,0.2)', '#fff', '1px solid rgba(255,255,255,0.3)'],
+    archived:  ['Archived', 'rgba(255,255,255,0.15)', 'rgba(255,255,255,0.6)', '1px solid rgba(255,255,255,0.2)'],
   };
-  const [slabel, sbg, scolor] = statusStyles[status] || statusStyles.draft;
+  const [slabel, sbg, scolor, sborder] = statusStyles[status] || statusStyles.draft;
   const sb = document.getElementById('od-status-badge');
   sb.textContent = slabel;
-  sb.style.cssText = 'background:' + sbg + ';color:' + scolor + ';font-weight:700;padding:3px 9px;border-radius:99px;font-size:10px;display:inline-flex;align-items:center;';
+  sb.style.cssText = 'background:' + sbg + ';color:' + scolor + ';font-weight:700;padding:4px 14px;border-radius:99px;font-size:11px;display:inline-flex;align-items:center;border:' + sborder + ';';
 
   document.getElementById('od-recruiter').textContent = recruiter;
   const ri = document.getElementById('inp-recruiter');
   if (ri) ri.value = recruiter;
-  document.getElementById('view-osb-org').textContent = 'Crestline SaaS';
+  document.getElementById('view-osb-org').textContent = _currentOpening.org || 'Crestline SaaS';
   document.getElementById('view-osb-status').textContent = slabel;
 
+  // Published toggle — restored from localStorage
   const pt = document.getElementById('osb-pub-toggle');
   const pl = document.getElementById('osb-pub-label');
   if (pt) { pt.className = 'toggle' + (published ? ' on' : ''); }
   if (pl) { pl.textContent = published ? 'Published' : 'Private'; pl.style.color = published ? 'var(--green)' : 'var(--g4)'; }
+
+  // Restore skills chips if stored
+  if (stored) {
+    try {
+      const d = JSON.parse(stored);
+      if (d.skills) {
+        const chips = d.skills.split(',').map(s=>s.trim()).filter(Boolean);
+        const cv = document.getElementById('view-skills-chips');
+        const ci = document.getElementById('inp-skills-chips');
+        if (cv) cv.innerHTML = chips.map(c=>'<span class="skill-chip">'+c+'</span>').join('');
+        if (ci) ci.value = d.skills;
+      }
+    } catch(e) {}
+  }
 
   document.querySelectorAll('.opening-edit-btn').forEach(b => b.style.display = 'none');
   document.getElementById('od-edit-btn').textContent = '✏️ Edit';
   document.getElementById('od-draft-chip').style.display = 'none';
   document.getElementById('od-save-btn').style.display = 'none';
   setSidebarEditMode(false);
-  // Reset header to view mode
   ['title','skills-chips','meta'].forEach(id => {
-    const v = document.getElementById('view-' + id); const e = document.getElementById('edit-' + id);
-    if (v) v.style.display = 'block'; if (e) e.style.display = 'none';
+    const v = document.getElementById('view-' + id);
+    const e = document.getElementById('edit-' + id);
+    if (v) v.style.display = 'block';
+    if (e) e.style.display = 'none';
   });
 
   if (editMode) setTimeout(toggleOpeningEdit, 50);
