@@ -1473,7 +1473,7 @@ onAuthStateChanged(auth, async user => {
         <div class="ot-code">OPEN-CSM-4X8B</div>
         <div style="font-size:12px;">Byron Giraldo</div>
         <div><span style="background:rgba(16,185,129,0.12);color:#059669;font-weight:700;padding:3px 9px;border-radius:99px;font-size:10px;">Active</span></div>
-        <div onclick="event.stopPropagation()"><div class="pub-toggle"><button class="toggle on" onclick="this.classList.toggle('on');this.nextElementSibling.textContent=this.classList.contains('on')?'Published':'Draft';this.nextElementSibling.style.color=this.classList.contains('on')?'var(--green)':'var(--g4)'"></button><span style="color:var(--green);font-size:11px;">Published</span></div></div>
+        <div onclick="event.stopPropagation()"><div class="pub-toggle"><button class="toggle on" onclick="toggleRowPublished(this,'OPEN-CSM-4X8B')" ></button><span style="color:var(--green);font-size:11px;">Published</span></div></div>
         <div onclick="event.stopPropagation()" style="display:flex;gap:5px;">
           <button class="btn btn-p btn-sm" onclick="openOpeningDetail('OPEN-CSM-4X8B','Customer Success Manager','active',true,'Byron Giraldo')">View</button>
           <button class="btn btn-ghost btn-sm" onclick="openOpeningDetail('OPEN-CSM-4X8B','Customer Success Manager','active',true,'Byron Giraldo',true)">Edit</button>
@@ -1485,7 +1485,7 @@ onAuthStateChanged(auth, async user => {
         <div class="ot-code">OPEN-SDR-9K2M</div>
         <div style="font-size:12px;">Byron Giraldo</div>
         <div><span style="background:rgba(16,185,129,0.12);color:#059669;font-weight:700;padding:3px 9px;border-radius:99px;font-size:10px;">Active</span></div>
-        <div onclick="event.stopPropagation()"><div class="pub-toggle"><button class="toggle on" onclick="this.classList.toggle('on');this.nextElementSibling.textContent=this.classList.contains('on')?'Published':'Draft';this.nextElementSibling.style.color=this.classList.contains('on')?'var(--green)':'var(--g4)'"></button><span style="color:var(--green);font-size:11px;">Published</span></div></div>
+        <div onclick="event.stopPropagation()"><div class="pub-toggle"><button class="toggle on" onclick="toggleRowPublished(this,'OPEN-SDR-9K2M')" ></button><span style="color:var(--green);font-size:11px;">Published</span></div></div>
         <div onclick="event.stopPropagation()" style="display:flex;gap:5px;">
           <button class="btn btn-p btn-sm" onclick="openOpeningDetail('OPEN-SDR-9K2M','SDR / Sales Development Rep','active',true,'Byron Giraldo')">View</button>
           <button class="btn btn-ghost btn-sm" onclick="openOpeningDetail('OPEN-SDR-9K2M','SDR / Sales Development Rep','active',true,'Byron Giraldo',true)">Edit</button>
@@ -1497,7 +1497,7 @@ onAuthStateChanged(auth, async user => {
         <div class="ot-code">OPEN-SUP-3B7R</div>
         <div style="font-size:12px;">Nany Salcedo</div>
         <div><span style="background:rgba(245,158,11,0.12);color:#D97706;font-weight:700;padding:3px 9px;border-radius:99px;font-size:10px;">On hold</span></div>
-        <div onclick="event.stopPropagation()"><div class="pub-toggle"><button class="toggle" onclick="this.classList.toggle('on');this.nextElementSibling.textContent=this.classList.contains('on')?'Published':'Draft';this.nextElementSibling.style.color=this.classList.contains('on')?'var(--green)':'var(--g4)'"></button><span style="color:var(--g4);font-size:11px;">Draft</span></div></div>
+        <div onclick="event.stopPropagation()"><div class="pub-toggle"><button class="toggle" onclick="toggleRowPublished(this,'OPEN-SUP-3B7R')" ></button><span style="color:var(--g4);font-size:11px;">Draft</span></div></div>
         <div onclick="event.stopPropagation()" style="display:flex;gap:5px;">
           <button class="btn btn-p btn-sm" onclick="openOpeningDetail('OPEN-SUP-3B7R','Technical Support Specialist','on hold',false,'Nany Salcedo')">View</button>
           <button class="btn btn-ghost btn-sm" onclick="openOpeningDetail('OPEN-SUP-3B7R','Technical Support Specialist','on hold',false,'Nany Salcedo',true)">Edit</button>
@@ -1509,7 +1509,7 @@ onAuthStateChanged(auth, async user => {
         <div class="ot-code">OPEN-OPS-5P2W</div>
         <div style="font-size:12px;">Andres García</div>
         <div><span style="background:rgba(16,185,129,0.12);color:#059669;font-weight:700;padding:3px 9px;border-radius:99px;font-size:10px;">Active</span></div>
-        <div onclick="event.stopPropagation()"><div class="pub-toggle"><button class="toggle on" onclick="this.classList.toggle('on');this.nextElementSibling.textContent=this.classList.contains('on')?'Published':'Draft';this.nextElementSibling.style.color=this.classList.contains('on')?'var(--green)':'var(--g4)'"></button><span style="color:var(--green);font-size:11px;">Published</span></div></div>
+        <div onclick="event.stopPropagation()"><div class="pub-toggle"><button class="toggle on" onclick="toggleRowPublished(this,'OPEN-OPS-5P2W')" ></button><span style="color:var(--green);font-size:11px;">Published</span></div></div>
         <div onclick="event.stopPropagation()" style="display:flex;gap:5px;">
           <button class="btn btn-p btn-sm" onclick="openOpeningDetail('OPEN-OPS-5P2W','Operations Manager','active',true,'Andres García')">View</button>
           <button class="btn btn-ghost btn-sm" onclick="openOpeningDetail('OPEN-OPS-5P2W','Operations Manager','active',true,'Andres García',true)">Edit</button>
@@ -1521,7 +1521,7 @@ onAuthStateChanged(auth, async user => {
         <div class="ot-code">OPEN-MKT-7Q4N</div>
         <div style="font-size:12px;">Byron Giraldo</div>
         <div><span style="background:rgba(245,158,11,0.12);color:#D97706;font-weight:700;padding:3px 9px;border-radius:99px;font-size:10px;">On hold</span></div>
-        <div onclick="event.stopPropagation()"><div class="pub-toggle"><button class="toggle" onclick="this.classList.toggle('on');this.nextElementSibling.textContent=this.classList.contains('on')?'Published':'Draft';this.nextElementSibling.style.color=this.classList.contains('on')?'var(--green)':'var(--g4)'"></button><span style="color:var(--g4);font-size:11px;">Draft</span></div></div>
+        <div onclick="event.stopPropagation()"><div class="pub-toggle"><button class="toggle" onclick="toggleRowPublished(this,'OPEN-MKT-7Q4N')" ></button><span style="color:var(--g4);font-size:11px;">Draft</span></div></div>
         <div onclick="event.stopPropagation()" style="display:flex;gap:5px;">
           <button class="btn btn-p btn-sm" onclick="openOpeningDetail('OPEN-MKT-7Q4N','Marketing Ops Specialist','on hold',false,'Byron Giraldo')">View</button>
           <button class="btn btn-ghost btn-sm" onclick="openOpeningDetail('OPEN-MKT-7Q4N','Marketing Ops Specialist','on hold',false,'Byron Giraldo',true)">Edit</button>
@@ -3142,21 +3142,66 @@ function upsertOpeningRow(code, data) {
 }
 
 // ── Load saved openings from localStorage on page load ──────────────────────
+// ── toggleRowPublished — saves immediately to localStorage (and Firebase) ────
+window.toggleRowPublished = async function(btn, code) {
+  btn.classList.toggle('on');
+  const on = btn.classList.contains('on');
+  const label = btn.nextElementSibling;
+  if (label) {
+    label.textContent = on ? 'Published' : 'Draft';
+    label.style.color  = on ? 'var(--green)' : 'var(--g4)';
+  }
+
+  // Save to localStorage immediately
+  const key = 'nw_opening_' + code;
+  const existing = JSON.parse(localStorage.getItem(key) || '{}');
+  existing.published = on;
+  existing.code = existing.code || code;
+  localStorage.setItem(key, JSON.stringify(existing));
+
+  // Write to Firebase
+  try {
+    const { db, doc, setDoc, serverTimestamp } = await import('./firebase-config.js');
+    await setDoc(doc(db, 'openings', code), { published: on, updatedAt: serverTimestamp() }, { merge: true });
+  } catch(e) { /* Firebase not wired yet — localStorage handled above */ }
+
+  toast((on ? 'Published' : 'Set to Draft') + ' — saved.', 'ok');
+};
+
+// ── On load: restore toggle state for all rows from localStorage ─────────────
 (function loadSavedOpenings() {
   try {
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       if (!key?.startsWith('nw_opening_')) continue;
-      const data = JSON.parse(localStorage.getItem(key));
-      if (data?.code && data?.title) {
-        // Only add if it's a new opening (not pre-existing in HTML)
-        const existing = document.querySelector('.ot-row[data-code="' + data.code.toLowerCase() + '"]');
-        if (!existing) upsertOpeningRow(data.code, data);
-        else {
-          // Update existing row title/status in case it changed
-          const roleEl = existing.querySelector('.ot-role');
-          if (roleEl) roleEl.textContent = data.title;
+      const raw = localStorage.getItem(key);
+      if (!raw) continue;
+      const data = JSON.parse(raw);
+      if (!data?.code) continue;
+
+      const codeLower = data.code.toLowerCase();
+      const row = document.querySelector('.ot-row[data-code="' + codeLower + '"]');
+
+      if (!row) {
+        // New opening created via the form — add its row
+        if (data.title) upsertOpeningRow(data.code, data);
+      } else {
+        // Existing row — restore published toggle from localStorage
+        if (typeof data.published === 'boolean') {
+          const btn   = row.querySelector('.toggle');
+          const label = btn?.nextElementSibling;
+          if (btn) {
+            if (data.published) btn.classList.add('on');
+            else                btn.classList.remove('on');
+          }
+          if (label) {
+            label.textContent = data.published ? 'Published' : 'Draft';
+            label.style.color  = data.published ? 'var(--green)' : 'var(--g4)';
+          }
         }
+        // Restore title if it changed
+        const roleEl = row.querySelector('.ot-role');
+        if (roleEl && data.title) roleEl.textContent = data.title;
       }
     }
   } catch(e) {}
