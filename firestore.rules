@@ -1,0 +1,204 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    function userPath() {
+      return /databases/$(database)/documents/users/$(request.auth.uid);
+    }
+
+    function hasUserDoc() {
+      return isAuth() && exists(userPath());
+    }
+
+    function userDoc() {
+      return get(userPath());
+    }
+
+    function role() {
+      return hasUserDoc() ? userDoc().data.role : '';
+    }
+
+    function portalRole() {
+      return hasUserDoc() ? userDoc().data.portalRole : '';
+    }
+
+    function orgId() {
+      return hasUserDoc()
+        ? (userDoc().data.orgId != null ? userDoc().data.orgId : userDoc().data.organizationId)
+        : null;
+    }
+
+    function isAdmin() {
+      return isAuth() && role() in [
+        'super_admin',
+        'admin',
+        'sr_recruiter',
+        'recruiter'
+      ];
+    }
+
+    function isClient() {
+      return isAuth()
+        && (
+          role() in ['client', 'client_admin', 'client_user', 'viewer', 'user']
+          || portalRole() in ['client', 'client_admin', 'client_user', 'viewer', 'user']
+        )
+        && orgId() != null;
+    }
+
+    function isOwnEmail(email) {
+      return isAuth()
+        && request.auth.token.email != null
+        && email == request.auth.token.email;
+    }
+
+    function sameOrg(data) {
+      return isClient()
+        && (
+          data.orgId == orgId()
+          || data.organizationId == orgId()
+          || (data.orgIds != null && orgId() in data.orgIds)
+        );
+    }
+
+    function validClientNoteCreate() {
+      return isClient()
+        && sameOrg(request.resource.data)
+        && request.resource.data.authorUid == request.auth.uid
+        && request.resource.data.scope in ['client_visible', 'client_internal']
+        && request.resource.data.visibility in ['client_visible', 'client_internal']
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() <= 5000;
+    }
+
+    match /openings/{openingId} {
+      allow read: if true;
+      allow write, delete: if isAdmin();
+    }
+
+    match /organizations/{orgIdParam} {
+      allow read: if isAdmin() || (isClient() && orgIdParam == orgId());
+      allow write, delete: if isAdmin();
+    }
+
+    match /users/{userId} {
+      allow read: if isAdmin()
+        || (isAuth() && request.auth.uid == userId)
+        || (isClient() && sameOrg(resource.data));
+
+      allow create: if isAuth()
+        && request.auth.uid == userId
+        && request.resource.data.role == 'candidate';
+
+      allow update: if isAdmin() || (
+        isAuth()
+        && request.auth.uid == userId
+        && resource.data.role == 'candidate'
+        && request.resource.data.role == 'candidate'
+      );
+
+      allow delete: if isAdmin();
+    }
+
+    match /candidates/{candId} {
+      allow read: if isAdmin()
+        || sameOrg(resource.data)
+        || (
+          isAuth()
+          && (
+            resource.data.ownerUid == request.auth.uid
+            || isOwnEmail(resource.data.email)
+          )
+        );
+
+      allow create: if isAuth()
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.source in ['talent.nearwork.co', 'jobs.nearwork.co'];
+
+      allow update: if isAdmin() || (
+        isAuth()
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.source in ['talent.nearwork.co', 'jobs.nearwork.co']
+        && (
+          resource.data.ownerUid == request.auth.uid
+          || isOwnEmail(resource.data.email)
+        )
+      );
+
+      allow delete: if isAdmin();
+    }
+
+    match /pipelines/{pipelineId} {
+      allow read: if isAdmin() || sameOrg(resource.data);
+      allow write: if isAdmin();
+    }
+
+    match /applications/{appId} {
+      allow read: if isAdmin() || sameOrg(resource.data) || (
+        isAuth()
+        && resource.data.ownerUid == request.auth.uid
+      );
+
+      allow create: if isAuth()
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.source == 'jobs.nearwork.co'
+        && request.resource.data.inPipeline == false
+        && request.resource.data.status == 'applied';
+
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /candidateNotes/{noteId} {
+      allow read: if isAdmin()
+        || (
+          isClient()
+          && sameOrg(resource.data)
+          && resource.data.scope in ['client_visible', 'client_internal']
+        );
+
+      allow create: if isAdmin() || validClientNoteCreate();
+      allow update, delete: if isAdmin();
+    }
+
+    match /notifications/{notificationId} {
+      allow read: if isAdmin()
+        || (
+          isAuth()
+          && (
+            resource.data.recipientUid == request.auth.uid
+            || resource.data.recipientEmail == request.auth.token.email
+          )
+        );
+
+      allow create: if isAdmin();
+
+      allow update: if isAdmin()
+        || (
+          isAuth()
+          && resource.data.recipientUid == request.auth.uid
+          && request.resource.data.diff(resource.data).changedKeys().hasOnly(['read', 'readAt'])
+        );
+
+      allow delete: if isAdmin();
+    }
+
+    match /notificationPreferences/{prefId} {
+      allow read, write: if isAdmin() || (isAuth() && prefId == request.auth.uid);
+    }
+
+    match /candidateActivity/{activityId} {
+      allow read: if isAdmin();
+
+      allow create: if isAuth()
+        && request.resource.data.candidateId == request.auth.uid;
+
+      allow update, delete: if isAdmin();
+    }
+  }
+}
