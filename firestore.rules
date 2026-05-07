@@ -1,0 +1,397 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    function userPath() {
+      return /databases/$(database)/documents/users/$(request.auth.uid);
+    }
+
+    function hasUserDoc() {
+      return isAuth() && exists(userPath());
+    }
+
+    function userDoc() {
+      return get(userPath());
+    }
+
+    function role() {
+      return hasUserDoc() ? userDoc().data.role : '';
+    }
+
+    function portalRole() {
+      return hasUserDoc() ? userDoc().data.portalRole : '';
+    }
+
+    function orgId() {
+      return hasUserDoc()
+        ? (userDoc().data.orgId != null ? userDoc().data.orgId : userDoc().data.organizationId)
+        : null;
+    }
+
+    function orgIds() {
+      return hasUserDoc()
+        ? (
+          userDoc().data.orgIds is list
+            ? userDoc().data.orgIds
+            : (orgId() != null ? [orgId()] : [])
+        )
+        : [];
+    }
+
+    function email() {
+      return isAuth() && request.auth.token.email != null
+        ? request.auth.token.email
+        : '';
+    }
+
+    function isAdmin() {
+      return isAuth() && role() in [
+        'super_admin',
+        'admin',
+        'sr_recruiter',
+        'recruiter'
+      ];
+    }
+
+    function isStaff() {
+      return isAuth() && role() in [
+        'super_admin',
+        'admin',
+        'sr_recruiter',
+        'recruiter',
+        'account_manager',
+        'hr',
+        'user'
+      ];
+    }
+
+    function isClient() {
+      return isAuth()
+        && (
+          role() in ['client', 'client_admin', 'client_user', 'viewer', 'user']
+          || portalRole() in ['client', 'client_admin', 'client_user', 'viewer', 'user']
+        )
+        && orgIds().size() > 0;
+    }
+
+    function isClientAdmin() {
+      return isClient()
+        && (
+          portalRole() in ['admin_client', 'client_admin', 'admin']
+          || role() in ['client_admin']
+        );
+    }
+
+    function isOrgMember(orgIdValue) {
+      return isClient()
+        && orgIdValue != null
+        && orgIdValue in orgIds();
+    }
+
+    function isOwnEmail(email) {
+      return isAuth()
+        && request.auth.token.email != null
+        && email == request.auth.token.email;
+    }
+
+    function sameOrg(data) {
+      return isClient()
+        && (
+          isOrgMember(data.orgId)
+          || isOrgMember(data.organizationId)
+        );
+    }
+
+    function validClientNoteCreate() {
+      return isClient()
+        && sameOrg(request.resource.data)
+        && request.resource.data.authorUid == request.auth.uid
+        && request.resource.data.scope in ['client_visible', 'client_internal']
+        && request.resource.data.visibility in ['client_visible', 'client_internal']
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() <= 5000;
+    }
+
+    match /openings/{openingId} {
+      allow read: if true;
+      allow write, delete: if isAdmin();
+    }
+
+    match /organizations/{orgIdParam} {
+      allow read: if isStaff() || isOrgMember(orgIdParam);
+      allow write, delete: if isAdmin();
+    }
+
+    match /orgMembers/{memberId} {
+      allow read: if isAdmin()
+        || (
+          isAuth()
+          && (
+            resource.data.uid == request.auth.uid
+            || resource.data.email == email()
+            || isOrgMember(resource.data.orgId)
+          )
+        );
+
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /orgInvites/{inviteId} {
+      allow read: if isAdmin()
+        || (
+          isAuth()
+          && resource.data.email == email()
+          && resource.data.status in ['pending', 'active']
+        );
+
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /users/{userId} {
+      allow read: if isStaff()
+        || (isAuth() && request.auth.uid == userId)
+        || (isClient() && sameOrg(resource.data));
+
+      allow create: if isAuth()
+        && request.auth.uid == userId
+        && request.resource.data.role == 'candidate';
+
+      allow update: if isAdmin() || (
+        isAuth()
+        && request.auth.uid == userId
+        && resource.data.role == 'candidate'
+        && request.resource.data.role == 'candidate'
+      );
+
+      allow delete: if isAdmin();
+    }
+
+    match /candidates/{candId} {
+      allow read: if isStaff()
+        || sameOrg(resource.data)
+        || (
+          isAuth()
+          && (
+            resource.data.ownerUid == request.auth.uid
+            || isOwnEmail(resource.data.email)
+          )
+        );
+
+      allow create: if isAuth()
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.source in ['talent.nearwork.co', 'jobs.nearwork.co'];
+
+      allow update: if isAdmin() || (
+        isAuth()
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.source in ['talent.nearwork.co', 'jobs.nearwork.co']
+        && (
+          resource.data.ownerUid == request.auth.uid
+          || isOwnEmail(resource.data.email)
+        )
+      );
+
+      allow delete: if isAdmin();
+    }
+
+    match /pipelines/{pipelineId} {
+      allow read: if isStaff() || sameOrg(resource.data);
+      allow write: if isAdmin();
+    }
+
+    match /clientAccountPeople/{personId} {
+      allow read: if isStaff() || sameOrg(resource.data);
+      allow write: if isAdmin();
+    }
+
+    match /hiredPlacements/{placementId} {
+      allow read: if isStaff() || sameOrg(resource.data);
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /payrollRuns/{runId} {
+      allow read: if isStaff();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /performanceReviews/{reviewId} {
+      allow read: if isStaff() || sameOrg(resource.data) || (
+        isAuth()
+        && (
+          resource.data.ownerUid == request.auth.uid
+          || resource.data.uid == request.auth.uid
+          || resource.data.candidateUid == request.auth.uid
+        )
+      );
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /partnerBilling/{billingId} {
+      allow read: if isStaff() || (isClientAdmin() && sameOrg(resource.data));
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /salaryRoles/{roleId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /fxRates/{rateId} {
+      allow read: if isStaff();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /timeOffRequests/{requestId} {
+      allow read: if isStaff() || sameOrg(resource.data) || (
+        isAuth()
+        && (
+          resource.data.ownerUid == request.auth.uid
+          || resource.data.uid == request.auth.uid
+          || resource.data.candidateUid == request.auth.uid
+          || resource.data.personId == request.auth.uid
+        )
+      );
+
+      allow create: if isAuth()
+        && (
+          request.resource.data.ownerUid == request.auth.uid
+          || request.resource.data.uid == request.auth.uid
+          || request.resource.data.candidateUid == request.auth.uid
+          || request.resource.data.personId == request.auth.uid
+        );
+
+      allow update: if isAdmin() || (
+        sameOrg(resource.data)
+        && request.resource.data.diff(resource.data).changedKeys().hasOnly([
+          'status',
+          'decisionComment',
+          'reviewedAt',
+          'reviewedBy',
+          'updatedAt'
+        ])
+      );
+
+      allow delete: if isAdmin();
+    }
+
+    match /applications/{appId} {
+      allow read: if isStaff() || sameOrg(resource.data) || (
+        isAuth()
+        && resource.data.ownerUid == request.auth.uid
+      );
+
+      allow create: if isAuth()
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.source == 'jobs.nearwork.co'
+        && request.resource.data.inPipeline == false
+        && request.resource.data.status == 'applied';
+
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /candidateNotes/{noteId} {
+      allow read: if isStaff()
+        || (
+          isClient()
+          && sameOrg(resource.data)
+          && resource.data.scope in ['client_visible', 'client_internal']
+        );
+
+      allow create: if isAdmin() || validClientNoteCreate();
+      allow update, delete: if isAdmin();
+    }
+
+    match /notifications/{notificationId} {
+      allow read: if isStaff()
+        || (
+          isAuth()
+          && (
+            resource.data.recipientUid == request.auth.uid
+            || resource.data.recipientEmail == request.auth.token.email
+          )
+        );
+
+      allow create: if isAdmin();
+
+      allow update: if isAdmin()
+        || (
+          isAuth()
+          && resource.data.recipientUid == request.auth.uid
+          && request.resource.data.diff(resource.data).changedKeys().hasOnly(['read', 'readAt'])
+        );
+
+      allow delete: if isAdmin();
+    }
+
+    match /notificationPreferences/{prefId} {
+      allow read, write: if isAdmin() || (isAuth() && prefId == request.auth.uid);
+    }
+
+    match /candidateActivity/{activityId} {
+      allow read: if isAdmin();
+
+      allow create: if isAuth()
+        && request.resource.data.candidateId == request.auth.uid;
+
+      allow update, delete: if isAdmin();
+    }
+
+    match /assessments/{assessmentId} {
+      allow read: if isStaff()
+        || sameOrg(resource.data)
+        || (
+          isAuth()
+          && (
+            resource.data.candidateUid == request.auth.uid
+            || resource.data.candidateId == request.auth.uid
+            || resource.data.ownerUid == request.auth.uid
+            || resource.data.candidateEmail == email()
+          )
+        );
+
+      allow create, update, delete: if isAdmin();
+
+      allow update: if isAuth()
+        && (
+          resource.data.candidateUid == request.auth.uid
+          || resource.data.candidateId == request.auth.uid
+          || resource.data.ownerUid == request.auth.uid
+          || resource.data.candidateEmail == email()
+        )
+        && request.resource.data.diff(resource.data).changedKeys().hasOnly([
+          'answers',
+          'answeredCount',
+          'currentQuestionIndex',
+          'currentStage',
+          'disc',
+          'discProfile',
+          'discScore',
+          'discStartedAt',
+          'finished',
+          'finishedAt',
+          'progress',
+          'score',
+          'startedAt',
+          'status',
+          'technical',
+          'technicalStartedAt',
+          'totalQuestions',
+          'updatedAt'
+        ]);
+    }
+
+    match /mail/{mailId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /audit_logs/{logId} {
+      allow read, write: if isAdmin();
+    }
+  }
+}
