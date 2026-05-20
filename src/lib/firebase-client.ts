@@ -337,18 +337,22 @@ export async function createClientAccount(email: string, password: string, invit
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     }, { merge: true });
-    await setDoc(doc(db, "orgInvites", inviteDocId), {
-      email: normalizedEmail,
-      uid: credential.user.uid,
-      orgId: invite.orgId,
-      organizationId: invite.orgId,
-      orgName: invite.orgName || "",
-      status: "active",
-      invitePending: false,
-      acceptedAt: serverTimestamp(),
-      acceptedInviteId: invite.token || "",
-      updatedAt: serverTimestamp(),
-    }, { merge: true });
+    try {
+      await setDoc(doc(db, "orgInvites", inviteDocId), {
+        email: normalizedEmail,
+        uid: credential.user.uid,
+        orgId: invite.orgId,
+        organizationId: invite.orgId,
+        orgName: invite.orgName || "",
+        status: "active",
+        invitePending: false,
+        acceptedAt: serverTimestamp(),
+        acceptedInviteId: invite.token || "",
+        updatedAt: serverTimestamp(),
+      }, { merge: true });
+    } catch (error) {
+      console.warn("[ClientInvite] Could not mirror accepted invite status.", error);
+    }
   }
   return credential;
 }
