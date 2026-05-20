@@ -1425,7 +1425,16 @@ function InsightBars({ bars }: { bars?: PortalAssessmentInsight["bars"] }) {
 function ClientAiInsight({ candidate, compact = false }: { candidate: PortalCandidate; compact?: boolean }) {
   const generated = Boolean(candidate.aiReview?.client);
   const insight = candidateInsight(candidate) || fallbackClientInsight(candidate);
-  const client = insight.client || fallbackClientInsight(candidate).client;
+  const fallbackInsight = fallbackClientInsight(candidate);
+  const client = insight.client || fallbackInsight.client || {
+    summary: "Nearwork will show the candidate evidence and interview guidance here.",
+    technicalBreakdown: "",
+    discSummary: "",
+    strengths: [],
+    watchouts: [],
+    followUps: [],
+    interviewGuide: [],
+  };
   return (
     <div className="mt-4 grid gap-4">
       <div className="rounded-lg border border-teal-100 bg-gradient-to-br from-[#eef8f5] via-white to-[#f7f0fb] p-4">

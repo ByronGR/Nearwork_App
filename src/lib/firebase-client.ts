@@ -314,6 +314,7 @@ export async function createClientAccount(email: string, password: string, invit
   const normalizedEmail = email.trim().toLowerCase();
   const credential = await createUserWithEmailAndPassword(auth, normalizedEmail, password);
   if (invite?.orgId) {
+    const inviteDocId = ("invite_" + invite.orgId + "_" + normalizedEmail).replace(/[^a-z0-9_-]+/g, "_").slice(0, 150);
     const name = [invite.firstName, invite.lastName].filter(Boolean).join(" ") || credential.user.displayName || normalizedEmail;
     await setDoc(doc(db, "users", credential.user.uid), {
       uid: credential.user.uid,
@@ -334,6 +335,18 @@ export async function createClientAccount(email: string, password: string, invit
       createdFromInvite: true,
       acceptedInviteId: invite.token || "",
       createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    }, { merge: true });
+    await setDoc(doc(db, "orgInvites", inviteDocId), {
+      email: normalizedEmail,
+      uid: credential.user.uid,
+      orgId: invite.orgId,
+      organizationId: invite.orgId,
+      orgName: invite.orgName || "",
+      status: "active",
+      invitePending: false,
+      acceptedAt: serverTimestamp(),
+      acceptedInviteId: invite.token || "",
       updatedAt: serverTimestamp(),
     }, { merge: true });
   }
