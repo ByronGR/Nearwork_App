@@ -5,13 +5,14 @@ import {
   GoogleAuthProvider,
   browserLocalPersistence,
   browserSessionPersistence,
+  confirmPasswordReset,
   createUserWithEmailAndPassword,
   getAuth,
-  sendPasswordResetEmail,
   setPersistence,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
+  verifyPasswordResetCode,
   type User,
 } from "firebase/auth";
 import {
@@ -363,10 +364,21 @@ export async function createClientAccount(email: string, password: string, invit
 
 export async function sendClientPasswordReset(email: string) {
   const normalizedEmail = email.trim().toLowerCase();
-  await sendPasswordResetEmail(auth, normalizedEmail, {
-    url: `https://app.nearwork.co/invite?email=${encodeURIComponent(normalizedEmail)}`,
-    handleCodeInApp: false,
+  const response = await fetch("/api/client-password-reset", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email: normalizedEmail }),
   });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok || result.ok === false) throw new Error(result.error || "Could not send password reset.");
+}
+
+export async function verifyClientPasswordResetCode(code: string) {
+  return verifyPasswordResetCode(auth, code);
+}
+
+export async function confirmClientPasswordReset(code: string, password: string) {
+  return confirmPasswordReset(auth, code, password);
 }
 
 export async function loginWithGoogle() {
