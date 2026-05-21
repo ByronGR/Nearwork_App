@@ -7,6 +7,7 @@ import {
   browserSessionPersistence,
   createUserWithEmailAndPassword,
   getAuth,
+  sendPasswordResetEmail,
   setPersistence,
   signInWithEmailAndPassword,
   signInWithPopup,
@@ -309,6 +310,7 @@ export async function createClientAccount(email: string, password: string, invit
   portalRole?: string;
   firstName?: string;
   lastName?: string;
+  businessRole?: string;
   token?: string;
 }) {
   const normalizedEmail = email.trim().toLowerCase();
@@ -327,8 +329,8 @@ export async function createClientAccount(email: string, password: string, invit
       orgId: invite.orgId,
       organizationId: invite.orgId,
       orgName: invite.orgName || "",
-      businessRole: "",
-      title: "",
+      businessRole: invite.businessRole || "",
+      title: invite.businessRole || "",
       source: "app.nearwork.co",
       invitePending: false,
       onboarded: true,
@@ -344,6 +346,8 @@ export async function createClientAccount(email: string, password: string, invit
         orgId: invite.orgId,
         organizationId: invite.orgId,
         orgName: invite.orgName || "",
+        businessRole: invite.businessRole || "",
+        title: invite.businessRole || "",
         status: "active",
         invitePending: false,
         acceptedAt: serverTimestamp(),
@@ -355,6 +359,14 @@ export async function createClientAccount(email: string, password: string, invit
     }
   }
   return credential;
+}
+
+export async function sendClientPasswordReset(email: string) {
+  const normalizedEmail = email.trim().toLowerCase();
+  await sendPasswordResetEmail(auth, normalizedEmail, {
+    url: `https://app.nearwork.co/invite?email=${encodeURIComponent(normalizedEmail)}`,
+    handleCodeInApp: false,
+  });
 }
 
 export async function loginWithGoogle() {

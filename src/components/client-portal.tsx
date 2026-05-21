@@ -39,6 +39,7 @@ import {
   logoutClient,
   markNotificationRead,
   saveNotificationPreferences,
+  sendClientPasswordReset,
   setClientRememberMe,
   sendOpeningChatMessage,
   subscribeOpeningChat,
@@ -337,6 +338,7 @@ function LoginScreen({ message }: { message?: string }) {
   const inviteRole = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("role") || "viewer_client" : "viewer_client";
   const inviteFirstName = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("firstName") || "" : "";
   const inviteLastName = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("lastName") || "" : "";
+  const inviteBusinessRole = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("title") || "" : "";
   const [inviteComplete, setInviteComplete] = useState(false);
   const isInvite = !inviteComplete && Boolean(inviteToken || inviteEmail);
   const [email, setEmail] = useState(inviteEmail);
@@ -363,6 +365,7 @@ function LoginScreen({ message }: { message?: string }) {
           portalRole: inviteRole,
           firstName: inviteFirstName,
           lastName: inviteLastName,
+          businessRole: inviteBusinessRole,
         });
         await logoutClient();
         if (typeof window !== "undefined") window.history.replaceState({}, "", "/");
@@ -376,7 +379,39 @@ function LoginScreen({ message }: { message?: string }) {
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Could not continue.";
-      setError(message.includes("auth/email-already-in-use") ? "This email already has an account. Please log in with your password instead." : message);
+      if (isInvite && message.includes("auth/email-already-in-use")) {
+        try {
+          await sendClientPasswordReset(email);
+          setInviteComplete(true);
+          setPassword("");
+          setConfirmPassword("");
+          setLocalMessage("This email already has an account. We sent a secure password reset link for app.nearwork.co.");
+          if (typeof window !== "undefined") window.history.replaceState({}, "", "/");
+          return;
+        } catch {
+          setError("This email already has an account. Use your existing password, or ask Nearwork to resend a password reset.");
+          return;
+        }
+      }
+      setError(message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function resetPassword() {
+    if (!email.trim()) {
+      setError("Enter your email first so we can send the password reset.");
+      return;
+    }
+    setBusy(true);
+    setError("");
+    try {
+      await sendClientPasswordReset(email);
+      setLocalMessage("Password reset sent. Use the link in your email to set your app.nearwork.co password.");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Could not send the password reset.";
+      setError(message);
     } finally {
       setBusy(false);
     }
@@ -448,6 +483,9 @@ function LoginScreen({ message }: { message?: string }) {
               Continue with Google
             </button>
           ) : null}
+          <button type="button" onClick={resetPassword} disabled={busy} className="mt-3 h-11 w-full rounded-md border border-[#d8dee4] bg-white text-sm font-black text-[#57606a] disabled:opacity-60">
+            Send password reset
+          </button>
         </form>
       </section>
     </main>
