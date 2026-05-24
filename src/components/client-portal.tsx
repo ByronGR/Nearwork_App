@@ -39,6 +39,7 @@ import {
   logoutClient,
   markNotificationRead,
   saveNotificationPreferences,
+  sendClientPasswordReset,
   setClientRememberMe,
   sendOpeningChatMessage,
   subscribeOpeningChat,
@@ -329,6 +330,15 @@ function timestampMs(value: unknown) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function friendlyAuthError(raw: string): string {
+  if (raw.includes("auth/invalid-credential") || raw.includes("auth/wrong-password") || raw.includes("auth/user-not-found")) return "Incorrect email or password.";
+  if (raw.includes("auth/too-many-requests")) return "Too many failed attempts. Please wait a few minutes and try again.";
+  if (raw.includes("auth/network-request-failed")) return "Network error. Check your connection and try again.";
+  if (raw.includes("auth/user-disabled")) return "This account has been disabled. Contact Nearwork support.";
+  if (raw.includes("auth/email-already-in-use")) return "An account with this email already exists.";
+  return raw.replace(/^Firebase:\s*/i, "").replace(/\s*\(auth\/[^)]+\)\.?\s*$/i, "").trim() || "Something went wrong. Please try again.";
+}
+
 function LoginScreen({ message }: { message?: string }) {
   const inviteEmail = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("email") || "" : "";
   const inviteToken = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("token") || "" : "";
@@ -337,13 +347,19 @@ function LoginScreen({ message }: { message?: string }) {
   const inviteRole = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("role") || "viewer_client" : "viewer_client";
   const inviteFirstName = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("firstName") || "" : "";
   const inviteLastName = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("lastName") || "" : "";
+  const inviteBusinessRole = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("title") || "" : "";
   const [inviteComplete, setInviteComplete] = useState(false);
   const isInvite = !inviteComplete && Boolean(inviteToken || inviteEmail);
   const [email, setEmail] = useState(inviteEmail);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(true);
-  const [localMessage, setLocalMessage] = useState("");
+  const [localMessage, setLocalMessage] = useState(() => {
+    if (typeof window === "undefined") return "";
+    const flag = sessionStorage.getItem("nw_invite_done");
+    if (flag) { sessionStorage.removeItem("nw_invite_done"); return "Your password is ready. Please log in to enter your company portal."; }
+    return "";
+  });
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -356,6 +372,11 @@ function LoginScreen({ message }: { message?: string }) {
       if (isInvite) {
         if (password.length < 8) throw new Error("Password must be at least 8 characters.");
         if (password !== confirmPassword) throw new Error("Passwords do not match.");
+        // Signal to onAuthStateChanged to skip profile loading while we're mid-creation.
+        // Firebase auto-signs in the user after createUserWithEmailAndPassword, which
+        // triggers onAuthStateChanged before our Firestore doc write completes —
+        // without this flag the handler signs them back out and the doc write fails.
+        if (typeof window !== "undefined") sessionStorage.setItem("nw_creating_account", "1");
         await createClientAccount(email, password, {
           token: inviteToken,
           orgId: inviteOrgId,
@@ -363,20 +384,48 @@ function LoginScreen({ message }: { message?: string }) {
           portalRole: inviteRole,
           firstName: inviteFirstName,
           lastName: inviteLastName,
+          businessRole: inviteBusinessRole,
         });
+        if (typeof window !== "undefined") sessionStorage.removeItem("nw_creating_account");
         await logoutClient();
-        if (typeof window !== "undefined") window.history.replaceState({}, "", "/");
-        setInviteComplete(true);
-        setLocalMessage("Your password is ready. Please log in to enter your company portal.");
-        setPassword("");
-        setConfirmPassword("");
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem("nw_invite_done", "1");
+          window.location.replace("/");
+        }
         return;
       } else {
         await loginWithEmail(email, password);
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Could not continue.";
-      setError(message.includes("auth/email-already-in-use") ? "This email already has an account. Please log in with your password instead." : message);
+      if (typeof window !== "undefined") sessionStorage.removeItem("nw_creating_account");
+      const raw = err instanceof Error ? err.message : "Could not continue.";
+      if (isInvite && raw.includes("auth/email-already-in-use")) {
+        setInviteComplete(true);
+        setPassword("");
+        setConfirmPassword("");
+        setLocalMessage("This email already has an account. Log in with your password, or use Send password reset below.");
+        if (typeof window !== "undefined") window.history.replaceState({}, "", "/");
+        return;
+      }
+      setError(friendlyAuthError(raw));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function resetPassword() {
+    if (!email.trim()) {
+      setError("Enter your email first so we can send the password reset.");
+      return;
+    }
+    setBusy(true);
+    setError("");
+    try {
+      await sendClientPasswordReset(email);
+      setLocalMessage("Password reset sent. Use the link in your email to set your app.nearwork.co password.");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Could not send the password reset.";
+      setError(message);
     } finally {
       setBusy(false);
     }
@@ -389,8 +438,8 @@ function LoginScreen({ message }: { message?: string }) {
       await setClientRememberMe(rememberMe);
       await loginWithGoogle();
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Google sign-in did not complete.";
-      setError(message.includes("auth/unauthorized-domain") ? "Google sign-in is not enabled for app.nearwork.co yet. Add app.nearwork.co in Firebase Auth authorized domains." : message);
+      const raw = err instanceof Error ? err.message : "Google sign-in did not complete.";
+      setError(raw.includes("auth/unauthorized-domain") ? "Google sign-in is not enabled for app.nearwork.co yet. Add app.nearwork.co in Firebase Auth authorized domains." : friendlyAuthError(raw));
     } finally {
       setBusy(false);
     }
@@ -448,6 +497,9 @@ function LoginScreen({ message }: { message?: string }) {
               Continue with Google
             </button>
           ) : null}
+          <button type="button" onClick={resetPassword} disabled={busy} className="mt-3 h-11 w-full rounded-md border border-[#d8dee4] bg-white text-sm font-black text-[#57606a] disabled:opacity-60">
+            Send password reset
+          </button>
         </form>
       </section>
     </main>
@@ -532,6 +584,7 @@ export function ClientPortal() {
   const [openingChat, setOpeningChat] = useState<OpeningChatMessage[]>([]);
   const [chatText, setChatText] = useState("");
   const [notifications, setNotifications] = useState<PortalNotification[]>([]);
+  const [loggingOut, setLoggingOut] = useState(false);
   const [active, setActive] = useState<TabId>("overview");
   const [selectedCode, setSelectedCode] = useState("");
   const [noteText, setNoteText] = useState("");
@@ -554,33 +607,45 @@ export function ClientPortal() {
 
   useEffect(() => onAuthStateChanged(auth, async (nextUser) => {
     if (testMode) return;
-    setUser(nextUser);
-    setAuthMessage("");
     if (!nextUser) {
+      setUser(null);
       setProfile(null);
       setOrg(null);
       return;
     }
-    const nextProfile = await getClientUser(nextUser);
-    const role = String(nextProfile?.role || nextProfile?.portalRole || "").toLowerCase();
-    const allowed = role.includes("client") || role.includes("org") || role === "viewer" || role === "user" || role === "admin";
-    if (!nextProfile || !allowed) {
-      setAuthMessage("This email is not invited to the client portal yet. Ask Nearwork to add it under the company users page.");
-      await logoutClient();
-      return;
+    // If account creation is in progress, skip profile loading — the Firestore doc
+    // hasn't been written yet. The submit() flow handles sign-out + page reload itself.
+    if (typeof window !== "undefined" && sessionStorage.getItem("nw_creating_account")) return;
+    setUser(nextUser);
+    setAuthMessage("");
+    try {
+      const nextProfile = await getClientUser(nextUser);
+      const role = String(nextProfile?.role || nextProfile?.portalRole || "").toLowerCase();
+      const allowed = role.includes("client") || role.includes("org") || role === "viewer" || role === "user" || role === "admin";
+      if (!nextProfile || !allowed) {
+        setAuthMessage("This email is not invited to the client portal yet. Ask Nearwork to add it under the company users page.");
+        await logoutClient();
+        return;
+      }
+      const nextOrg = await getOrganization(nextProfile);
+      if (!nextOrg) {
+        setAuthMessage("This email is invited, but it is not connected to a company workspace yet. Ask Nearwork to add the user to an organization.");
+        await logoutClient();
+        return;
+      }
+      setProfile(nextProfile);
+      setOrg(nextOrg);
+    } catch (err) {
+      console.error("[ClientPortal] Error loading portal:", err);
+      setAuthMessage("Something went wrong loading your portal. Please refresh the page and try again.");
+      await logoutClient().catch(() => null);
     }
-    const nextOrg = await getOrganization(nextProfile);
-    if (!nextOrg) {
-      setAuthMessage("This email is invited, but it is not connected to a company workspace yet. Ask Nearwork to add the user to an organization.");
-      await logoutClient();
-      return;
-    }
-    setProfile(nextProfile);
-    setOrg(nextOrg);
   }), [testMode]);
 
-  function leavePortal() {
-    logoutClient();
+  async function leavePortal() {
+    setLoggingOut(true);
+    await logoutClient().catch(() => null);
+    setLoggingOut(false);
   }
 
   useEffect(() => {
@@ -846,12 +911,26 @@ export function ClientPortal() {
     return [...candidateRows, ...openingRows, ...hireRows];
   }, [search, openings, pipelines, pipelineCandidates, visibleHires]);
 
+  if (loggingOut) {
+    return (
+      <main className="grid min-h-screen place-items-center bg-[#f6f8fa] text-[#24292f]">
+        <div className="flex flex-col items-center gap-3 rounded-lg border border-[#d8dee4] bg-white px-10 py-8 text-sm text-[#57606a] shadow-sm">
+          <div className="size-6 animate-spin rounded-full border-2 border-[#d8dee4] border-t-[#12866E]" />
+          <span>Signing out…</span>
+        </div>
+      </main>
+    );
+  }
+
   if (!user || authMessage) return <LoginScreen message={authMessage} />;
 
   if (!profile || !org) {
     return (
       <main className="grid min-h-screen place-items-center bg-[#f6f8fa] text-[#24292f]">
-        <div className="rounded-lg border border-[#d8dee4] bg-white p-6 text-sm text-[#57606a] shadow-sm">Loading client portal...</div>
+        <div className="flex flex-col items-center gap-3 rounded-lg border border-[#d8dee4] bg-white px-10 py-8 text-sm text-[#57606a] shadow-sm">
+          <div className="size-6 animate-spin rounded-full border-2 border-[#d8dee4] border-t-[#12866E]" />
+          <span>Loading your portal…</span>
+        </div>
       </main>
     );
   }

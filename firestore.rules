@@ -116,11 +116,11 @@ service cloud.firestore {
     }
 
     function sameOrg(data) {
-      return isClient()
-        && (
-          isOrgMember(data.orgId)
-          || isOrgMember(data.organizationId)
-        );
+      return (isClient() && (isOrgMember(data.orgId) || isOrgMember(data.organizationId)))
+        || (isAuth() && hasUserDoc() && (
+              (data.orgId != null && (userDoc().data.orgId == data.orgId || userDoc().data.organizationId == data.orgId))
+              || (data.organizationId != null && (userDoc().data.orgId == data.organizationId || userDoc().data.organizationId == data.organizationId))
+            ));
     }
 
     function validClientNoteCreate() {
@@ -140,7 +140,13 @@ service cloud.firestore {
     }
 
     match /organizations/{orgIdParam} {
-      allow read: if isStaff() || isOrgMember(orgIdParam);
+      allow read: if isStaff()
+        || isOrgMember(orgIdParam)
+        || (isAuth() && hasUserDoc() && (
+             userDoc().data.orgId == orgIdParam
+             || userDoc().data.organizationId == orgIdParam
+             || (userDoc().data.orgIds is list && orgIdParam in userDoc().data.orgIds)
+           ));
       allow write, delete: if isAdmin();
     }
 

@@ -5,12 +5,15 @@ import {
   GoogleAuthProvider,
   browserLocalPersistence,
   browserSessionPersistence,
+  confirmPasswordReset,
   createUserWithEmailAndPassword,
   getAuth,
+  sendPasswordResetEmail,
   setPersistence,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
+  verifyPasswordResetCode,
   type User,
 } from "firebase/auth";
 import {
@@ -309,6 +312,7 @@ export async function createClientAccount(email: string, password: string, invit
   portalRole?: string;
   firstName?: string;
   lastName?: string;
+  businessRole?: string;
   token?: string;
 }) {
   const normalizedEmail = email.trim().toLowerCase();
@@ -327,8 +331,8 @@ export async function createClientAccount(email: string, password: string, invit
       orgId: invite.orgId,
       organizationId: invite.orgId,
       orgName: invite.orgName || "",
-      businessRole: "",
-      title: "",
+      businessRole: invite.businessRole || "",
+      title: invite.businessRole || "",
       source: "app.nearwork.co",
       invitePending: false,
       onboarded: true,
@@ -344,6 +348,8 @@ export async function createClientAccount(email: string, password: string, invit
         orgId: invite.orgId,
         organizationId: invite.orgId,
         orgName: invite.orgName || "",
+        businessRole: invite.businessRole || "",
+        title: invite.businessRole || "",
         status: "active",
         invitePending: false,
         acceptedAt: serverTimestamp(),
@@ -355,6 +361,22 @@ export async function createClientAccount(email: string, password: string, invit
     }
   }
   return credential;
+}
+
+export async function sendClientPasswordReset(email: string) {
+  const normalizedEmail = email.trim().toLowerCase();
+  await sendPasswordResetEmail(auth, normalizedEmail, {
+    url: "https://app.nearwork.co/reset-password",
+    handleCodeInApp: false,
+  });
+}
+
+export async function verifyClientPasswordResetCode(code: string) {
+  return verifyPasswordResetCode(auth, code);
+}
+
+export async function confirmClientPasswordReset(code: string, password: string) {
+  return confirmPasswordReset(auth, code, password);
 }
 
 export async function loginWithGoogle() {
@@ -433,14 +455,24 @@ export async function getClientMemberships(user: User): Promise<OrgMembership[]>
 
 export async function getOrganization(profile: ClientUser): Promise<Organization | null> {
   const orgId = profile.activeOrgId || profile.orgId || profile.organizationId || profile.orgIds?.[0];
-  if (orgId) {
+  if (!orgId) return null;
+  try {
     const snap = await getDoc(doc(db, "organizations", orgId));
     if (snap.exists()) {
       const data = snap.data();
       return { id: snap.id, orgId: data.orgId || snap.id, name: data.name || profile.orgName || "Client organization", ...data };
     }
+    // Doc was read successfully but doesn't exist — org was deleted. Don't fall back.
+    return null;
+  } catch (err) {
+    // Permission or network error — fall back to profile fields so rules propagation delays
+    // don't lock out a valid user.
+    console.warn("[getOrganization] Could not read organizations collection — using profile data as fallback.", err);
+    if (profile.orgName) {
+      return { id: orgId, orgId, name: profile.orgName };
+    }
+    return null;
   }
-  return null;
 }
 
 function withId<T>(id: string, data: DocumentData): T {
