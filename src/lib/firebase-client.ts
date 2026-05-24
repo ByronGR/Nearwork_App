@@ -8,7 +8,6 @@ import {
   confirmPasswordReset,
   createUserWithEmailAndPassword,
   getAuth,
-  sendPasswordResetEmail,
   setPersistence,
   signInWithEmailAndPassword,
   signInWithPopup,
@@ -365,10 +364,18 @@ export async function createClientAccount(email: string, password: string, invit
 
 export async function sendClientPasswordReset(email: string) {
   const normalizedEmail = email.trim().toLowerCase();
-  await sendPasswordResetEmail(auth, normalizedEmail, {
-    url: "https://app.nearwork.co/reset-password",
-    handleCodeInApp: false,
+  const response = await fetch("https://admin.nearwork.co/api/send-password-reset", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: normalizedEmail,
+      continueUrl: "https://app.nearwork.co/reset-password",
+    }),
   });
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error((data as { error?: string }).error || "Password reset failed");
+  }
 }
 
 export async function verifyClientPasswordResetCode(code: string) {
