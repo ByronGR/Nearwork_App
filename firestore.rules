@@ -214,6 +214,17 @@ service cloud.firestore {
         && isNearworkEmail()
         && resource.data.role in ['employee', 'account_manager', 'hr', 'recruiter', 'sr_recruiter', 'admin', 'super_admin']
         && request.resource.data.role == resource.data.role
+      ) || (
+        // Allow a client user to re-link their account to a new org via an invite
+        // (e.g. after their previous org was deleted and they were re-invited).
+        // Requires them to be authenticated, writing their own email, and keeping
+        // a client-type role — prevents candidates from self-promoting to client.
+        isAuth()
+        && request.auth.uid == userId
+        && resource.data.role in ['client', 'client_admin', 'client_user', 'viewer', 'user']
+        && request.resource.data.role in ['client', 'client_admin', 'client_user', 'viewer', 'user']
+        && request.resource.data.email == email()
+        && request.resource.data.orgId is string
       );
 
       allow delete: if isAdmin();

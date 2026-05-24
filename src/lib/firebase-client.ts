@@ -387,6 +387,41 @@ export async function logoutClient() {
   return signOut(auth);
 }
 
+export async function linkExistingAccountToOrg(email: string, password: string, invite?: {
+  orgId?: string;
+  orgName?: string;
+  portalRole?: string;
+  firstName?: string;
+  lastName?: string;
+  businessRole?: string;
+  token?: string;
+}) {
+  const normalizedEmail = email.trim().toLowerCase();
+  // Sign in with their existing password to verify they own this account
+  const credential = await signInWithEmailAndPassword(auth, normalizedEmail, password);
+  const uid = credential.user.uid;
+  // Write (or overwrite) the org association — uses create rule if doc was deleted,
+  // or update rule if doc still exists with a client role
+  if (invite?.orgId) {
+    await setDoc(doc(db, "users", uid), {
+      uid,
+      email: normalizedEmail,
+      role: "client",
+      portalRole: invite.portalRole || "viewer_client",
+      orgId: invite.orgId,
+      organizationId: invite.orgId,
+      orgName: invite.orgName || "",
+      businessRole: invite.businessRole || "",
+      title: invite.businessRole || "",
+      invitePending: false,
+      onboarded: true,
+      acceptedInviteId: invite.token || "",
+      updatedAt: serverTimestamp(),
+    }, { merge: true });
+  }
+  await signOut(auth);
+}
+
 export async function getClientUser(user: User): Promise<ClientUser | null> {
   const email = user.email?.toLowerCase();
   const snap = await getDoc(doc(db, "users", user.uid));

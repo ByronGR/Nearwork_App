@@ -34,6 +34,7 @@ import {
   createClientAccount,
   getClientUser,
   getOrganization,
+  linkExistingAccountToOrg,
   loginWithEmail,
   loginWithGoogle,
   logoutClient,
@@ -400,12 +401,37 @@ function LoginScreen({ message }: { message?: string }) {
       if (typeof window !== "undefined") sessionStorage.removeItem("nw_creating_account");
       const raw = err instanceof Error ? err.message : "Could not continue.";
       if (isInvite && raw.includes("auth/email-already-in-use")) {
-        setInviteComplete(true);
-        setPassword("");
-        setConfirmPassword("");
-        setLocalMessage("This email already has an account. Log in with your password, or use Send password reset below.");
-        if (typeof window !== "undefined") window.history.replaceState({}, "", "/");
-        return;
+        // An account already exists for this email (e.g. from a previous org that was deleted).
+        // Try to sign them in with the password they just typed — if it matches, we can
+        // automatically re-link their existing account to the new org without them needing
+        // to do anything extra.
+        if (typeof window !== "undefined") sessionStorage.setItem("nw_creating_account", "1");
+        try {
+          await linkExistingAccountToOrg(email, password, {
+            token: inviteToken,
+            orgId: inviteOrgId,
+            orgName: inviteOrgName,
+            portalRole: inviteRole,
+            firstName: inviteFirstName,
+            lastName: inviteLastName,
+            businessRole: inviteBusinessRole,
+          });
+          if (typeof window !== "undefined") {
+            sessionStorage.removeItem("nw_creating_account");
+            sessionStorage.setItem("nw_invite_done", "1");
+            window.location.replace("/");
+          }
+          return;
+        } catch {
+          // Password didn't match their existing account — show login form
+          if (typeof window !== "undefined") sessionStorage.removeItem("nw_creating_account");
+          setInviteComplete(true);
+          setPassword("");
+          setConfirmPassword("");
+          setLocalMessage("This email already has an account. Log in with your existing password below, or use Send password reset.");
+          if (typeof window !== "undefined") window.history.replaceState({}, "", "/");
+          return;
+        }
       }
       setError(friendlyAuthError(raw));
     } finally {
