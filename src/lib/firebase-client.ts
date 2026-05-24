@@ -414,8 +414,16 @@ export async function getClientUser(user: User): Promise<ClientUser | null> {
   }
 
   if (!email) return null;
-  const byEmail = await getDocs(query(collection(db, "users"), where("email", "==", email), limit(1)));
-  const emailProfile = byEmail.empty ? null : ({ id: byEmail.docs[0].id, ...byEmail.docs[0].data() } as ClientUser);
+  // Wrap in try/catch: a user with no Firestore doc querying across all users
+  // by email will get permission denied (rules only allow reading your own doc).
+  // Treat that as "no profile found" rather than crashing the entire auth flow.
+  let emailProfile: ClientUser | null = null;
+  try {
+    const byEmail = await getDocs(query(collection(db, "users"), where("email", "==", email), limit(1)));
+    emailProfile = byEmail.empty ? null : ({ id: byEmail.docs[0].id, ...byEmail.docs[0].data() } as ClientUser);
+  } catch {
+    emailProfile = null;
+  }
   if (!emailProfile && !memberships.length) return null;
   const primaryMembership = memberships[0];
   return {
