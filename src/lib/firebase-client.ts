@@ -364,12 +364,13 @@ export async function createClientAccount(email: string, password: string, invit
 
 export async function sendClientPasswordReset(email: string) {
   const normalizedEmail = email.trim().toLowerCase();
-  const response = await fetch("https://admin.nearwork.co/api/send-password-reset", {
+  const response = await fetch("https://admin.nearwork.co/api/send-email", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      email: normalizedEmail,
-      continueUrl: "https://app.nearwork.co/reset-password",
+      to: normalizedEmail,
+      templateId: "password_reset",
+      data: { continueUrl: "https://app.nearwork.co/reset-password" },
     }),
   });
   if (!response.ok) {

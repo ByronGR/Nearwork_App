@@ -346,7 +346,7 @@ service cloud.firestore {
 
       allow create: if isAuth()
         && request.resource.data.ownerUid == request.auth.uid
-        && request.resource.data.source == 'jobs.nearwork.co'
+        && request.resource.data.source in ['jobs.nearwork.co', 'talent.nearwork.co']
         && request.resource.data.inPipeline == false
         && request.resource.data.status == 'applied';
 
