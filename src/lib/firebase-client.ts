@@ -8,6 +8,7 @@ import {
   confirmPasswordReset,
   createUserWithEmailAndPassword,
   getAuth,
+  sendPasswordResetEmail,
   setPersistence,
   signInWithEmailAndPassword,
   signInWithPopup,
@@ -364,19 +365,13 @@ export async function createClientAccount(email: string, password: string, invit
 
 export async function sendClientPasswordReset(email: string) {
   const normalizedEmail = email.trim().toLowerCase();
-  const response = await fetch("https://admin.nearwork.co/api/send-email", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      to: normalizedEmail,
-      templateId: "password_reset",
-      data: { continueUrl: "https://app.nearwork.co/reset-password" },
-    }),
+  // Use Firebase's built-in password reset — no Admin SDK credentials required.
+  // The user receives a Firebase password reset email; clicking the link brings
+  // them back to app.nearwork.co/reset-password where they enter a new password.
+  await sendPasswordResetEmail(auth, normalizedEmail, {
+    url: "https://app.nearwork.co/reset-password",
+    handleCodeInApp: false,
   });
-  if (!response.ok) {
-    const data = await response.json().catch(() => ({}));
-    throw new Error((data as { error?: string }).error || "Password reset failed");
-  }
 }
 
 export async function verifyClientPasswordResetCode(code: string) {
