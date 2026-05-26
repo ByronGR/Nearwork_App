@@ -428,7 +428,7 @@ function LoginScreen({ message }: { message?: string }) {
           setInviteComplete(true);
           setPassword("");
           setConfirmPassword("");
-          setLocalMessage("This email already has an account. Log in with your existing password below, or use Send password reset.");
+          setLocalMessage("This email already has an account from a previous workspace. Enter your previous password to continue, or click \"Send password reset\" below to set a new one.");
           if (typeof window !== "undefined") window.history.replaceState({}, "", "/");
           return;
         }

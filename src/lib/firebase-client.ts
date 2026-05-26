@@ -303,7 +303,10 @@ export type OpeningChatMessage = {
 };
 
 export async function loginWithEmail(email: string, password: string) {
-  return signInWithEmailAndPassword(auth, email.trim().toLowerCase(), password);
+  const credential = await signInWithEmailAndPassword(auth, email.trim().toLowerCase(), password);
+  // Update lastLoginAt so the Admin users page shows the correct timestamp
+  setDoc(doc(db, "users", credential.user.uid), { lastLoginAt: serverTimestamp() }, { merge: true }).catch(() => null);
+  return credential;
 }
 
 export async function createClientAccount(email: string, password: string, invite?: {
@@ -365,9 +368,25 @@ export async function createClientAccount(email: string, password: string, invit
 
 export async function sendClientPasswordReset(email: string) {
   const normalizedEmail = email.trim().toLowerCase();
-  // Use Firebase's built-in password reset — no Admin SDK credentials required.
-  // The user receives a Firebase password reset email; clicking the link brings
-  // them back to app.nearwork.co/reset-password where they enter a new password.
+  // Try the Admin email API first so the user receives the branded Nearwork email.
+  // This requires Firebase Admin credentials on the Admin Vercel deployment; if they
+  // are not configured the API returns an error and we fall back to Firebase's own
+  // password reset flow, which delivers a plain but functional reset email.
+  try {
+    const response = await fetch("https://admin.nearwork.co/api/send-email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        to: normalizedEmail,
+        templateId: "password_reset",
+        data: { continueUrl: "https://app.nearwork.co/reset-password" },
+      }),
+    });
+    if (response.ok) return; // branded email sent successfully
+  } catch {
+    // network error — fall through to Firebase fallback
+  }
+  // Fallback: Firebase's built-in reset email (no Admin SDK credentials required)
   await sendPasswordResetEmail(auth, normalizedEmail, {
     url: "https://app.nearwork.co/reset-password",
     handleCodeInApp: false,
@@ -383,7 +402,9 @@ export async function confirmClientPasswordReset(code: string, password: string)
 }
 
 export async function loginWithGoogle() {
-  return signInWithPopup(auth, googleProvider);
+  const credential = await signInWithPopup(auth, googleProvider);
+  setDoc(doc(db, "users", credential.user.uid), { lastLoginAt: serverTimestamp() }, { merge: true }).catch(() => null);
+  return credential;
 }
 
 export async function logoutClient() {
