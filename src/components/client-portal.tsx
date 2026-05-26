@@ -457,20 +457,6 @@ function LoginScreen({ message }: { message?: string }) {
     }
   }
 
-  async function continueWithGoogle() {
-    setBusy(true);
-    setError("");
-    try {
-      await setClientRememberMe(rememberMe);
-      await loginWithGoogle();
-    } catch (err) {
-      const raw = err instanceof Error ? err.message : "Google sign-in did not complete.";
-      setError(raw.includes("auth/unauthorized-domain") ? "Google sign-in is not enabled for app.nearwork.co yet. Add app.nearwork.co in Firebase Auth authorized domains." : friendlyAuthError(raw));
-    } finally {
-      setBusy(false);
-    }
-  }
-
   return (
     <main className="grid min-h-screen bg-[#f6f8fa] px-5 py-8 text-[#24292f] lg:grid-cols-[1fr_440px]">
       <section className="flex min-h-[520px] flex-col justify-between rounded-lg border border-[#d8dee4] bg-white p-8 shadow-sm lg:p-12">
@@ -518,11 +504,6 @@ function LoginScreen({ message }: { message?: string }) {
           <button disabled={busy} className="mt-5 h-11 w-full rounded-md bg-[#12866E] text-sm font-black text-white disabled:opacity-60">
             {busy ? "Working..." : isInvite ? "Create account" : "Log in"}
           </button>
-          {!isInvite ? (
-            <button type="button" onClick={continueWithGoogle} disabled={busy} className="mt-3 h-11 w-full rounded-md border border-[#d8dee4] bg-white text-sm font-black text-[#24292f] disabled:opacity-60">
-              Continue with Google
-            </button>
-          ) : null}
           <button type="button" onClick={resetPassword} disabled={busy} className="mt-3 h-11 w-full rounded-md border border-[#d8dee4] bg-white text-sm font-black text-[#57606a] disabled:opacity-60">
             Send password reset
           </button>
@@ -653,9 +634,19 @@ export function ClientPortal() {
         await logoutClient();
         return;
       }
+      if ((nextProfile as any).suspended === true) {
+        setAuthMessage("Your access has been paused. Please contact support@nearwork.co for more information.");
+        await logoutClient();
+        return;
+      }
       const nextOrg = await getOrganization(nextProfile);
       if (!nextOrg) {
         setAuthMessage("This email is invited, but it is not connected to a company workspace yet. Ask Nearwork to add the user to an organization.");
+        await logoutClient();
+        return;
+      }
+      if ((nextOrg as any).status === "suspended") {
+        setAuthMessage("Your company's access has been suspended. Please contact support@nearwork.co for more information.");
         await logoutClient();
         return;
       }
@@ -1059,7 +1050,7 @@ export function ClientPortal() {
           {active === "overview" ? (
             <>
               <section className="grid gap-4 md:grid-cols-4">
-                <Metric label="Active openings" value={activeOpenings.length} sub="Synced from Admin" />
+                <Metric label="Active openings" value={activeOpenings.length} sub="" onClick={() => setActive("pipeline")} />
                 <Metric label="Needs action" value={reviewCount + ptoPending} sub="Reviews and PTO" />
                 <Metric label="Monthly savings" value={estimatedMonthlySavings} sub="Estimated with Nearwork" money />
                 <Metric label="Upcoming PTO" value={upcomingPto} sub="Pending or approved" />
@@ -1253,8 +1244,8 @@ export function ClientPortal() {
   );
 }
 
-function Metric({ label, value, sub, money }: { label: string; value: number; sub: string; money?: boolean }) {
-  return <div className="rounded-xl border border-[#d8dee4] bg-white p-5 shadow-sm"><p className="text-sm font-bold text-[#57606a]">{label}</p><p className="mt-3 text-3xl font-black">{money ? moneyText(value, "USD") : value}</p><p className="mt-2 text-sm font-bold text-[#12866E]">{sub}</p></div>;
+function Metric({ label, value, sub, money, onClick }: { label: string; value: number; sub: string; money?: boolean; onClick?: () => void }) {
+  return <div onClick={onClick} className={cx("rounded-xl border border-[#d8dee4] bg-white p-5 shadow-sm", onClick && "cursor-pointer hover:border-[#12866E] hover:shadow-md transition-shadow")}><p className="text-sm font-bold text-[#57606a]">{label}</p><p className="mt-3 text-3xl font-black">{money ? moneyText(value, "USD") : value}</p>{sub ? <p className="mt-2 text-sm font-bold text-[#12866E]">{sub}</p> : null}</div>;
 }
 
 function Panel({ eyebrow, title, children }: { eyebrow: string; title: string; children: React.ReactNode }) {
