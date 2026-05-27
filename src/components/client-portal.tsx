@@ -10,6 +10,7 @@ import {
   Eye,
   FileText,
   Handshake,
+  Kanban,
   LayoutDashboard,
   LogOut,
   MessageCircle,
@@ -62,15 +63,16 @@ import {
 } from "@/lib/firebase-client";
 
 const tabs = [
-  { id: "overview", label: "Overview", icon: LayoutDashboard, section: "Account" },
-  { id: "pipeline", label: "Openings & Pipeline", icon: BriefcaseBusiness, section: "Recruiting" },
-  { id: "hires", label: "Hires", icon: Handshake, section: "Team" },
-  { id: "services", label: "Services", icon: ShieldCheck, section: "Team" },
-  { id: "timeoff", label: "PTO", icon: CalendarCheck, section: "Team" },
-  { id: "finance", label: "Finance", icon: ReceiptText, section: "Account" },
-  { id: "notes", label: "Notes", icon: NotebookPen, section: "Collaboration" },
-  { id: "users", label: "Users", icon: UsersRound, section: "Settings" },
-  { id: "settings", label: "Settings", icon: Settings, section: "Settings" },
+  { id: "overview",  label: "Overview",   icon: LayoutDashboard,   section: "Hiring" },
+  { id: "pipeline",  label: "Pipeline",   icon: Kanban,            section: "Hiring" },
+  { id: "openings",  label: "Open roles", icon: BriefcaseBusiness, section: "Hiring" },
+  { id: "hires",     label: "Hires",      icon: Handshake,         section: "Team" },
+  { id: "services",  label: "Services",   icon: ShieldCheck,       section: "Team" },
+  { id: "timeoff",   label: "PTO",        icon: CalendarCheck,     section: "Team" },
+  { id: "finance",   label: "Finance",    icon: ReceiptText,       section: "Account" },
+  { id: "notes",     label: "Notes",      icon: NotebookPen,       section: "Collaboration" },
+  { id: "users",     label: "Users",      icon: UsersRound,        section: "Settings" },
+  { id: "settings",  label: "Settings",   icon: Settings,          section: "Settings" },
 ] as const;
 
 type TabId = (typeof tabs)[number]["id"] | "candidate" | "hire";
@@ -107,6 +109,33 @@ const pipelineStages = [
 ];
 
 const emptyClientUsers: ClientUser[] = [];
+
+const clientStages = [
+  { key: "applied",     label: "Applied"     },
+  { key: "screening",   label: "Screening"   },
+  { key: "technical",   label: "Technical"   },
+  { key: "final-round", label: "Final round" },
+  { key: "offer",       label: "Offer"       },
+];
+
+function clientStageKey(stage?: string): string {
+  const s = String(stage || "").toLowerCase().replace(/[-_ ]/g, "");
+  if (s.includes("applied"))  return "applied";
+  if (s.includes("screen") || s.includes("profile") || s.includes("background")) return "screening";
+  if (s.includes("tech") || s.includes("assess") || s.includes("test")) return "technical";
+  if (s.includes("interview") || s.includes("review") || s.includes("present") || s.includes("final") || s.includes("client")) return "final-round";
+  if (s.includes("offer") || s.includes("hired")) return "offer";
+  return "screening";
+}
+
+const clientStageTone: Record<string, string> = {
+  "applied":     "border-sky-200 bg-sky-50 text-sky-700",
+  "screening":   "border-violet-200 bg-violet-50 text-violet-700",
+  "technical":   "border-amber-200 bg-amber-50 text-amber-800",
+  "final-round": "border-teal-200 bg-teal-50 text-teal-700",
+  "offer":       "border-emerald-200 bg-emerald-50 text-emerald-700",
+};
+
 const defaultAccountManager = {
   name: "",
   email: "",
@@ -141,7 +170,7 @@ function initials(name = "NW") {
 
 function Badge({ children, tone }: { children: React.ReactNode; tone?: string }) {
   return (
-    <span className={cx("inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold", tone || "border-[#d8dee4] bg-[#f6f8fa] text-[#24292f]")}>
+    <span className={cx("inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium", tone || "border-[#E5E4E0] bg-[#F5F4F0] text-[#555]")}>
       {children}
     </span>
   );
@@ -150,8 +179,8 @@ function Badge({ children, tone }: { children: React.ReactNode; tone?: string })
 function Score({ value = 0 }: { value?: number }) {
   const score = Math.max(0, Math.min(100, Number(value || 0)));
   return (
-    <div className="grid size-14 place-items-center rounded-full" style={{ background: `conic-gradient(#12866E ${score * 3.6}deg, #d8dee4 0deg)` }}>
-      <div className="grid size-10 place-items-center rounded-full bg-white text-sm font-black text-[#24292f]">{score || "—"}</div>
+    <div className="grid size-12 place-items-center rounded-full" style={{ background: `conic-gradient(#12866E ${score * 3.6}deg, #E5E4E0 0deg)` }}>
+      <div className="grid size-8 place-items-center rounded-full bg-white text-sm font-semibold text-[#111]">{score || "—"}</div>
     </div>
   );
 }
@@ -458,53 +487,53 @@ function LoginScreen({ message }: { message?: string }) {
   }
 
   return (
-    <main className="grid min-h-screen bg-[#f6f8fa] px-5 py-8 text-[#24292f] lg:grid-cols-[1fr_440px]">
-      <section className="flex min-h-[520px] flex-col justify-between rounded-lg border border-[#d8dee4] bg-white p-8 shadow-sm lg:p-12">
+    <main className="grid min-h-screen bg-[#F8F7F3] px-5 py-8 text-[#111] lg:grid-cols-[1fr_440px]">
+      <section className="flex min-h-[520px] flex-col justify-between rounded-lg border border-[#E5E4E0] bg-white p-8 shadow-sm lg:p-12">
         <div>
-          <div className="text-2xl font-black">Near<span className="text-[#12866E]">work</span></div>
-          <p className="mt-16 max-w-2xl text-5xl font-black leading-[1.02] lg:text-7xl">
+          <div className="text-2xl font-semibold">Near<span className="text-[#12866E]">work</span></div>
+          <p className="mt-16 max-w-2xl text-5xl font-semibold leading-[1.02] lg:text-7xl">
             Company hiring command center.
           </p>
-          <p className="mt-6 max-w-xl text-base leading-7 text-[#57606a]">
+          <p className="mt-6 max-w-xl text-base leading-7 text-[#555]">
             Review candidates, add private notes, track openings, and receive updates from Nearwork in one shared portal.
           </p>
         </div>
-        <div className="grid gap-3 text-sm text-[#57606a] sm:grid-cols-3">
-          <div className="rounded-md border border-[#d8dee4] bg-[#f6f8fa] p-4">Pipeline visibility</div>
-          <div className="rounded-md border border-[#d8dee4] bg-[#f6f8fa] p-4">Private notes</div>
-          <div className="rounded-md border border-[#d8dee4] bg-[#f6f8fa] p-4">Realtime updates</div>
+        <div className="grid gap-3 text-sm text-[#555] sm:grid-cols-3">
+          <div className="rounded-md border border-[#E5E4E0] bg-[#F5F4F0] p-4">Pipeline visibility</div>
+          <div className="rounded-md border border-[#E5E4E0] bg-[#F5F4F0] p-4">Private notes</div>
+          <div className="rounded-md border border-[#E5E4E0] bg-[#F5F4F0] p-4">Realtime updates</div>
         </div>
       </section>
       <section className="flex items-center justify-center px-0 py-8 lg:px-10">
-        <form onSubmit={submit} className="w-full rounded-lg border border-[#d8dee4] bg-white p-6 shadow-sm">
-          <p className="text-xs font-black uppercase tracking-[0.18em] text-[#12866E]">app.nearwork.co</p>
-          <h1 className="mt-2 text-3xl font-black">{isInvite ? "Create your password" : "Company login"}</h1>
-          <p className="mt-2 text-sm leading-6 text-[#57606a]">{isInvite ? "Use the invited email and choose a password to enter your company workspace." : "Use the email invited by Nearwork for your company portal."}</p>
+        <form onSubmit={submit} className="w-full rounded-lg border border-[#E5E4E0] bg-white p-6 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#12866E]">app.nearwork.co</p>
+          <h1 className="mt-2 text-3xl font-semibold">{isInvite ? "Create your password" : "Company login"}</h1>
+          <p className="mt-2 text-sm leading-6 text-[#555]">{isInvite ? "Use the invited email and choose a password to enter your company workspace." : "Use the email invited by Nearwork for your company portal."}</p>
           {localMessage ? <div className="mt-4 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">{localMessage}</div> : null}
           {!localMessage && message ? <div className="mt-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">{message}</div> : null}
-          <label className="mt-5 block text-sm font-bold">
+          <label className="mt-5 block text-sm font-medium">
             Email
-            <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" className="mt-2 h-11 w-full rounded-md border border-[#d8dee4] px-3 outline-none focus:border-[#12866E]" required />
+            <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" className="mt-2 h-11 w-full rounded-md border border-[#E5E4E0] px-3 outline-none focus:border-[#12866E]" required />
           </label>
-          <label className="mt-4 block text-sm font-bold">
+          <label className="mt-4 block text-sm font-medium">
             {isInvite ? "Create password" : "Password"}
-            <input value={password} onChange={(event) => setPassword(event.target.value)} type="password" className="mt-2 h-11 w-full rounded-md border border-[#d8dee4] px-3 outline-none focus:border-[#12866E]" required />
+            <input value={password} onChange={(event) => setPassword(event.target.value)} type="password" className="mt-2 h-11 w-full rounded-md border border-[#E5E4E0] px-3 outline-none focus:border-[#12866E]" required />
           </label>
           {isInvite ? (
-            <label className="mt-4 block text-sm font-bold">
+            <label className="mt-4 block text-sm font-medium">
               Confirm password
-              <input value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} type="password" className="mt-2 h-11 w-full rounded-md border border-[#d8dee4] px-3 outline-none focus:border-[#12866E]" required />
+              <input value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} type="password" className="mt-2 h-11 w-full rounded-md border border-[#E5E4E0] px-3 outline-none focus:border-[#12866E]" required />
             </label>
           ) : null}
-          <label className="mt-4 flex items-center gap-2 text-sm font-bold text-[#57606a]">
+          <label className="mt-4 flex items-center gap-2 text-sm font-medium text-[#555]">
             <input checked={rememberMe} onChange={(event) => setRememberMe(event.target.checked)} type="checkbox" className="h-4 w-4 accent-[#12866E]" />
             Keep me signed in on this device
           </label>
           {error ? <div className="mt-4 rounded-md border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">{error}</div> : null}
-          <button disabled={busy} className="mt-5 h-11 w-full rounded-md bg-[#12866E] text-sm font-black text-white disabled:opacity-60">
+          <button disabled={busy} className="mt-5 h-11 w-full rounded-md bg-[#12866E] text-sm font-semibold text-white disabled:opacity-60">
             {busy ? "Working..." : isInvite ? "Create account" : "Log in"}
           </button>
-          <button type="button" onClick={resetPassword} disabled={busy} className="mt-3 h-11 w-full rounded-md border border-[#d8dee4] bg-white text-sm font-black text-[#57606a] disabled:opacity-60">
+          <button type="button" onClick={resetPassword} disabled={busy} className="mt-3 h-11 w-full rounded-md border border-[#E5E4E0] bg-white text-sm font-semibold text-[#555] disabled:opacity-60">
             Send password reset
           </button>
         </form>
@@ -524,27 +553,27 @@ function CandidateCard({
   selected: boolean;
   onSelect: () => void;
 }) {
-  const stage = normalizedPipelineStage(candidate.stage);
-  const stageLabel = pipelineStages.find((item) => item.key === stage)?.label || candidate.stage || "Review";
+  const stageKey = clientStageKey(candidate.stage);
+  const stageLabel = clientStages.find((s) => s.key === stageKey)?.label || candidate.stage || "Screening";
   return (
-    <button onClick={onSelect} className={cx("w-full rounded-lg border bg-white p-4 text-left shadow-sm transition hover:border-[#12866E]", selected ? "border-[#12866E] ring-2 ring-[#12866E]/10" : "border-[#d8dee4]")}>
+    <button onClick={onSelect} className={cx("w-full rounded-xl border bg-white p-4 text-left transition hover:border-[#12866E] hover:shadow-sm", selected ? "border-[#12866E]" : "border-[#E5E4E0]")}>
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-lg font-black">{candidate.name}</h3>
-            <Badge tone={stageTone[stage] || "border-stone-200 bg-stone-50 text-stone-700"}>{stageLabel}</Badge>
+            <h3 className="text-base font-semibold text-[#111]">{candidate.name}</h3>
+            <Badge tone={clientStageTone[stageKey] || "border-stone-200 bg-stone-50 text-stone-600"}>{stageLabel}</Badge>
           </div>
-          <p className="mt-1 text-sm text-[#57606a]">{candidate.role} · {candidate.location || "Colombia"}</p>
-          <p className="mt-1 text-xs font-bold text-[#6e7781]">{pipeline?.openingTitle || pipeline?.code || "General pipeline"}</p>
+          <p className="mt-1 text-sm text-[#555]">{candidate.role} · {candidate.location || "Colombia"}</p>
+          <p className="mt-1 text-xs text-[#888]">{pipeline?.openingTitle || pipeline?.code || "General pipeline"}</p>
         </div>
         <Score value={candidate.score} />
       </div>
-      <div className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
-        <div><p className="text-xs font-black uppercase tracking-wider text-[#6e7781]">Expected pay</p><p className="font-bold">{salaryTextUsd(candidate)}</p></div>
-        <div><p className="text-xs font-black uppercase tracking-wider text-[#6e7781]">English</p><p className="font-bold">{candidate.english || "—"}</p></div>
-        <div><p className="text-xs font-black uppercase tracking-wider text-[#6e7781]">DISC</p><p className="font-bold">{candidate.discProfile?.label || "Pending"}</p></div>
+      <div className="mt-3 grid gap-3 text-sm sm:grid-cols-3">
+        <div><p className="text-[10px] font-medium uppercase tracking-wider text-[#888]">Expected pay</p><p className="mt-0.5 font-medium text-[#111]">{salaryTextUsd(candidate)}</p></div>
+        <div><p className="text-[10px] font-medium uppercase tracking-wider text-[#888]">English</p><p className="mt-0.5 font-medium text-[#111]">{candidate.english || "—"}</p></div>
+        <div><p className="text-[10px] font-medium uppercase tracking-wider text-[#888]">DISC</p><p className="mt-0.5 font-medium text-[#111]">{candidate.discProfile?.label || "Pending"}</p></div>
       </div>
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div className="mt-3 flex flex-wrap gap-1.5">
         {(candidate.skills || []).slice(0, 5).map((skill) => <Badge key={skill}>{skill}</Badge>)}
       </div>
     </button>
@@ -559,19 +588,19 @@ function NotificationPanel({
   onRead: (id: string) => void;
 }) {
   return (
-    <div className="absolute right-0 top-12 z-30 w-[min(380px,calc(100vw-32px))] rounded-lg border border-[#d8dee4] bg-white shadow-xl">
-      <div className="border-b border-[#d8dee4] p-4">
-        <p className="font-black">Notifications</p>
-        <p className="text-xs text-[#57606a]">Every notification includes date and time. Email summaries are buffered for 2 hours.</p>
+    <div className="absolute right-0 top-12 z-30 w-[min(360px,calc(100vw-32px))] rounded-xl border border-[#E5E4E0] bg-white shadow-xl">
+      <div className="border-b border-[#E5E4E0] p-4">
+        <p className="font-medium text-[#111]">Notifications</p>
+        <p className="text-xs text-[#888]">Email summaries are buffered for 2 hours.</p>
       </div>
       <div className="max-h-96 overflow-auto">
         {notifications.length ? notifications.map((item) => (
-          <button key={item.id} onClick={() => onRead(item.id)} className={cx("block w-full border-b border-[#d8dee4] p-4 text-left last:border-b-0", item.read ? "bg-white" : "bg-[#eef8f5]")}>
-            <p className="text-sm font-black">{item.title || "Nearwork update"}</p>
-            <p className="mt-1 text-sm leading-5 text-[#57606a]">{item.message || ""}</p>
-            <p className="mt-2 text-xs font-bold text-[#6e7781]">{dateTime(item.createdAt)}</p>
+          <button key={item.id} onClick={() => onRead(item.id)} className={cx("block w-full border-b border-[#E5E4E0] p-4 text-left last:border-b-0", item.read ? "bg-white" : "bg-[#EEF6F3]")}>
+            <p className="text-sm font-medium text-[#111]">{item.title || "Nearwork update"}</p>
+            <p className="mt-1 text-sm leading-5 text-[#555]">{item.message || ""}</p>
+            <p className="mt-2 text-xs text-[#888]">{dateTime(item.createdAt)}</p>
           </button>
-        )) : <div className="p-6 text-center text-sm text-[#6e7781]">No notifications yet.</div>}
+        )) : <div className="p-6 text-center text-sm text-[#888]">No notifications yet.</div>}
       </div>
     </div>
   );
@@ -601,9 +630,10 @@ export function ClientPortal() {
   const [showBell, setShowBell] = useState(false);
   const [authMessage, setAuthMessage] = useState("");
   const testMode = false;
-  const [sidebarPinned, setSidebarPinned] = useState(false);
+  const [sidebarPinned, setSidebarPinned] = useState(true);
   const [sidebarHover, setSidebarHover] = useState(false);
   const [selectedPipelineCode, setSelectedPipelineCode] = useState("");
+  const [pipelineFilter, setPipelineFilter] = useState("");
   const [selectedHireId, setSelectedHireId] = useState("");
   const [compareCodes, setCompareCodes] = useState<string[]>([]);
   const [favoriteCodes, setFavoriteCodes] = useState<string[]>([]);
@@ -893,9 +923,13 @@ export function ClientPortal() {
         sub: opening.code,
         action: () => {
           const pipeline = pipelines.find((item) => item.openingCode === opening.code || item.openingTitle === opening.title);
-          setSelectedPipelineCode(pipeline?.code || "");
+          if (pipeline) {
+            setPipelineFilter(pipeline.code);
+            setActive("pipeline");
+          } else {
+            setActive("openings");
+          }
           setSelectedCode("");
-          setActive("pipeline");
         },
       }));
     const candidateRows = pipelineCandidates
@@ -930,9 +964,9 @@ export function ClientPortal() {
 
   if (loggingOut) {
     return (
-      <main className="grid min-h-screen place-items-center bg-[#f6f8fa] text-[#24292f]">
-        <div className="flex flex-col items-center gap-3 rounded-lg border border-[#d8dee4] bg-white px-10 py-8 text-sm text-[#57606a] shadow-sm">
-          <div className="size-6 animate-spin rounded-full border-2 border-[#d8dee4] border-t-[#12866E]" />
+      <main className="grid min-h-screen place-items-center bg-[#F8F7F3] text-[#111]">
+        <div className="flex flex-col items-center gap-3 rounded-lg border border-[#E5E4E0] bg-white px-10 py-8 text-sm text-[#555] shadow-sm">
+          <div className="size-6 animate-spin rounded-full border-2 border-[#E5E4E0] border-t-[#12866E]" />
           <span>Signing out…</span>
         </div>
       </main>
@@ -943,9 +977,9 @@ export function ClientPortal() {
 
   if (!profile || !org) {
     return (
-      <main className="grid min-h-screen place-items-center bg-[#f6f8fa] text-[#24292f]">
-        <div className="flex flex-col items-center gap-3 rounded-lg border border-[#d8dee4] bg-white px-10 py-8 text-sm text-[#57606a] shadow-sm">
-          <div className="size-6 animate-spin rounded-full border-2 border-[#d8dee4] border-t-[#12866E]" />
+      <main className="grid min-h-screen place-items-center bg-[#F8F7F3] text-[#111]">
+        <div className="flex flex-col items-center gap-3 rounded-lg border border-[#E5E4E0] bg-white px-10 py-8 text-sm text-[#555] shadow-sm">
+          <div className="size-6 animate-spin rounded-full border-2 border-[#E5E4E0] border-t-[#12866E]" />
           <span>Loading your portal…</span>
         </div>
       </main>
@@ -953,38 +987,38 @@ export function ClientPortal() {
   }
 
   return (
-    <div className="min-h-screen bg-[#eef5f3] text-[#24292f]">
+    <div className="min-h-screen bg-[#F8F7F3] text-[#111]">
       <aside
         onMouseEnter={() => setSidebarHover(true)}
         onMouseLeave={() => setSidebarHover(false)}
         className={cx(
-          "fixed inset-y-0 left-0 z-20 flex flex-col border-r border-[#d8dee4] bg-white text-[#24292f] shadow-sm transition-all duration-200",
-          sidebarOpen ? "w-72" : "w-20",
+          "fixed inset-y-0 left-0 z-20 flex flex-col border-r border-[#E5E4E0] bg-white text-[#111] shadow-sm transition-all duration-200",
+          sidebarOpen ? "w-56" : "w-14",
         )}
       >
-        <div className="border-b border-[#d8dee4] p-4 lg:p-6">
-          <div className="flex items-center justify-between gap-3">
-            <div className="grid size-10 shrink-0 place-items-center rounded-md bg-[#12866E] text-lg font-black text-white">N</div>
+        <div className="border-b border-[#E5E4E0] p-4">
+          <div className="flex items-center justify-between gap-2">
+            <div className="grid size-8 shrink-0 place-items-center rounded-md bg-[#12866E] text-sm font-semibold text-white">N</div>
             {sidebarOpen ? (
               <div className="min-w-0 flex-1">
-                <p className="text-xl font-black">Near<span className="text-[#12866E]">work</span></p>
-                <p className="mt-1 truncate text-xs text-[#6e7781]">{org.name}</p>
+                <p className="text-base font-semibold">Near<span className="text-[#12866E]">work</span></p>
+                <p className="truncate text-xs text-[#888]">{org.name}</p>
               </div>
             ) : null}
-            <button onClick={() => setSidebarPinned(!sidebarPinned)} className={cx("grid size-9 place-items-center rounded-md border border-[#d8dee4] bg-white text-[#57606a]", sidebarPinned && "border-[#12866E] text-[#12866E]")}>
-              {sidebarPinned ? <PanelLeftClose className="size-4" /> : <PanelLeftOpen className="size-4" />}
+            <button onClick={() => setSidebarPinned(!sidebarPinned)} className={cx("grid size-7 place-items-center rounded border border-[#E5E4E0] bg-white text-[#888]", sidebarPinned && "border-[#12866E] text-[#12866E]")}>
+              {sidebarPinned ? <PanelLeftClose className="size-3.5" /> : <PanelLeftOpen className="size-3.5" />}
             </button>
           </div>
         </div>
-        <nav className="flex-1 overflow-y-auto p-3">
+        <nav className="flex-1 overflow-y-auto p-2">
           {[...new Set(tabs.map((tab) => tab.section))].map((section) => (
-            <div key={section} className="mb-3">
-              {sidebarOpen ? <p className="px-3 pb-2 pt-2 text-[10px] font-black uppercase tracking-[0.16em] text-[#8c959f]">{section}</p> : null}
-              <div className="space-y-1">
+            <div key={section} className="mb-2">
+              {sidebarOpen ? <p className="px-2 pb-1 pt-2 text-[10px] font-medium uppercase tracking-[0.14em] text-[#888]">{section}</p> : null}
+              <div className="space-y-0.5">
                 {tabs.filter((tab) => tab.section === section).map((tab) => {
                   const Icon = tab.icon;
                   return (
-                    <button key={tab.id} onClick={() => setActive(tab.id)} className={cx("flex h-10 w-full items-center gap-3 rounded-md px-3 text-sm font-semibold", sidebarOpen ? "justify-start" : "justify-center", active === tab.id ? "bg-[#eef8f5] text-[#12866E]" : "text-[#57606a] hover:bg-[#f6f8fa] hover:text-[#24292f]")}>
+                    <button key={tab.id} onClick={() => setActive(tab.id)} className={cx("flex h-9 w-full items-center gap-2.5 rounded-md px-2.5 text-sm", sidebarOpen ? "justify-start" : "justify-center", active === tab.id ? "bg-[#EEF6F3] font-medium text-[#12866E]" : "font-normal text-[#555] hover:bg-[#F5F4F0] hover:text-[#111]")}>
                       <Icon className="size-4 shrink-0" />
                       {sidebarOpen ? <span>{tab.label}</span> : null}
                     </button>
@@ -994,38 +1028,42 @@ export function ClientPortal() {
             </div>
           ))}
         </nav>
-        <div className="border-t border-[#d8dee4] p-3 lg:p-4">
+        <div className="border-t border-[#E5E4E0] p-3">
           {sidebarOpen ? (
-          <div className="rounded-lg border border-[#d8dee4] bg-[#f6f8fa] p-3">
-            <div className="rounded-md bg-white p-2">
-              <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[#12866E]">Support</p>
-              <p className="mt-1 text-sm font-black">{accountManager.name}</p>
-              <p className="truncate text-xs text-[#6e7781]">{accountManager.email}</p>
+          <div className="space-y-3">
+            <div className="rounded-lg border border-[#E5E4E0] bg-[#F5F4F0] p-2.5">
+              <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-[#888]">Account manager</p>
+              <p className="mt-1 text-sm font-medium text-[#111]">{accountManager.name || "Nearwork team"}</p>
+              <p className="truncate text-xs text-[#888]">{accountManager.email || "support@nearwork.co"}</p>
             </div>
-            <div className="my-3 border-t border-[#d8dee4]" />
-            <p className="font-bold">{profile.name || profile.email}</p>
-            <p className="mt-1 text-xs text-[#6e7781]">{profile.portalRole || profile.role || "Company user"}</p>
-            <button onClick={leavePortal} className="mt-3 inline-flex h-9 w-full items-center justify-center gap-2 rounded-md border border-[#d8dee4] bg-white text-sm font-black text-[#24292f]">
-              <LogOut className="size-4" /> Log out
-            </button>
+            <div className="flex items-center gap-2.5">
+              <div className="grid size-8 shrink-0 place-items-center rounded-full bg-[#EEF6F3] text-xs font-medium text-[#12866E]">{initials(profile.name || profile.email)}</div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium text-[#111]">{profile.name || profile.email}</p>
+                <p className="text-xs text-[#888]">{profile.portalRole || profile.role || "Company user"}</p>
+              </div>
+              <button onClick={leavePortal} title="Log out" className="grid size-7 place-items-center rounded border border-[#E5E4E0] bg-white text-[#888] hover:text-[#111]">
+                <LogOut className="size-3.5" />
+              </button>
+            </div>
           </div>) : (
-            <button onClick={leavePortal} className="grid size-11 place-items-center rounded-md bg-[#f6f8fa] font-black">{initials(profile.name || profile.email)}</button>
+            <button onClick={leavePortal} className="grid size-9 place-items-center rounded-md bg-[#F5F4F0] text-xs font-medium text-[#555]">{initials(profile.name || profile.email)}</button>
           )}
         </div>
       </aside>
 
-      <main className={cx("min-h-screen transition-[margin] duration-200", sidebarOpen ? "ml-72" : "ml-20")}>
-        <header className="sticky top-0 z-10 border-b border-[#d8dee4] bg-white/95 px-4 py-3 backdrop-blur lg:px-8">
+      <main className={cx("min-h-screen transition-[margin] duration-200", sidebarOpen ? "ml-56" : "ml-14")}>
+        <header className="sticky top-0 z-10 border-b border-[#E5E4E0] bg-white/95 px-4 py-3 backdrop-blur lg:px-8">
           <div className="mx-auto flex max-w-7xl items-center gap-4">
-            <div ref={searchRef} className="relative flex min-w-[280px] flex-1 items-center gap-3">
-              <div className="flex h-12 min-w-[280px] flex-1 items-center gap-2 rounded-lg border border-[#d8dee4] bg-[#f6f8fa] px-4 text-sm text-[#6e7781]">
-                <Search className="size-4" />
+            <div ref={searchRef} className="relative flex min-w-[240px] flex-1 items-center gap-3">
+              <div className="flex h-9 min-w-[240px] flex-1 items-center gap-2 rounded-lg border border-[#E5E4E0] bg-[#F5F4F0] px-3 text-sm text-[#888]">
+                <Search className="size-3.5" />
                 <input
                   value={search}
                   onFocus={() => setGlobalSearchOpen(true)}
                   onChange={(event) => { setSearch(event.target.value); setGlobalSearchOpen(true); }}
-                  placeholder="Search candidates, openings, notes, hires..."
-                  className="h-full flex-1 bg-transparent text-sm outline-none"
+                  placeholder="Search candidates, openings, hires..."
+                  className="h-full flex-1 bg-transparent text-sm text-[#111] outline-none placeholder:text-[#888]"
                 />
               </div>
               {globalSearchOpen && search.trim() ? (
@@ -1033,12 +1071,12 @@ export function ClientPortal() {
               ) : null}
             </div>
             <div className="relative ml-auto flex shrink-0 items-center gap-2">
-              <button onClick={() => setShowBell(!showBell)} className="relative grid size-10 place-items-center rounded-md border border-[#d8dee4] bg-white">
+              <button onClick={() => setShowBell(!showBell)} className="relative grid size-9 place-items-center rounded-md border border-[#E5E4E0] bg-white text-[#555]">
                 <Bell className="size-4" />
-                {unread ? <span className="absolute -right-1 -top-1 grid min-w-5 place-items-center rounded-full bg-[#C73565] px-1 text-xs font-black text-white">{unread}</span> : null}
+                {unread ? <span className="absolute -right-1 -top-1 grid min-w-5 place-items-center rounded-full bg-[#C73565] px-1 text-xs font-medium text-white">{unread}</span> : null}
               </button>
               {showBell ? <NotificationPanel notifications={notifications} onRead={markRead} /> : null}
-              <button onClick={() => setShowInvite(true)} className="inline-flex h-10 items-center gap-2 rounded-md bg-[#24292f] px-4 text-sm font-black text-white">
+              <button onClick={() => setShowInvite(true)} className="inline-flex h-9 items-center gap-2 rounded-md bg-[#111] px-3 text-sm font-medium text-white">
                 <UserPlus className="size-4" /> Invite user
               </button>
             </div>
@@ -1050,7 +1088,7 @@ export function ClientPortal() {
           {active === "overview" ? (
             <>
               <section className="grid gap-4 md:grid-cols-4">
-                <Metric label="Active openings" value={activeOpenings.length} sub="" onClick={() => setActive("pipeline")} />
+                <Metric label="Active openings" value={activeOpenings.length} sub="" onClick={() => setActive("openings")} />
                 <Metric label="Needs action" value={reviewCount + ptoPending} sub="Reviews and PTO" />
                 <Metric label="Monthly savings" value={estimatedMonthlySavings} sub="Estimated with Nearwork" money />
                 <Metric label="Upcoming PTO" value={upcomingPto} sub="Pending or approved" />
@@ -1059,7 +1097,7 @@ export function ClientPortal() {
                 <Panel title="Candidates needing review" eyebrow="Pipeline">
                   <div className="space-y-3">
                     {filteredCandidates.slice(0, 4).map(({ candidate, pipeline }) => (
-                      <CandidateCard key={`${pipeline.code}-${candidateKey(candidate)}`} candidate={candidate} pipeline={pipeline} selected={selected?.candidate.code === candidate.code} onSelect={() => { setSelectedPipelineCode(pipeline.code); setSelectedCode(candidate.code); setActive("pipeline"); }} />
+                      <CandidateCard key={`${pipeline.code}-${candidateKey(candidate)}`} candidate={candidate} pipeline={pipeline} selected={selected?.candidate.code === candidate.code} onSelect={() => { setSelectedPipelineCode(pipeline.code); setSelectedCode(candidate.code); setActive("candidate"); }} />
                     ))}
                     {!filteredCandidates.length ? <Empty title="No candidates in client review yet" text="When Nearwork adds candidates to your pipeline, they will appear here." /> : null}
                   </div>
@@ -1067,10 +1105,10 @@ export function ClientPortal() {
                 <Panel title="Nearwork updates" eyebrow="Notifications">
                   <div className="space-y-3">
                     {notifications.slice(0, 5).map((item) => (
-                      <div key={item.id} className="rounded-md border border-[#d8dee4] bg-white p-3">
-                        <p className="font-bold">{item.title || "Nearwork update"}</p>
-                        <p className="mt-1 text-sm leading-6 text-[#57606a]">{item.message}</p>
-                        <p className="mt-2 text-xs font-bold text-[#6e7781]">{dateTime(item.createdAt)}</p>
+                      <div key={item.id} className="rounded-md border border-[#E5E4E0] bg-white p-3">
+                        <p className="font-medium text-[#111]">{item.title || "Nearwork update"}</p>
+                        <p className="mt-1 text-sm leading-6 text-[#555]">{item.message}</p>
+                        <p className="mt-2 text-xs text-[#888]">{dateTime(item.createdAt)}</p>
                       </div>
                     ))}
                     {!notifications.length ? <Empty title="No updates yet" text="Your bell will show candidate movement, notes, mentions, and opening updates." /> : null}
@@ -1085,75 +1123,40 @@ export function ClientPortal() {
           ) : null}
 
           {active === "pipeline" ? (
-            selectedPipeline ? (
-              <>
-                <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#d8dee4] bg-white p-4 shadow-sm">
-                  <div>
-                    <button onClick={() => { setSelectedPipelineCode(""); setSelectedCode(""); setCompareCodes([]); }} className="inline-flex items-center gap-2 text-sm font-black text-[#12866E]">
-                      <ArrowLeft className="size-4" /> All pipelines
-                    </button>
-                    <h1 className="mt-2 text-2xl font-black">{selectedPipeline.openingTitle || selectedPipeline.code}</h1>
-                    <p className="text-sm text-[#57606a]">{selectedPipeline.code} · Recruiter: {selectedPipeline.recruiter || "Nearwork team"}</p>
-                  </div>
-                  <Badge tone="border-teal-200 bg-teal-50 text-teal-700">{selectedPipeline.status || "Active"}</Badge>
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h1 className="text-lg font-semibold text-[#111]">Pipeline</h1>
+                  <p className="text-sm text-[#555]">{filteredCandidates.length} candidate{filteredCandidates.length !== 1 ? "s" : ""} across all openings</p>
                 </div>
-                <section className={cx("grid gap-6", selected ? "xl:grid-cols-[minmax(0,1fr)_420px]" : "xl:grid-cols-1")}>
-                  <Panel title="Pipeline board" eyebrow="Pipeline stages">
-                    <div className="mb-4 flex items-center gap-2 rounded-md border border-[#d8dee4] bg-[#f6f8fa] px-3">
-                      <Search className="size-4 text-[#6e7781]" />
-                      <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search candidates, openings, pipeline..." className="h-11 flex-1 bg-transparent text-sm outline-none" />
-                    </div>
-                    <PipelineBoard
-                      rows={pipelineRows}
-                      selectedCode={selected?.candidate.code || ""}
-                      compareCodes={compareCodes}
-                      favoriteCodes={favoriteCodes}
-                      interviewCodes={interviewCodes}
-                      onSelect={setSelectedCode}
-                      onCompare={toggleCompare}
-                      onFavorite={toggleFavorite}
-                      onInterview={toggleInterview}
-                    />
-                  </Panel>
-                  {selected ? (
-                    <Panel title={selected.candidate.name || "Candidate"} eyebrow="Candidate profile">
-                      <CandidateDetail
-                        candidate={selected.candidate}
-                        pipeline={selected.pipeline}
-                        companyName={org.name}
-                        notes={selectedNotes}
-                        noteText={noteText}
-                        noteScope={noteScope}
-                        setNoteText={setNoteText}
-                        setNoteScope={setNoteScope}
-                        saveNote={saveNote}
-                        openFullProfile={() => setActive("candidate")}
-                        closeDetail={() => setSelectedCode("")}
-                      />
-                    </Panel>
-                  ) : null}
-                </section>
-                <CandidateCompare
-                  rows={pipelineRows}
-                  compareCodes={compareCodes}
-                  favoriteCodes={favoriteCodes}
-                  interviewCodes={interviewCodes}
-                  onCompare={toggleCompare}
-                  onFavorite={toggleFavorite}
-                  onInterview={toggleInterview}
-                />
-                <OpeningChatPanel
-                  companyName={org.name}
-                  recruiter={selectedPipeline.recruiter || "Nearwork team"}
-                  messages={openingChat}
-                  value={chatText}
-                  setValue={setChatText}
-                  onSend={sendChatMessage}
-                />
-              </>
-            ) : (
-              <PipelineList openings={openings} pipelines={pipelines} rows={pipelineCandidates} onOpen={(code) => { setSelectedPipelineCode(code); setSelectedCode(""); }} />
-            )
+                <div className="flex items-center gap-2 rounded-md border border-[#E5E4E0] bg-white px-3">
+                  <Search className="size-3.5 text-[#888]" />
+                  <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search candidates..." className="h-9 w-44 bg-transparent text-sm text-[#111] outline-none placeholder:text-[#888]" />
+                </div>
+              </div>
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                <button onClick={() => setPipelineFilter("")} className={cx("whitespace-nowrap rounded-full border px-3 py-1 text-sm transition", !pipelineFilter ? "border-[#111] bg-[#111] font-medium text-white" : "border-[#E5E4E0] bg-white font-normal text-[#555] hover:border-[#111]")}>
+                  All roles
+                </button>
+                {pipelines.map((pl) => (
+                  <button key={pl.code} onClick={() => setPipelineFilter(pipelineFilter === pl.code ? "" : pl.code)} className={cx("whitespace-nowrap rounded-full border px-3 py-1 text-sm transition", pipelineFilter === pl.code ? "border-[#111] bg-[#111] font-medium text-white" : "border-[#E5E4E0] bg-white font-normal text-[#555] hover:border-[#111]")}>
+                    {pl.openingTitle || pl.code}
+                  </button>
+                ))}
+              </div>
+              <KanbanBoard
+                rows={pipelineFilter ? filteredCandidates.filter((r) => r.pipeline.code === pipelineFilter) : filteredCandidates}
+                onSelect={(candidate, pipeline) => {
+                  setSelectedPipelineCode(pipeline.code);
+                  setSelectedCode(candidate.code);
+                  setActive("candidate");
+                }}
+              />
+            </div>
+          ) : null}
+
+          {active === "openings" ? (
+            <OpeningsView openings={openings} pipelines={pipelines} rows={pipelineCandidates} onOpenPipeline={(code) => { setPipelineFilter(code); setActive("pipeline"); }} />
           ) : null}
 
           {active === "candidate" && selected ? (
@@ -1162,6 +1165,11 @@ export function ClientPortal() {
               pipeline={selected.pipeline}
               companyName={org.name}
               notes={selectedNotes}
+              noteText={noteText}
+              noteScope={noteScope}
+              setNoteText={setNoteText}
+              setNoteScope={setNoteScope}
+              saveNote={saveNote}
               onBack={() => setActive("pipeline")}
               onFavorite={() => toggleFavorite(selected.candidate.code)}
               onInterview={() => toggleInterview(selected.candidate.code)}
@@ -1197,12 +1205,12 @@ export function ClientPortal() {
             <Panel title={`${org.name} notes`} eyebrow="Scoped by pipeline">
               <div className="grid gap-3">
                 {notes.filter((note) => note.scope === "client_visible" || note.scope === "client_internal").map((note) => (
-                  <article key={note.id} className="rounded-lg border border-[#d8dee4] bg-white p-4 shadow-sm">
+                  <article key={note.id} className="rounded-lg border border-[#E5E4E0] bg-white p-4">
                     <div className="flex flex-wrap justify-between gap-3">
-                      <div><p className="font-black">{note.pipelineTitle || note.candidateCode}</p><p className="text-sm text-[#57606a]">{note.scope === "client_internal" ? `${org.name} internal only` : `Visible to Nearwork and ${org.name}`} · {note.author}</p></div>
-                      <p className="text-xs font-bold text-[#6e7781]">{dateTime(note.createdAt)}</p>
+                      <div><p className="font-medium text-[#111]">{note.pipelineTitle || note.candidateCode}</p><p className="text-sm text-[#555]">{note.scope === "client_internal" ? `${org.name} internal only` : `Visible to Nearwork and ${org.name}`} · {note.author}</p></div>
+                      <p className="text-xs text-[#888]">{dateTime(note.createdAt)}</p>
                     </div>
-                    <p className="mt-3 text-sm leading-6 text-[#57606a]">{note.text}</p>
+                    <p className="mt-3 text-sm leading-6 text-[#555]">{note.text}</p>
                   </article>
                 ))}
                 {!notes.length ? <Empty title="No notes yet" text="Notes added in candidate profiles will appear here." /> : null}
@@ -1227,15 +1235,15 @@ export function ClientPortal() {
                 ].map(([key, label]) => {
                   const pref = profile.notificationPreferences?.[key] || {};
                   return (
-                    <div key={key} className="grid gap-3 rounded-md border border-[#d8dee4] bg-white p-4 md:grid-cols-[1fr_120px_120px]">
-                      <p className="font-black">{label}</p>
+                    <div key={key} className="grid gap-3 rounded-md border border-[#E5E4E0] bg-white p-4 md:grid-cols-[1fr_120px_120px]">
+                      <p className="font-semibold">{label}</p>
                       <label className="text-sm"><input type="checkbox" defaultChecked={pref.app !== false} onChange={(event) => updatePreference(key, "app", event.target.checked)} /> In-app</label>
                       <label className="text-sm"><input type="checkbox" defaultChecked={pref.email !== false} onChange={(event) => updatePreference(key, "email", event.target.checked)} /> Email</label>
                     </div>
                   );
                 })}
               </div>
-              <p className="mt-4 text-sm leading-6 text-[#57606a]">Email notifications should be sent by the backend digest job with a 2-hour buffer. The bell shows the full notification history immediately.</p>
+              <p className="mt-4 text-sm leading-6 text-[#555]">Email notifications should be sent by the backend digest job with a 2-hour buffer. The bell shows the full notification history immediately.</p>
             </Panel>
           ) : null}
         </div>
@@ -1245,19 +1253,19 @@ export function ClientPortal() {
 }
 
 function Metric({ label, value, sub, money, onClick }: { label: string; value: number; sub: string; money?: boolean; onClick?: () => void }) {
-  return <div onClick={onClick} className={cx("rounded-xl border border-[#d8dee4] bg-white p-5 shadow-sm", onClick && "cursor-pointer hover:border-[#12866E] hover:shadow-md transition-shadow")}><p className="text-sm font-bold text-[#57606a]">{label}</p><p className="mt-3 text-3xl font-black">{money ? moneyText(value, "USD") : value}</p>{sub ? <p className="mt-2 text-sm font-bold text-[#12866E]">{sub}</p> : null}</div>;
+  return <div onClick={onClick} className={cx("rounded-xl border border-[#E5E4E0] bg-white p-5", onClick && "cursor-pointer transition-shadow hover:border-[#12866E] hover:shadow-sm")}><p className="text-sm text-[#888]">{label}</p><p className="mt-3 text-3xl font-semibold text-[#111]">{money ? moneyText(value, "USD") : value}</p>{sub ? <p className="mt-2 text-xs text-[#12866E]">{sub}</p> : null}</div>;
 }
 
 function Panel({ eyebrow, title, children }: { eyebrow: string; title: string; children: React.ReactNode }) {
-  return <section className="rounded-xl border border-[#d8dee4] border-t-4 border-t-[#16A085] bg-white p-5 shadow-sm"><div className="mb-5 flex flex-wrap items-end justify-between gap-3"><div><p className="text-xs font-black uppercase tracking-[0.16em] text-[#12866E]">{eyebrow}</p><h2 className="mt-1 text-xl font-black">{title}</h2></div></div>{children}</section>;
+  return <section className="rounded-xl border border-[#E5E4E0] bg-white p-5"><div className="mb-5 flex flex-wrap items-end justify-between gap-3"><div><p className="text-xs font-medium uppercase tracking-[0.14em] text-[#888]">{eyebrow}</p><h2 className="mt-1 text-lg font-semibold text-[#111]">{title}</h2></div></div>{children}</section>;
 }
 
 function Detail({ label, value }: { label: string; value: string }) {
-  return <div><p className="text-xs font-black uppercase tracking-wider text-[#6e7781]">{label}</p><p className="mt-1 font-bold">{value}</p></div>;
+  return <div><p className="text-xs font-medium uppercase tracking-wider text-[#888]">{label}</p><p className="mt-1 text-sm font-medium text-[#111]">{value}</p></div>;
 }
 
 function Empty({ title, text }: { title: string; text: string }) {
-  return <div className="rounded-lg border border-dashed border-[#d8dee4] bg-[#f6f8fa] p-8 text-center"><p className="font-black">{title}</p><p className="mt-2 text-sm text-[#57606a]">{text}</p></div>;
+  return <div className="rounded-lg border border-dashed border-[#E5E4E0] bg-[#F5F4F0] p-8 text-center"><p className="font-medium text-[#111]">{title}</p><p className="mt-2 text-sm text-[#555]">{text}</p></div>;
 }
 
 function PipelineBoard({
@@ -1288,10 +1296,10 @@ function PipelineBoard({
         {pipelineStages.map((stage) => {
           const stageRows = rows.filter(({ candidate }) => normalizedPipelineStage(candidate.stage) === stage.key);
           return (
-            <section key={stage.key} className="rounded-lg border border-[#d8dee4] bg-[#f6f8fa] p-4">
+            <section key={stage.key} className="rounded-lg border border-[#E5E4E0] bg-[#F5F4F0] p-4">
               <div className="mb-3 flex items-center justify-between gap-2">
-                <p className="text-xs font-black uppercase tracking-[0.08em] text-[#57606a]">{stage.label}</p>
-                <span className="rounded-full border border-[#d8dee4] bg-white px-2 py-0.5 text-xs font-black text-[#57606a]">{stageRows.length}</span>
+                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#555]">{stage.label}</p>
+                <span className="rounded-full border border-[#E5E4E0] bg-white px-2 py-0.5 text-xs font-semibold text-[#555]">{stageRows.length}</span>
               </div>
               <div className="space-y-2">
                 {stageRows.map(({ candidate, pipeline }) => (
@@ -1299,40 +1307,157 @@ function PipelineBoard({
                     key={`${pipeline.code}-${candidateKey(candidate)}`}
                     className={cx(
                       "w-full rounded-md border bg-white p-4 text-left shadow-sm transition hover:border-[#12866E]",
-                      selectedCode === candidate.code ? "border-[#12866E] ring-2 ring-[#12866E]/10" : "border-[#d8dee4]",
+                      selectedCode === candidate.code ? "border-[#12866E] ring-2 ring-[#12866E]/10" : "border-[#E5E4E0]",
                     )}
                   >
                     <button onClick={() => onSelect(candidate.code)} className="w-full text-left">
                       <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <p className="truncate text-base font-black">{candidate.name}</p>
-                        <p className="mt-1 truncate text-sm font-semibold text-[#57606a]">{candidate.role}</p>
-                        <p className="mt-1 truncate text-[11px] text-[#6e7781]">{pipeline.openingTitle || pipeline.code}</p>
+                        <p className="truncate text-base font-semibold">{candidate.name}</p>
+                        <p className="mt-1 truncate text-sm font-semibold text-[#555]">{candidate.role}</p>
+                        <p className="mt-1 truncate text-[11px] text-[#888]">{pipeline.openingTitle || pipeline.code}</p>
                       </div>
-                      <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#eef8f5] text-xs font-black text-[#12866E]">{candidate.score || "-"}</span>
+                      <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#EEF6F3] text-xs font-semibold text-[#12866E]">{candidate.score || "-"}</span>
                       </div>
                     </button>
                     <div className="mt-3 flex flex-wrap gap-1.5">
-                      {(candidate.skills || []).slice(0, 2).map((skill) => <span key={skill} className="rounded-full bg-[#f6f8fa] px-2 py-0.5 text-[10px] font-bold text-[#57606a]">{skill}</span>)}
+                      {(candidate.skills || []).slice(0, 2).map((skill) => <span key={skill} className="rounded-full bg-[#F5F4F0] px-2 py-0.5 text-[10px] font-medium text-[#555]">{skill}</span>)}
                     </div>
-                    <div className="mt-3 grid gap-2 text-xs text-[#57606a]">
-                      <div><span className="font-black text-[#24292f]">Expected pay:</span> {salaryTextUsd(candidate)}</div>
-                      <div><span className="font-black text-[#24292f]">Recruiter:</span> {pipeline.recruiter || "Nearwork team"}</div>
+                    <div className="mt-3 grid gap-2 text-xs text-[#555]">
+                      <div><span className="font-semibold text-[#111]">Expected pay:</span> {salaryTextUsd(candidate)}</div>
+                      <div><span className="font-semibold text-[#111]">Recruiter:</span> {pipeline.recruiter || "Nearwork team"}</div>
                     </div>
                     <div className="mt-3 grid grid-cols-3 gap-1.5">
-                      <button onClick={() => onCompare(candidate.code)} className={cx("rounded-md border px-2 py-1.5 text-[11px] font-black", compareCodes.includes(candidate.code) ? "border-[#12866E] bg-[#eef8f5] text-[#12866E]" : "border-[#d8dee4] bg-white text-[#57606a]")}>Compare</button>
-                      <button onClick={() => onFavorite(candidate.code)} className={cx("rounded-md border px-2 py-1.5 text-[11px] font-black", favoriteCodes.includes(candidate.code) ? "border-amber-200 bg-amber-50 text-amber-800" : "border-[#d8dee4] bg-white text-[#57606a]")}>Favorite</button>
-                      <button onClick={() => onInterview(candidate.code)} className={cx("rounded-md border px-2 py-1.5 text-[11px] font-black", interviewCodes.includes(candidate.code) ? "border-violet-200 bg-violet-50 text-violet-700" : "border-[#d8dee4] bg-white text-[#57606a]")}>Interview</button>
+                      <button onClick={() => onCompare(candidate.code)} className={cx("rounded-md border px-2 py-1.5 text-[11px] font-semibold", compareCodes.includes(candidate.code) ? "border-[#12866E] bg-[#EEF6F3] text-[#12866E]" : "border-[#E5E4E0] bg-white text-[#555]")}>Compare</button>
+                      <button onClick={() => onFavorite(candidate.code)} className={cx("rounded-md border px-2 py-1.5 text-[11px] font-semibold", favoriteCodes.includes(candidate.code) ? "border-amber-200 bg-amber-50 text-amber-800" : "border-[#E5E4E0] bg-white text-[#555]")}>Favorite</button>
+                      <button onClick={() => onInterview(candidate.code)} className={cx("rounded-md border px-2 py-1.5 text-[11px] font-semibold", interviewCodes.includes(candidate.code) ? "border-violet-200 bg-violet-50 text-violet-700" : "border-[#E5E4E0] bg-white text-[#555]")}>Interview</button>
                     </div>
                   </article>
                 ))}
-                {!stageRows.length ? <div className="rounded-md border border-dashed border-[#d8dee4] bg-white p-3 text-center text-xs text-[#6e7781]">No candidates</div> : null}
+                {!stageRows.length ? <div className="rounded-md border border-dashed border-[#E5E4E0] bg-white p-3 text-center text-xs text-[#888]">No candidates</div> : null}
               </div>
             </section>
           );
         })}
       </div>
     </div>
+  );
+}
+
+function KanbanBoard({
+  rows,
+  onSelect,
+}: {
+  rows: Array<{ candidate: PortalCandidate; pipeline: PortalPipeline }>;
+  onSelect: (candidate: PortalCandidate, pipeline: PortalPipeline) => void;
+}) {
+  if (!rows.length) return <Empty title="No candidates yet" text="When Nearwork adds candidates to your pipeline they will appear here." />;
+  return (
+    <div className="overflow-x-auto pb-2">
+      <div className="grid min-w-[900px] grid-cols-5 gap-3">
+        {clientStages.map((stage) => {
+          const stageRows = rows.filter(({ candidate }) => clientStageKey(candidate.stage) === stage.key);
+          return (
+            <section key={stage.key} className="min-h-[200px] rounded-xl border border-[#E5E4E0] bg-[#F8F7F3] p-3">
+              <div className="mb-3 flex items-center justify-between gap-2">
+                <p className="text-xs font-medium text-[#555]">{stage.label}</p>
+                <span className="rounded-full bg-white border border-[#E5E4E0] px-2 py-0.5 text-xs text-[#888]">{stageRows.length}</span>
+              </div>
+              <div className="space-y-2">
+                {stageRows.map(({ candidate, pipeline }) => (
+                  <button
+                    key={`${pipeline.code}-${candidateKey(candidate)}`}
+                    onClick={() => onSelect(candidate, pipeline)}
+                    className="w-full rounded-lg border border-[#E5E4E0] bg-white p-3 text-left transition hover:border-[#12866E] hover:shadow-sm"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium text-[#111]">{candidate.name}</p>
+                        <p className="mt-0.5 truncate text-xs text-[#555]">{candidate.role}</p>
+                      </div>
+                      {candidate.score ? (
+                        <span className="shrink-0 rounded-full bg-[#EEF6F3] px-1.5 py-0.5 text-[10px] font-medium text-[#12866E]">{candidate.score}</span>
+                      ) : null}
+                    </div>
+                    <p className="mt-1.5 truncate text-[10px] text-[#888]">{pipeline.openingTitle || pipeline.code}</p>
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {(candidate.skills || []).slice(0, 2).map((skill) => (
+                        <span key={skill} className="rounded-full bg-[#F5F4F0] px-2 py-0.5 text-[10px] text-[#555]">{skill}</span>
+                      ))}
+                    </div>
+                    <p className="mt-2 text-[10px] text-[#888]">{salaryTextUsd(candidate)}</p>
+                  </button>
+                ))}
+                {!stageRows.length ? <div className="rounded-lg border border-dashed border-[#E5E4E0] p-3 text-center text-xs text-[#888]">Empty</div> : null}
+              </div>
+            </section>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function OpeningsView({
+  openings,
+  pipelines,
+  rows,
+  onOpenPipeline,
+}: {
+  openings: PortalOpening[];
+  pipelines: PortalPipeline[];
+  rows: Array<{ candidate: PortalCandidate; pipeline: PortalPipeline }>;
+  onOpenPipeline: (code: string) => void;
+}) {
+  if (!pipelines.length && !openings.length) {
+    return (
+      <Panel title="Open roles" eyebrow="Active openings">
+        <Empty title="No openings yet" text="When Nearwork creates openings for your company they will appear here." />
+      </Panel>
+    );
+  }
+  return (
+    <Panel title="Open roles" eyebrow="Active openings">
+      <div className="grid gap-3 lg:grid-cols-2">
+        {pipelines.map((pipeline) => {
+          const opening = openings.find((item) => item.code === pipeline.openingCode || item.title === pipeline.openingTitle);
+          const candidates = rows.filter((row) => row.pipeline.code === pipeline.code);
+          const isActive = !["closed", "cancelled", "archived", "lost"].includes(String(pipeline.status || "").toLowerCase());
+          return (
+            <button key={pipeline.code} onClick={() => onOpenPipeline(pipeline.code)} className="rounded-xl border border-[#E5E4E0] bg-white p-5 text-left transition hover:-translate-y-0.5 hover:border-[#12866E] hover:shadow-sm">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-[#12866E]">{isActive ? "Active" : "Closed"}</p>
+                  <h3 className="mt-1.5 text-base font-semibold text-[#111]">{pipeline.openingTitle || pipeline.code}</h3>
+                  <p className="mt-1 text-sm text-[#555]">{opening?.code || pipeline.openingCode || pipeline.code} · {pipeline.recruiter || "Nearwork team"}</p>
+                </div>
+                <Badge tone={isActive ? "border-teal-200 bg-teal-50 text-teal-700" : "border-stone-200 bg-stone-50 text-stone-600"}>{pipeline.status || "Active"}</Badge>
+              </div>
+              <div className="mt-4 grid grid-cols-3 gap-2">
+                <MiniStat label="Candidates" value={candidates.length} />
+                <MiniStat label="In review" value={candidates.filter(({ candidate }) => ["final-round", "offer"].includes(clientStageKey(candidate.stage))).length} />
+                <MiniStat label="Hired" value={candidates.filter(({ candidate }) => clientStageKey(candidate.stage) === "offer").length} />
+              </div>
+              <div className="mt-3 flex items-center gap-1 text-xs font-medium text-[#12866E]">
+                <span>View pipeline →</span>
+              </div>
+            </button>
+          );
+        })}
+        {openings.filter((opening) => !pipelines.some((pipeline) => pipeline.openingCode === opening.code || pipeline.openingTitle === opening.title)).map((opening) => (
+          <article key={opening.id || opening.code} className="rounded-xl border border-dashed border-[#E5E4E0] bg-white p-5">
+            <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-[#C73565]">Awaiting pipeline</p>
+            <h3 className="mt-1.5 text-base font-semibold text-[#111]">{opening.title}</h3>
+            <p className="mt-1 text-sm text-[#555]">{opening.code} · {opening.roleLibraryDepartment || "Department pending"}</p>
+            <div className="mt-4 grid grid-cols-3 gap-2">
+              <MiniStat label="Candidates" value={0} />
+              <MiniStat label="In review" value={0} />
+              <MiniStat label="Hired" value={0} />
+            </div>
+          </article>
+        ))}
+      </div>
+    </Panel>
   );
 }
 
@@ -1353,24 +1478,24 @@ function OpeningChatPanel({
 }) {
   return (
     <Panel title="Opening chat" eyebrow={`${companyName} + Nearwork`}>
-      <div className="rounded-lg border border-[#d8dee4] bg-[#f6f8fa] p-4">
+      <div className="rounded-lg border border-[#E5E4E0] bg-[#F5F4F0] p-4">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="font-black">Shared conversation for this opening</p>
-            <p className="text-sm text-[#57606a]">Nearwork recruiter: {recruiter}. Messages stay attached to this opening.</p>
+            <p className="font-semibold">Shared conversation for this opening</p>
+            <p className="text-sm text-[#555]">Nearwork recruiter: {recruiter}. Messages stay attached to this opening.</p>
           </div>
           <Badge tone="border-teal-200 bg-teal-50 text-teal-700">Group chat</Badge>
         </div>
-        <div className="max-h-72 space-y-3 overflow-auto rounded-md border border-[#d8dee4] bg-white p-3">
+        <div className="max-h-72 space-y-3 overflow-auto rounded-md border border-[#E5E4E0] bg-white p-3">
           {messages.map((message) => {
             const client = message.authorType !== "nearwork";
             return (
-              <article key={message.id} className={cx("max-w-[82%] rounded-lg p-3", client ? "ml-auto bg-[#eef8f5]" : "bg-[#f6f8fa]")}>
+              <article key={message.id} className={cx("max-w-[82%] rounded-lg p-3", client ? "ml-auto bg-[#EEF6F3]" : "bg-[#F5F4F0]")}>
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-sm font-black">{message.author || (client ? companyName : "Nearwork")}</p>
-                  <p className="text-[11px] font-bold text-[#6e7781]">{dateTime(message.createdAt)}</p>
+                  <p className="text-sm font-semibold">{message.author || (client ? companyName : "Nearwork")}</p>
+                  <p className="text-[11px] font-medium text-[#888]">{dateTime(message.createdAt)}</p>
                 </div>
-                <p className="mt-2 text-sm leading-6 text-[#57606a]">{message.text}</p>
+                <p className="mt-2 text-sm leading-6 text-[#555]">{message.text}</p>
               </article>
             );
           })}
@@ -1381,9 +1506,9 @@ function OpeningChatPanel({
             value={value}
             onChange={(event) => setValue(event.target.value)}
             placeholder="Ask Nearwork about this opening, timeline, candidate feedback, or next steps..."
-            className="min-h-24 resize-none rounded-md border border-[#d8dee4] bg-white p-3 text-sm outline-none focus:border-[#12866E]"
+            className="min-h-24 resize-none rounded-md border border-[#E5E4E0] bg-white p-3 text-sm outline-none focus:border-[#12866E]"
           />
-          <button onClick={onSend} disabled={!value.trim()} className="h-11 self-end rounded-md bg-[#12866E] px-5 text-sm font-black text-white disabled:opacity-50">
+          <button onClick={onSend} disabled={!value.trim()} className="h-11 self-end rounded-md bg-[#12866E] px-5 text-sm font-semibold text-white disabled:opacity-50">
             Send message
           </button>
         </div>
@@ -1395,22 +1520,22 @@ function OpeningChatPanel({
 function HiresTable({ hires, onOpen }: { hires: PortalHire[]; onOpen: (hire: PortalHire) => void }) {
   if (!hires.length) return <Empty title="No hired candidates yet" text="When Nearwork marks a candidate as hired, their employment/service details will appear here." />;
   return (
-    <div className="overflow-x-auto rounded-lg border border-[#d8dee4] bg-white">
+    <div className="overflow-x-auto rounded-lg border border-[#E5E4E0] bg-white">
       <table className="w-full min-w-[980px] text-left text-sm">
-        <thead className="bg-[#f6f8fa] text-xs font-black uppercase tracking-wider text-[#57606a]">
+        <thead className="bg-[#F5F4F0] text-xs font-medium uppercase tracking-wider text-[#888]">
           <tr><th className="px-4 py-3">Hire</th><th className="px-4 py-3">Role</th><th className="px-4 py-3">Service</th><th className="px-4 py-3">Start</th><th className="px-4 py-3">Monthly price</th><th className="px-4 py-3">Status</th></tr>
         </thead>
         <tbody className="divide-y divide-[#d8dee4]">
           {hires.map((hire) => {
             const name = hire.candidateName || hire.name || hire.email || "Hired candidate";
             return (
-              <tr key={hire.id} className="hover:bg-[#f6f8fa]">
-                <td className="px-4 py-3"><button onClick={() => onOpen(hire)} className="text-left"><p className="font-black">{name}</p><p className="text-xs text-[#6e7781]">{hire.candidateCode || hire.pipelineCode || hire.uniqueUrl}</p></button></td>
-                <td className="px-4 py-3 text-[#57606a]">{hire.role || "Role pending"}</td>
+              <tr key={hire.id} className="hover:bg-[#F5F4F0]">
+                <td className="px-4 py-3"><button onClick={() => onOpen(hire)} className="text-left"><p className="font-semibold">{name}</p><p className="text-xs text-[#888]">{hire.candidateCode || hire.pipelineCode || hire.uniqueUrl}</p></button></td>
+                <td className="px-4 py-3 text-[#555]">{hire.role || "Role pending"}</td>
                 <td className="px-4 py-3"><Badge>{hire.serviceType || hire.engagementType || hire.contractType || "Direct Recruiting"}</Badge></td>
-                <td className="px-4 py-3 text-[#57606a]">{hire.startDate || hire.effectiveDate || "Pending"}</td>
-                <td className="px-4 py-3 font-bold">{clientPriceText(hire)}</td>
-                <td className="px-4 py-3"><div className="flex items-center gap-2"><Badge tone="border-teal-200 bg-teal-50 text-teal-700">{hire.status || "Active"}</Badge><button onClick={() => onOpen(hire)} className="grid size-8 place-items-center rounded-md border border-[#d8dee4] bg-white"><Eye className="size-4" /></button></div></td>
+                <td className="px-4 py-3 text-[#555]">{hire.startDate || hire.effectiveDate || "Pending"}</td>
+                <td className="px-4 py-3 font-medium">{clientPriceText(hire)}</td>
+                <td className="px-4 py-3"><div className="flex items-center gap-2"><Badge tone="border-teal-200 bg-teal-50 text-teal-700">{hire.status || "Active"}</Badge><button onClick={() => onOpen(hire)} className="grid size-8 place-items-center rounded-md border border-[#E5E4E0] bg-white"><Eye className="size-4" /></button></div></td>
               </tr>
             );
           })}
@@ -1428,19 +1553,19 @@ function TimeOffTable({ requests }: { requests: TimeOffRequest[] }) {
         const status = String(request.status || "Pending");
         const tone = status.toLowerCase() === "approved" ? "border-teal-200 bg-teal-50 text-teal-700" : status.toLowerCase() === "denied" ? "border-rose-200 bg-rose-50 text-rose-700" : "border-violet-200 bg-violet-50 text-violet-700";
         return (
-          <article key={request.id} className="rounded-lg border border-[#d8dee4] bg-white p-4 shadow-sm">
+          <article key={request.id} className="rounded-lg border border-[#E5E4E0] bg-white p-4 shadow-sm">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <p className="font-black">{request.personName || request.name || request.candidateCode || "Employee"}</p>
-                <p className="mt-1 text-sm text-[#57606a]">{request.role || request.type || "Time off"} · {request.from || request.startDate || "Start pending"} to {request.to || request.endDate || "End pending"}</p>
-                {request.comments ? <p className="mt-2 text-sm leading-6 text-[#57606a]">{request.comments}</p> : null}
+                <p className="font-semibold">{request.personName || request.name || request.candidateCode || "Employee"}</p>
+                <p className="mt-1 text-sm text-[#555]">{request.role || request.type || "Time off"} · {request.from || request.startDate || "Start pending"} to {request.to || request.endDate || "End pending"}</p>
+                {request.comments ? <p className="mt-2 text-sm leading-6 text-[#555]">{request.comments}</p> : null}
               </div>
               <Badge tone={tone}>{status}</Badge>
             </div>
             <div className="mt-4 flex flex-wrap gap-2">
-              <button className="h-9 rounded-md bg-[#12866E] px-3 text-sm font-black text-white">Approve</button>
-              <button className="h-9 rounded-md border border-[#d8dee4] bg-white px-3 text-sm font-black text-[#24292f]">Deny</button>
-              <button className="h-9 rounded-md border border-[#d8dee4] bg-white px-3 text-sm font-black text-[#24292f]">Add comment</button>
+              <button className="h-9 rounded-md bg-[#12866E] px-3 text-sm font-semibold text-white">Approve</button>
+              <button className="h-9 rounded-md border border-[#E5E4E0] bg-white px-3 text-sm font-semibold text-[#111]">Deny</button>
+              <button className="h-9 rounded-md border border-[#E5E4E0] bg-white px-3 text-sm font-semibold text-[#111]">Add comment</button>
             </div>
           </article>
         );
@@ -1503,8 +1628,8 @@ function InsightBars({ bars }: { bars?: PortalAssessmentInsight["bars"] }) {
         const average = Math.max(0, Math.min(100, Number(item.average || 0)));
         return (
           <div key={item.label}>
-            <div className="mb-2 flex justify-between gap-3 text-xs font-bold text-[#57606a]">
-              <span className="font-black text-[#24292f]">{item.label}</span>
+            <div className="mb-2 flex justify-between gap-3 text-xs font-medium text-[#555]">
+              <span className="font-semibold text-[#111]">{item.label}</span>
               <span>{candidate}% · role avg {average}%</span>
             </div>
             <div className="relative h-3 rounded-full bg-[#edf1f5]">
@@ -1535,44 +1660,44 @@ function ClientAiInsight({ candidate, compact = false }: { candidate: PortalCand
     <div className="mt-4 grid gap-4">
       <div className="rounded-lg border border-teal-100 bg-gradient-to-br from-[#eef8f5] via-white to-[#f7f0fb] p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-xs font-black uppercase tracking-[0.14em] text-[#12866E]">Assessment insights</p>
-          <span className={cx("rounded-full px-3 py-1 text-xs font-black", generated ? "bg-teal-100 text-[#12866E]" : "bg-violet-100 text-[#6D28D9]")}>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#12866E]">Assessment insights</p>
+          <span className={cx("rounded-full px-3 py-1 text-xs font-semibold", generated ? "bg-teal-100 text-[#12866E]" : "bg-violet-100 text-[#6D28D9]")}>
             {generated ? "Generated review" : "Benchmark preview"}
           </span>
         </div>
-        <p className="mt-2 font-black">{insight?.summaryTitle || "Candidate vs role benchmark"}</p>
-        <p className="mt-2 text-sm leading-6 text-[#57606a]">{client.summary}</p>
+        <p className="mt-2 font-semibold">{insight?.summaryTitle || "Candidate vs role benchmark"}</p>
+        <p className="mt-2 text-sm leading-6 text-[#555]">{client.summary}</p>
       </div>
       {!compact ? (
         <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
-          <div className="rounded-lg border border-[#d8dee4] bg-white p-4">
-            <p className="text-xs font-black uppercase tracking-[0.14em] text-[#6D28D9]">Match radar</p>
+          <div className="rounded-lg border border-[#E5E4E0] bg-white p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#6D28D9]">Match radar</p>
             <InsightRadar radar={insight?.radar} />
-            <p className="text-xs text-[#6e7781]">Solid line: candidate · dashed line: role average</p>
+            <p className="text-xs text-[#888]">Solid line: candidate · dashed line: role average</p>
           </div>
-          <div className="rounded-lg border border-[#d8dee4] bg-white p-4">
+          <div className="rounded-lg border border-[#E5E4E0] bg-white p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-xs font-black uppercase tracking-[0.14em] text-[#6D28D9]">Candidate vs role average</p>
-              <span className="inline-flex items-center gap-2 text-xs font-bold text-[#57606a]"><span className="h-4 w-0.5 rounded-full bg-[#6D28D9]" /> Role avg marker</span>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#6D28D9]">Candidate vs role average</p>
+              <span className="inline-flex items-center gap-2 text-xs font-medium text-[#555]"><span className="h-4 w-0.5 rounded-full bg-[#6D28D9]" /> Role avg marker</span>
             </div>
             <div className="mt-4"><InsightBars bars={insight?.bars} /></div>
           </div>
         </div>
       ) : null}
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="rounded-lg border border-[#d8dee4] bg-white p-4">
-          <p className="font-black">Strengths</p>
-          <ul className="mt-3 space-y-2 text-sm leading-6 text-[#57606a]">{insightTextList(client.strengths).map((item) => <li key={item}>• {item}</li>)}</ul>
+        <div className="rounded-lg border border-[#E5E4E0] bg-white p-4">
+          <p className="font-semibold">Strengths</p>
+          <ul className="mt-3 space-y-2 text-sm leading-6 text-[#555]">{insightTextList(client.strengths).map((item) => <li key={item}>• {item}</li>)}</ul>
         </div>
         <div className="rounded-lg border border-amber-100 bg-amber-50 p-4">
-          <p className="font-black">Watchouts & follow-ups</p>
-          <ul className="mt-3 space-y-2 text-sm leading-6 text-[#57606a]">{insightTextList([...(client.watchouts || []), ...(client.followUps || [])]).map((item) => <li key={item}>• {item}</li>)}</ul>
+          <p className="font-semibold">Watchouts & follow-ups</p>
+          <ul className="mt-3 space-y-2 text-sm leading-6 text-[#555]">{insightTextList([...(client.watchouts || []), ...(client.followUps || [])]).map((item) => <li key={item}>• {item}</li>)}</ul>
         </div>
       </div>
       {!compact ? (
-        <div className="rounded-lg border border-[#d8dee4] bg-white p-4">
-          <p className="font-black">Interview guide</p>
-          <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6 text-[#57606a]">{insightTextList(client.interviewGuide).map((item) => <li key={item}>{item}</li>)}</ol>
+        <div className="rounded-lg border border-[#E5E4E0] bg-white p-4">
+          <p className="font-semibold">Interview guide</p>
+          <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6 text-[#555]">{insightTextList(client.interviewGuide).map((item) => <li key={item}>{item}</li>)}</ol>
         </div>
       ) : null}
     </div>
@@ -1608,70 +1733,64 @@ function CandidateDetail({
   const disc = discInsight(candidate);
   return (
     <div>
-      <div className="flex items-start gap-4">
-        <div className="grid size-12 place-items-center rounded-md bg-[#eef8f5] font-black text-[#12866E]">{initials(candidate.name)}</div>
+      <div className="flex items-start gap-3">
+        <div className="grid size-10 place-items-center rounded-lg bg-[#EEF6F3] text-sm font-medium text-[#12866E]">{initials(candidate.name)}</div>
         <div className="min-w-0 flex-1">
-          <p className="text-lg font-black">{candidate.name}</p>
-          <p className="text-sm text-[#57606a]">{candidate.role} · {pipeline.openingTitle}</p>
+          <p className="font-medium text-[#111]">{candidate.name}</p>
+          <p className="text-sm text-[#555]">{candidate.role} · {pipeline.openingTitle}</p>
         </div>
-        <button onClick={closeDetail} className="grid size-8 place-items-center rounded-md border border-[#d8dee4] bg-white text-[#57606a]" aria-label="Close candidate profile">
-          <X className="size-4" />
+        <button onClick={closeDetail} className="grid size-7 place-items-center rounded border border-[#E5E4E0] bg-white text-[#888]" aria-label="Close candidate profile">
+          <X className="size-3.5" />
         </button>
         <Score value={candidate.score} />
       </div>
-      <div className="mt-5 grid gap-3 text-sm">
+      <div className="mt-4 grid gap-3 text-sm">
         <Detail label="Email" value={candidate.email || "Not shared"} />
         <Detail label="Expected pay" value={salaryTextUsd(candidate)} />
         <Detail label="Assessment" value={`Overall ${breakdown.overall || "pending"} · Technical ${breakdown.technical || "pending"}`} />
         <Detail label="DISC" value={candidate.discProfile?.label || "Pending"} />
       </div>
-      <div className="mt-5 rounded-md border border-teal-100 bg-[#eef8f5] p-3">
-        <p className="text-xs font-black uppercase tracking-[0.14em] text-[#12866E]">Recruiter contact</p>
-        <p className="mt-1 font-black">{pipeline.recruiter || "Nearwork recruiting team"}</p>
-        <p className="mt-1 text-xs text-[#57606a]">Use notes for candidate-specific questions.</p>
+      <div className="mt-4 rounded-lg border border-teal-100 bg-[#EEF6F3] p-3">
+        <p className="text-xs font-medium uppercase tracking-[0.12em] text-[#12866E]">Recruiter contact</p>
+        <p className="mt-1 text-sm font-medium text-[#111]">{pipeline.recruiter || "Nearwork recruiting team"}</p>
+        <p className="mt-1 text-xs text-[#555]">Use notes for candidate-specific questions.</p>
       </div>
-      <div className="mt-4 rounded-md border border-[#d8dee4] bg-white p-3">
-        <p className="text-xs font-black uppercase tracking-[0.14em] text-[#12866E]">Assessment breakdown</p>
-        <p className="mt-2 font-black">{breakdown.signal}</p>
-        <p className="mt-1 text-sm leading-6 text-[#57606a]">{breakdown.focus}</p>
-      </div>
-      <div className="mt-4 rounded-md border border-violet-100 bg-violet-50 p-3">
-        <p className="text-xs font-black uppercase tracking-[0.14em] text-violet-700">DISC evaluation</p>
-        <p className="mt-2 font-black">{disc.title}</p>
-        <p className="mt-1 text-sm leading-6 text-[#57606a]">{disc.benefit}</p>
+      <div className="mt-3 rounded-lg border border-[#E5E4E0] bg-white p-3">
+        <p className="text-xs font-medium uppercase tracking-[0.12em] text-[#12866E]">Assessment</p>
+        <p className="mt-1.5 text-sm font-medium text-[#111]">{breakdown.signal}</p>
+        <p className="mt-1 text-sm leading-5 text-[#555]">{breakdown.focus}</p>
       </div>
       <ClientAiInsight candidate={candidate} compact />
-      <div className="mt-5 flex flex-wrap gap-2">
-        <button onClick={openFullProfile} className="inline-flex h-9 items-center gap-2 rounded-md bg-[#12866E] px-3 text-sm font-bold text-white"><ExternalLink className="size-4" /> Open full profile</button>
-        {candidate.cvUrl ? <a href={candidate.cvUrl} target="_blank" className="inline-flex h-9 items-center gap-2 rounded-md border border-[#d8dee4] px-3 text-sm font-bold"><FileText className="size-4" /> CV</a> : null}
-        {candidate.linkedin ? <a href={candidate.linkedin} target="_blank" className="inline-flex h-9 items-center gap-2 rounded-md border border-[#d8dee4] px-3 text-sm font-bold"><ShieldCheck className="size-4" /> LinkedIn</a> : null}
+      <div className="mt-4 flex flex-wrap gap-2">
+        <button onClick={openFullProfile} className="inline-flex h-9 items-center gap-2 rounded-lg bg-[#12866E] px-3 text-sm font-medium text-white"><ExternalLink className="size-4" /> Full profile</button>
+        {candidate.cvUrl ? <a href={candidate.cvUrl} target="_blank" className="inline-flex h-9 items-center gap-2 rounded-lg border border-[#E5E4E0] px-3 text-sm font-medium text-[#555]"><FileText className="size-4" /> CV</a> : null}
       </div>
-      <div className="mt-6 rounded-md border border-[#d8dee4] bg-[#f6f8fa] p-4">
-        <p className="font-black">Add note</p>
-        <select value={noteScope} onChange={(event) => setNoteScope(event.target.value as "client_visible" | "client_internal")} className="mt-3 h-10 w-full rounded-md border border-[#d8dee4] bg-white px-3 text-sm">
-          <option value="client_visible">Visible to Nearwork for this pipeline</option>
+      <div className="mt-5 space-y-2">
+        <p className="text-sm font-medium text-[#111]">Add note</p>
+        <select value={noteScope} onChange={(event) => setNoteScope(event.target.value as "client_visible" | "client_internal")} className="h-9 w-full rounded-lg border border-[#E5E4E0] bg-white px-3 text-sm text-[#111]">
+          <option value="client_visible">Visible to Nearwork</option>
           <option value="client_internal">{companyName} internal only</option>
         </select>
-        <textarea value={noteText} onChange={(event) => setNoteText(event.target.value)} placeholder={`Type @ to mention a ${companyName} or Nearwork teammate...`} className="mt-3 min-h-28 w-full resize-none rounded-md border border-[#d8dee4] bg-white p-3 text-sm outline-none focus:border-[#12866E]" />
-        <button onClick={saveNote} disabled={!noteText.trim()} className="mt-3 inline-flex h-10 items-center gap-2 rounded-md bg-[#12866E] px-4 text-sm font-black text-white disabled:opacity-50"><MessageCircle className="size-4" /> Save note</button>
+        <textarea value={noteText} onChange={(event) => setNoteText(event.target.value)} placeholder="Add a note..." className="min-h-24 w-full resize-none rounded-lg border border-[#E5E4E0] bg-white p-3 text-sm text-[#111] outline-none placeholder:text-[#888] focus:border-[#12866E]" />
+        <button onClick={saveNote} disabled={!noteText.trim()} className="inline-flex h-9 items-center gap-2 rounded-lg bg-[#12866E] px-3 text-sm font-medium text-white disabled:opacity-50"><MessageCircle className="size-4" /> Save</button>
       </div>
-      <div className="mt-6 space-y-3">
-        <p className="font-black">Notes for this candidate</p>
+      <div className="mt-5 space-y-2">
         {notes.map((note) => (
-          <article key={note.id} className="rounded-md border border-[#d8dee4] bg-white p-3">
+          <article key={note.id} className="rounded-lg border border-[#E5E4E0] bg-[#F5F4F0] p-3">
             <div className="flex justify-between gap-3">
-              <p className="text-sm font-black">{note.scope === "client_internal" ? `${companyName} internal` : "Shared with Nearwork"}</p>
-              <p className="text-xs font-bold text-[#6e7781]">{dateTime(note.createdAt)}</p>
+              <p className="text-xs font-medium text-[#555]">{note.scope === "client_internal" ? `${companyName} internal` : "Shared with Nearwork"}</p>
+              <p className="text-xs text-[#888]">{dateTime(note.createdAt)}</p>
             </div>
-            <p className="mt-2 text-sm leading-6 text-[#57606a]">{note.text}</p>
+            <p className="mt-1.5 text-sm leading-5 text-[#555]">{note.text}</p>
           </article>
         ))}
-        {!notes.length ? <p className="text-sm text-[#6e7781]">No notes for this candidate yet.</p> : null}
+        {!notes.length ? <p className="text-xs text-[#888]">No notes for this candidate yet.</p> : null}
       </div>
     </div>
   );
 }
 
+// PipelineList is kept for backward compat but navigation now uses OpeningsView
 function PipelineList({
   openings,
   pipelines,
@@ -1683,40 +1802,40 @@ function PipelineList({
   rows: Array<{ candidate: PortalCandidate; pipeline: PortalPipeline }>;
   onOpen: (code: string) => void;
 }) {
-  if (!pipelines.length && !openings.length) return <Panel title="Openings & Pipeline" eyebrow="Recruiting"><Empty title="No openings yet" text="When Nearwork creates openings and pipelines for your company, they will appear here." /></Panel>;
+  if (!pipelines.length && !openings.length) return <Panel title="Open roles" eyebrow="Active openings"><Empty title="No openings yet" text="When Nearwork creates openings and pipelines for your company, they will appear here." /></Panel>;
   return (
-    <Panel title="Openings & Pipeline" eyebrow="Active and closed">
-      <div className="grid gap-4 lg:grid-cols-2">
+    <Panel title="Open roles" eyebrow="Active openings">
+      <div className="grid gap-3 lg:grid-cols-2">
         {pipelines.map((pipeline) => {
           const opening = openings.find((item) => item.code === pipeline.openingCode || item.title === pipeline.openingTitle);
           const candidates = rows.filter((row) => row.pipeline.code === pipeline.code);
-          const active = !["closed", "cancelled", "archived", "lost"].includes(String(pipeline.status || "").toLowerCase());
+          const isActive = !["closed", "cancelled", "archived", "lost"].includes(String(pipeline.status || "").toLowerCase());
           return (
-            <button key={pipeline.code} onClick={() => onOpen(pipeline.code)} className="rounded-xl border border-[#d8dee4] bg-white p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-[#12866E] hover:shadow-md">
+            <button key={pipeline.code} onClick={() => onOpen(pipeline.code)} className="rounded-xl border border-[#E5E4E0] bg-white p-5 text-left transition hover:-translate-y-0.5 hover:border-[#12866E] hover:shadow-sm">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-xs font-black uppercase tracking-[0.16em] text-[#12866E]">{active ? "Active opening" : "Closed opening"}</p>
-                  <h3 className="mt-2 text-xl font-black">{pipeline.openingTitle || pipeline.code}</h3>
-                  <p className="mt-1 text-sm text-[#57606a]">{opening?.code || pipeline.openingCode || pipeline.code} · Recruiter: {pipeline.recruiter || opening?.recruiter || "Nearwork team"}</p>
+                  <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-[#12866E]">{isActive ? "Active" : "Closed"}</p>
+                  <h3 className="mt-1.5 text-base font-semibold text-[#111]">{pipeline.openingTitle || pipeline.code}</h3>
+                  <p className="mt-1 text-sm text-[#555]">{opening?.code || pipeline.openingCode || pipeline.code} · {pipeline.recruiter || opening?.recruiter || "Nearwork team"}</p>
                 </div>
-                <Badge tone={active ? "border-teal-200 bg-teal-50 text-teal-700" : "border-stone-200 bg-stone-50 text-stone-700"}>{pipeline.status || "Active"}</Badge>
+                <Badge tone={isActive ? "border-teal-200 bg-teal-50 text-teal-700" : "border-stone-200 bg-stone-50 text-stone-600"}>{pipeline.status || "Active"}</Badge>
               </div>
-              <div className="mt-5 grid grid-cols-3 gap-3">
+              <div className="mt-4 grid grid-cols-3 gap-2">
                 <MiniStat label="Candidates" value={candidates.length} />
-                <MiniStat label="Review" value={candidates.filter(({ candidate }) => ["presented", "client-review"].includes(normalizedPipelineStage(candidate.stage))).length} />
-                <MiniStat label="Hired" value={candidates.filter(({ candidate }) => normalizedPipelineStage(candidate.stage) === "hired").length} />
+                <MiniStat label="In review" value={candidates.filter(({ candidate }) => ["final-round", "offer"].includes(clientStageKey(candidate.stage))).length} />
+                <MiniStat label="Hired" value={candidates.filter(({ candidate }) => clientStageKey(candidate.stage) === "offer").length} />
               </div>
             </button>
           );
         })}
         {openings.filter((opening) => !pipelines.some((pipeline) => pipeline.openingCode === opening.code || pipeline.openingTitle === opening.title)).map((opening) => (
-          <article key={opening.id || opening.code} className="rounded-xl border border-dashed border-[#d8dee4] bg-white p-5 shadow-sm">
-            <p className="text-xs font-black uppercase tracking-[0.16em] text-[#C73565]">Opening awaiting pipeline</p>
-            <h3 className="mt-2 text-xl font-black">{opening.title}</h3>
-            <p className="mt-1 text-sm text-[#57606a]">{opening.code} · {opening.roleLibraryDepartment || "Department pending"} · {opening.roleLibrarySeniority || "Seniority pending"}</p>
-            <div className="mt-5 grid grid-cols-3 gap-3">
+          <article key={opening.id || opening.code} className="rounded-xl border border-dashed border-[#E5E4E0] bg-white p-5">
+            <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-[#C73565]">Awaiting pipeline</p>
+            <h3 className="mt-1.5 text-base font-semibold text-[#111]">{opening.title}</h3>
+            <p className="mt-1 text-sm text-[#555]">{opening.code} · {opening.roleLibraryDepartment || "Department pending"}</p>
+            <div className="mt-4 grid grid-cols-3 gap-2">
               <MiniStat label="Candidates" value={0} />
-              <MiniStat label="Review" value={0} />
+              <MiniStat label="In review" value={0} />
               <MiniStat label="Hired" value={0} />
             </div>
           </article>
@@ -1727,7 +1846,7 @@ function PipelineList({
 }
 
 function MiniStat({ label, value }: { label: string; value: number }) {
-  return <div className="rounded-lg border border-[#d8dee4] bg-[#f6f8fa] p-3"><p className="text-xs font-black uppercase tracking-wider text-[#6e7781]">{label}</p><p className="mt-1 text-xl font-black">{value}</p></div>;
+  return <div className="rounded-lg border border-[#E5E4E0] bg-[#F5F4F0] p-3"><p className="text-[10px] font-medium uppercase tracking-wider text-[#888]">{label}</p><p className="mt-1 text-xl font-semibold text-[#111]">{value}</p></div>;
 }
 
 function CandidateCompare({
@@ -1758,11 +1877,11 @@ function CandidateCompare({
             const breakdown = assessmentBreakdown(candidate);
             const disc = discInsight(candidate);
             return (
-              <article key={`${pipeline.code}-${candidate.code}`} className="rounded-xl border border-[#d8dee4] bg-white p-5 shadow-sm">
+              <article key={`${pipeline.code}-${candidate.code}`} className="rounded-xl border border-[#E5E4E0] bg-white p-5 shadow-sm">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-xl font-black">{candidate.name}</p>
-                    <p className="mt-1 text-sm text-[#57606a]">{candidate.role || pipeline.openingTitle}</p>
+                    <p className="text-xl font-semibold">{candidate.name}</p>
+                    <p className="mt-1 text-sm text-[#555]">{candidate.role || pipeline.openingTitle}</p>
                   </div>
                   <Score value={candidate.score} />
                 </div>
@@ -1775,9 +1894,9 @@ function CandidateCompare({
                   <Detail label="DISC" value={`${disc.title}: ${disc.fit}`} />
                 </div>
                 <div className="mt-5 flex flex-wrap gap-2">
-                  <button onClick={() => onFavorite(candidate.code)} className={cx("inline-flex h-9 items-center gap-2 rounded-md border px-3 text-sm font-black", favoriteCodes.includes(candidate.code) ? "border-amber-200 bg-amber-50 text-amber-800" : "border-[#d8dee4] bg-white text-[#24292f]")}><Star className="size-4" /> Favorite</button>
-                  <button onClick={() => onInterview(candidate.code)} className={cx("inline-flex h-9 items-center gap-2 rounded-md border px-3 text-sm font-black", interviewCodes.includes(candidate.code) ? "border-violet-200 bg-violet-50 text-violet-700" : "border-[#d8dee4] bg-white text-[#24292f]")}><UserCheck className="size-4" /> Interview</button>
-                  <button onClick={() => onCompare(candidate.code)} className="h-9 rounded-md border border-[#d8dee4] bg-white px-3 text-sm font-black text-[#57606a]">Remove</button>
+                  <button onClick={() => onFavorite(candidate.code)} className={cx("inline-flex h-9 items-center gap-2 rounded-md border px-3 text-sm font-semibold", favoriteCodes.includes(candidate.code) ? "border-amber-200 bg-amber-50 text-amber-800" : "border-[#E5E4E0] bg-white text-[#111]")}><Star className="size-4" /> Favorite</button>
+                  <button onClick={() => onInterview(candidate.code)} className={cx("inline-flex h-9 items-center gap-2 rounded-md border px-3 text-sm font-semibold", interviewCodes.includes(candidate.code) ? "border-violet-200 bg-violet-50 text-violet-700" : "border-[#E5E4E0] bg-white text-[#111]")}><UserCheck className="size-4" /> Interview</button>
+                  <button onClick={() => onCompare(candidate.code)} className="h-9 rounded-md border border-[#E5E4E0] bg-white px-3 text-sm font-semibold text-[#555]">Remove</button>
                 </div>
               </article>
             );
@@ -1793,6 +1912,11 @@ function CandidateFullPage({
   pipeline,
   companyName,
   notes,
+  noteText,
+  noteScope,
+  setNoteText,
+  setNoteScope,
+  saveNote,
   onBack,
   onFavorite,
   onInterview,
@@ -1803,6 +1927,11 @@ function CandidateFullPage({
   pipeline: PortalPipeline;
   companyName: string;
   notes: PortalNote[];
+  noteText: string;
+  noteScope: "client_visible" | "client_internal";
+  setNoteText: (value: string) => void;
+  setNoteScope: (value: "client_visible" | "client_internal") => void;
+  saveNote: () => void;
   onBack: () => void;
   onFavorite: () => void;
   onInterview: () => void;
@@ -1811,26 +1940,52 @@ function CandidateFullPage({
 }) {
   const breakdown = assessmentBreakdown(candidate);
   const disc = discInsight(candidate);
+  const stageKey = clientStageKey(candidate.stage);
+  const stageLabel = clientStages.find((s) => s.key === stageKey)?.label || "Screening";
   return (
     <div className="space-y-6">
-      <button onClick={onBack} className="inline-flex items-center gap-2 text-sm font-black text-[#12866E]"><ArrowLeft className="size-4" /> Back to pipeline</button>
-      <section className="rounded-xl border border-[#d8dee4] bg-white p-6 shadow-sm">
+      {/* Breadcrumb */}
+      <nav className="flex items-center gap-1.5 text-sm text-[#888]">
+        <button onClick={onBack} className="hover:text-[#12866E]">Pipeline</button>
+        <span>/</span>
+        <span className="text-[#555]">{pipeline.openingTitle || pipeline.code}</span>
+        <span>/</span>
+        <span className="font-medium text-[#111]">{candidate.name}</span>
+      </nav>
+      {/* Hero section */}
+      <section className="rounded-xl border border-[#E5E4E0] bg-white p-6">
         <div className="flex flex-wrap items-start justify-between gap-6">
           <div className="flex items-start gap-4">
-            <div className="grid size-16 place-items-center rounded-xl bg-[#eef8f5] text-xl font-black text-[#12866E]">{initials(candidate.name)}</div>
+            <div className="grid size-14 place-items-center rounded-xl bg-[#EEF6F3] text-lg font-semibold text-[#12866E]">{initials(candidate.name)}</div>
             <div>
-              <p className="text-3xl font-black">{candidate.name}</p>
-              <p className="mt-1 text-[#57606a]">{candidate.role || pipeline.openingTitle} · {pipeline.openingTitle}</p>
-              <div className="mt-3 flex flex-wrap gap-2">{(candidate.skills || []).map((skill) => <Badge key={skill}>{skill}</Badge>)}</div>
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-2xl font-semibold text-[#111]">{candidate.name}</p>
+                <Badge tone={clientStageTone[stageKey] || "border-stone-200 bg-stone-50 text-stone-600"}>{stageLabel}</Badge>
+              </div>
+              <p className="mt-1 text-[#555]">{candidate.role || pipeline.openingTitle} · {pipeline.openingTitle}</p>
+              <div className="mt-3 flex flex-wrap gap-1.5">{(candidate.skills || []).map((skill) => <Badge key={skill}>{skill}</Badge>)}</div>
             </div>
           </div>
           <Score value={candidate.score} />
         </div>
-        <div className="mt-6 grid gap-4 md:grid-cols-4">
+        <div className="mt-6 grid gap-3 md:grid-cols-4">
           <Metric label="Nearwork score" value={candidate.score || 0} sub="Overall match" />
           <Metric label="Technical" value={breakdown.technical || 0} sub={breakdown.signal} />
-          <div className="rounded-xl border border-[#d8dee4] bg-[#f6f8fa] p-5"><Detail label="Expected pay" value={salaryTextUsd(candidate)} /></div>
-          <div className="rounded-xl border border-[#d8dee4] bg-[#f6f8fa] p-5"><Detail label="English" value={candidate.english || "Pending"} /></div>
+          <div className="rounded-xl border border-[#E5E4E0] bg-[#F5F4F0] p-4"><Detail label="Expected pay" value={salaryTextUsd(candidate)} /></div>
+          <div className="rounded-xl border border-[#E5E4E0] bg-[#F5F4F0] p-4"><Detail label="English" value={candidate.english || "Pending"} /></div>
+        </div>
+        {/* Action buttons */}
+        <div className="mt-6 flex flex-wrap gap-2">
+          <button onClick={onFavorite} className={cx("inline-flex h-10 items-center gap-2 rounded-lg border px-4 text-sm font-medium", favorite ? "border-amber-200 bg-amber-50 text-amber-800" : "border-[#E5E4E0] bg-white text-[#555] hover:border-[#111]")}><Star className="size-4" /> {favorite ? "Favorited" : "Favorite"}</button>
+          <button onClick={onInterview} className={cx("inline-flex h-10 items-center gap-2 rounded-lg border px-4 text-sm font-medium", interview ? "border-violet-200 bg-violet-50 text-violet-700" : "border-[#E5E4E0] bg-white text-[#555] hover:border-[#111]")}><UserCheck className="size-4" /> {interview ? "Interview requested" : "Request interview"}</button>
+          <button onClick={() => alert("Schedule interview — contact your Nearwork recruiter to confirm the time.")} className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#12866E] px-4 text-sm font-medium text-white hover:bg-[#0e7060]">
+            Schedule interview
+          </button>
+          <button onClick={() => alert("To decline a candidate, please message your Nearwork recruiter in the opening chat.")} className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#E5E4E0] bg-white px-4 text-sm font-medium text-[#888] hover:border-[#C73565] hover:text-[#C73565]">
+            Not a fit
+          </button>
+          {candidate.cvUrl ? <a href={candidate.cvUrl} target="_blank" className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#E5E4E0] bg-white px-4 text-sm font-medium text-[#555] hover:border-[#111]"><FileText className="size-4" /> CV</a> : null}
+          {candidate.linkedin ? <a href={candidate.linkedin} target="_blank" className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#E5E4E0] bg-white px-4 text-sm font-medium text-[#555] hover:border-[#111]"><ExternalLink className="size-4" /> LinkedIn</a> : null}
         </div>
       </section>
       <section className="grid gap-6 lg:grid-cols-2">
@@ -1840,17 +1995,27 @@ function CandidateFullPage({
         <DiscProfileCard candidate={candidate} />
       </section>
       <DiscCommunicationCard candidate={candidate} />
-      <Panel title={`${companyName} actions`} eyebrow="Decision support">
-        <div className="flex flex-wrap gap-3">
-          <button onClick={onFavorite} className={cx("inline-flex h-10 items-center gap-2 rounded-md border px-4 text-sm font-black", favorite ? "border-amber-200 bg-amber-50 text-amber-800" : "border-[#d8dee4] bg-white")}><Star className="size-4" /> {favorite ? "Favorited" : "Add to favorites"}</button>
-          <button onClick={onInterview} className={cx("inline-flex h-10 items-center gap-2 rounded-md border px-4 text-sm font-black", interview ? "border-violet-200 bg-violet-50 text-violet-700" : "border-[#d8dee4] bg-white")}><UserCheck className="size-4" /> {interview ? "Interview requested" : "Request interview"}</button>
-        </div>
-      </Panel>
       <Panel title="Notes" eyebrow="Pipeline history">
-        <div className="grid gap-3">
-          {notes.map((note) => <article key={note.id} className="rounded-lg border border-[#d8dee4] bg-white p-4"><p className="font-black">{note.scope === "client_internal" ? `${companyName} internal` : "Shared with Nearwork"}</p><p className="mt-2 text-sm leading-6 text-[#57606a]">{note.text}</p></article>)}
+        <div className="mb-4 space-y-3">
+          {notes.map((note) => (
+            <article key={note.id} className="rounded-lg border border-[#E5E4E0] bg-[#F5F4F0] p-4">
+              <div className="flex justify-between gap-3">
+                <p className="text-sm font-medium text-[#111]">{note.scope === "client_internal" ? `${companyName} internal` : "Shared with Nearwork"}</p>
+                <p className="text-xs text-[#888]">{dateTime(note.createdAt)}</p>
+              </div>
+              <p className="mt-2 text-sm leading-6 text-[#555]">{note.text}</p>
+            </article>
+          ))}
           {!notes.length ? <Empty title="No notes yet" text="Notes for this candidate will show here." /> : null}
         </div>
+        <select value={noteScope} onChange={(event) => setNoteScope(event.target.value as "client_visible" | "client_internal")} className="h-10 w-full rounded-lg border border-[#E5E4E0] bg-white px-3 text-sm text-[#111]">
+          <option value="client_visible">Visible to Nearwork</option>
+          <option value="client_internal">{companyName} internal only</option>
+        </select>
+        <textarea value={noteText} onChange={(event) => setNoteText(event.target.value)} placeholder="Add a note about this candidate..." className="mt-3 min-h-24 w-full resize-none rounded-lg border border-[#E5E4E0] bg-white p-3 text-sm text-[#111] outline-none placeholder:text-[#888] focus:border-[#12866E]" />
+        <button onClick={saveNote} disabled={!noteText.trim()} className="mt-3 inline-flex h-10 items-center gap-2 rounded-lg bg-[#12866E] px-4 text-sm font-medium text-white disabled:opacity-50">
+          <MessageCircle className="size-4" /> Save note
+        </button>
       </Panel>
     </div>
   );
@@ -1873,16 +2038,16 @@ function DiscProfileCard({ candidate }: { candidate: PortalCandidate }) {
             ["Conscientiousness (C)", scores.conscientiousness, "bg-blue-500"],
           ].map(([name, value, color]) => (
             <div key={String(name)}>
-              <div className="flex justify-between text-sm font-black"><span>{name}</span><span>{value}%</span></div>
+              <div className="flex justify-between text-sm font-semibold"><span>{name}</span><span>{value}%</span></div>
               <div className="mt-2 h-3 rounded-full bg-[#edf1f5]"><div className={cx("h-3 rounded-full", color as string)} style={{ width: `${value}%` }} /></div>
             </div>
           ))}
         </div>
-        <div className="grid place-items-center rounded-xl border border-[#d8dee4] bg-[#f6f8fa] p-4">
+        <div className="grid place-items-center rounded-xl border border-[#E5E4E0] bg-[#F5F4F0] p-4">
           <div className="relative grid size-40 place-items-center rounded-full border border-blue-100 bg-white">
             <div className="grid size-28 place-items-center rounded-full border border-blue-100 bg-blue-50 text-center">
-              <p className="text-3xl font-black text-blue-600">{scores.conscientiousness}</p>
-              <p className="text-xs font-bold text-[#57606a]">Current profile</p>
+              <p className="text-3xl font-semibold text-blue-600">{scores.conscientiousness}</p>
+              <p className="text-xs font-medium text-[#555]">Current profile</p>
             </div>
           </div>
         </div>
@@ -1897,20 +2062,20 @@ function DiscCommunicationCard({ candidate }: { candidate: PortalCandidate }) {
     <Panel title={`How to work with ${candidate.name.split(" ")[0] || "this person"}`} eyebrow="DISC communication">
       <div className="grid gap-6 md:grid-cols-2">
         <div>
-          <p className="mb-3 text-lg font-black text-[#12866E]">Best practices</p>
+          <p className="mb-3 text-lg font-semibold text-[#12866E]">Best practices</p>
           {["Use data-backed arguments", "Be direct and professional", "Provide written details"].map((item) => (
-            <div key={item} className="mb-3 rounded-lg border border-teal-200 bg-[#eef8f5] p-3 text-sm font-bold">{item}</div>
+            <div key={item} className="mb-3 rounded-lg border border-teal-200 bg-[#EEF6F3] p-3 text-sm font-medium">{item}</div>
           ))}
         </div>
         <div>
-          <p className="mb-3 text-lg font-black text-amber-800">What to avoid</p>
+          <p className="mb-3 text-lg font-semibold text-amber-800">What to avoid</p>
           {["Vague or abstract instructions", "Overly emotional appeals", "Dismissing their need for precision"].map((item) => (
-            <div key={item} className="mb-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm font-bold">{item}</div>
+            <div key={item} className="mb-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm font-medium">{item}</div>
           ))}
         </div>
       </div>
-      <div className="mt-4 rounded-lg border border-[#d8dee4] bg-white p-4 text-sm leading-6 text-[#57606a]">
-        <span className="font-black text-[#24292f]">Role fit:</span> {disc.fit}
+      <div className="mt-4 rounded-lg border border-[#E5E4E0] bg-white p-4 text-sm leading-6 text-[#555]">
+        <span className="font-semibold text-[#111]">Role fit:</span> {disc.fit}
       </div>
     </Panel>
   );
@@ -1931,13 +2096,13 @@ function HireFullPage({
   const employeePto = timeOff.filter((request) => request.candidateCode === hire.candidateCode || request.personName === name);
   return (
     <div className="space-y-6">
-      <button onClick={onBack} className="inline-flex items-center gap-2 text-sm font-black text-[#12866E]"><ArrowLeft className="size-4" /> Back to hires</button>
-      <section className="overflow-hidden rounded-xl border border-[#d8dee4] bg-white shadow-sm">
+      <button onClick={onBack} className="inline-flex items-center gap-2 text-sm font-semibold text-[#12866E]"><ArrowLeft className="size-4" /> Back to hires</button>
+      <section className="overflow-hidden rounded-xl border border-[#E5E4E0] bg-white shadow-sm">
         <div className="bg-blue-500 px-6 py-8 text-white">
           <div className="flex flex-wrap items-center gap-5">
-            <div className="grid size-20 place-items-center rounded-full border-4 border-white bg-[#eef8f5] text-2xl font-black text-[#12866E]">{initials(name)}</div>
+            <div className="grid size-20 place-items-center rounded-full border-4 border-white bg-[#EEF6F3] text-2xl font-semibold text-[#12866E]">{initials(name)}</div>
             <div>
-              <h1 className="text-3xl font-black">{name}</h1>
+              <h1 className="text-3xl font-semibold">{name}</h1>
               <p className="mt-1 text-lg">{hire.role || "Role pending"} · {hire.engagementType || hire.serviceType || "Service"}</p>
             </div>
           </div>
@@ -1965,11 +2130,11 @@ function HireFullPage({
             <Metric label="Tech skills" value={4} sub="Q score" />
             <Metric label="Soft skills" value={4} sub="Q score" />
           </div>
-          <p className="mt-4 text-sm leading-6 text-[#57606a]">Quarterly and yearly review history can sync here from the staff portal once reviews are created.</p>
+          <p className="mt-4 text-sm leading-6 text-[#555]">Quarterly and yearly review history can sync here from the staff portal once reviews are created.</p>
         </Panel>
         <Panel title="PTO history" eyebrow="Requests">
           <div className="space-y-3">
-            {employeePto.map((request) => <div key={request.id} className="rounded-lg border border-[#d8dee4] bg-[#f6f8fa] p-3 text-sm"><p className="font-black">{request.type || "PTO"} · {request.status || "Pending"}</p><p className="text-[#57606a]">{request.from || request.startDate} to {request.to || request.endDate}</p></div>)}
+            {employeePto.map((request) => <div key={request.id} className="rounded-lg border border-[#E5E4E0] bg-[#F5F4F0] p-3 text-sm"><p className="font-semibold">{request.type || "PTO"} · {request.status || "Pending"}</p><p className="text-[#555]">{request.from || request.startDate} to {request.to || request.endDate}</p></div>)}
             {!employeePto.length ? <Empty title="No PTO yet" text="Approved and pending PTO requests will appear here." /> : null}
           </div>
         </Panel>
@@ -1989,15 +2154,15 @@ function ServicesView({ hires }: { hires: PortalHire[] }) {
     <Panel title="Services" eyebrow="Nearwork support">
       <div className="grid gap-4 lg:grid-cols-2">
         {services.map((service) => (
-          <article key={service.title} className="rounded-xl border border-[#d8dee4] bg-white p-5 shadow-sm">
+          <article key={service.title} className="rounded-xl border border-[#E5E4E0] bg-white p-5 shadow-sm">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h3 className="text-xl font-black">{service.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-[#57606a]">{service.text}</p>
+                <h3 className="text-xl font-semibold">{service.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-[#555]">{service.text}</p>
               </div>
-              <span className="grid size-12 place-items-center rounded-full bg-[#eef8f5] text-lg font-black text-[#12866E]">{service.count}</span>
+              <span className="grid size-12 place-items-center rounded-full bg-[#EEF6F3] text-lg font-semibold text-[#12866E]">{service.count}</span>
             </div>
-            <button className="mt-5 h-10 rounded-md border border-[#d8dee4] bg-white px-4 text-sm font-black text-[#24292f]">Talk to Nearwork</button>
+            <button className="mt-5 h-10 rounded-md border border-[#E5E4E0] bg-white px-4 text-sm font-semibold text-[#111]">Talk to Nearwork</button>
           </article>
         ))}
       </div>
@@ -2013,21 +2178,21 @@ function TimeOffCalendar({ requests }: { requests: TimeOffRequest[] }) {
   ];
   return (
     <div className="grid gap-4 lg:grid-cols-[1fr_360px]">
-      <div className="rounded-xl border border-[#d8dee4] bg-[#f6f8fa] p-4">
-        <div className="mb-4 flex items-center gap-2"><CalendarDays className="size-5 text-[#12866E]" /><p className="font-black">Calendar view</p></div>
-        <div className="grid grid-cols-7 gap-2 text-center text-xs font-black text-[#6e7781]">
+      <div className="rounded-xl border border-[#E5E4E0] bg-[#F5F4F0] p-4">
+        <div className="mb-4 flex items-center gap-2"><CalendarDays className="size-5 text-[#12866E]" /><p className="font-semibold">Calendar view</p></div>
+        <div className="grid grid-cols-7 gap-2 text-center text-xs font-semibold text-[#888]">
           {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => <div key={day}>{day}</div>)}
           {Array.from({ length: 35 }).map((_, index) => {
             const day = index + 1;
             const hasPto = requests.some((request) => String(request.from || request.startDate || "").endsWith(String(day).padStart(2, "0")));
-            return <div key={day} className={cx("min-h-16 rounded-lg border bg-white p-2 text-left", hasPto ? "border-[#12866E] bg-[#eef8f5]" : "border-[#d8dee4]")}><span>{day}</span>{hasPto ? <p className="mt-2 rounded bg-[#12866E] px-1 py-0.5 text-[10px] text-white">PTO</p> : null}</div>;
+            return <div key={day} className={cx("min-h-16 rounded-lg border bg-white p-2 text-left", hasPto ? "border-[#12866E] bg-[#EEF6F3]" : "border-[#E5E4E0]")}><span>{day}</span>{hasPto ? <p className="mt-2 rounded bg-[#12866E] px-1 py-0.5 text-[10px] text-white">PTO</p> : null}</div>;
           })}
         </div>
       </div>
-      <div className="rounded-xl border border-[#d8dee4] bg-white p-4">
-        <p className="font-black">Holidays and reminders</p>
+      <div className="rounded-xl border border-[#E5E4E0] bg-white p-4">
+        <p className="font-semibold">Holidays and reminders</p>
         <div className="mt-3 space-y-2">
-          {holidays.map((holiday) => <div key={holiday.label} className="rounded-lg border border-[#d8dee4] bg-[#f6f8fa] p-3 text-sm"><p className="font-black">{holiday.date}</p><p className="text-[#57606a]">{holiday.label}</p></div>)}
+          {holidays.map((holiday) => <div key={holiday.label} className="rounded-lg border border-[#E5E4E0] bg-[#F5F4F0] p-3 text-sm"><p className="font-semibold">{holiday.date}</p><p className="text-[#555]">{holiday.label}</p></div>)}
         </div>
       </div>
     </div>
@@ -2053,39 +2218,39 @@ function FinanceView({ org, hires, accountManager, profile }: { org: Organizatio
   return (
     <Panel title="Finance" eyebrow={`${org.name} billing`}>
       <div className="mb-6 grid gap-3 md:grid-cols-4">
-        <select value={year} onChange={(event) => setYear(event.target.value)} className="h-11 rounded-md border border-[#d8dee4] bg-white px-3 text-sm font-bold"><option>2026</option><option>2025</option><option>2024</option></select>
-        <select value={quarter} onChange={(event) => setQuarter(event.target.value)} className="h-11 rounded-md border border-[#d8dee4] bg-white px-3 text-sm font-bold"><option>All Quarters</option><option>Q1</option><option>Q2</option><option>Q3</option><option>Q4</option></select>
-        <select value={month} onChange={(event) => setMonth(event.target.value)} className="h-11 rounded-md border border-[#d8dee4] bg-white px-3 text-sm font-bold"><option>All Months</option><option>January</option><option>February</option><option>March</option><option>April</option><option>May</option></select>
-        <select value={invoice} onChange={(event) => setInvoice(event.target.value)} className="h-11 rounded-md border border-[#d8dee4] bg-white px-3 text-sm font-bold"><option>All invoices</option><option>Paid</option><option>Upcoming</option><option>Overdue</option></select>
+        <select value={year} onChange={(event) => setYear(event.target.value)} className="h-11 rounded-md border border-[#E5E4E0] bg-white px-3 text-sm font-medium"><option>2026</option><option>2025</option><option>2024</option></select>
+        <select value={quarter} onChange={(event) => setQuarter(event.target.value)} className="h-11 rounded-md border border-[#E5E4E0] bg-white px-3 text-sm font-medium"><option>All Quarters</option><option>Q1</option><option>Q2</option><option>Q3</option><option>Q4</option></select>
+        <select value={month} onChange={(event) => setMonth(event.target.value)} className="h-11 rounded-md border border-[#E5E4E0] bg-white px-3 text-sm font-medium"><option>All Months</option><option>January</option><option>February</option><option>March</option><option>April</option><option>May</option></select>
+        <select value={invoice} onChange={(event) => setInvoice(event.target.value)} className="h-11 rounded-md border border-[#E5E4E0] bg-white px-3 text-sm font-medium"><option>All invoices</option><option>Paid</option><option>Upcoming</option><option>Overdue</option></select>
       </div>
       <div className="grid gap-4 md:grid-cols-3">
         <Metric label="Monthly services" value={totalMonthly} sub="Current contracted value" money />
         <Metric label="Active services" value={hires.length} sub="Team members and services" />
         <Metric label="Next invoice" value={totalMonthly} sub="Upcoming estimate" money />
       </div>
-      <div className="mt-6 overflow-x-auto rounded-xl border border-[#d8dee4] bg-white">
+      <div className="mt-6 overflow-x-auto rounded-xl border border-[#E5E4E0] bg-white">
         <table className="w-full min-w-[980px] text-left text-sm">
-          <thead className="bg-[#f6f8fa] text-xs font-black uppercase tracking-wider text-[#57606a]">
+          <thead className="bg-[#F5F4F0] text-xs font-medium uppercase tracking-wider text-[#888]">
             <tr><th className="px-4 py-3">Month</th><th className="px-4 py-3">Team size</th><th className="px-4 py-3">Team cost</th><th className="px-4 py-3">Other team charges</th><th className="px-4 py-3">Other charges</th><th className="px-4 py-3">Discounts</th><th className="px-4 py-3">Total</th></tr>
           </thead>
           <tbody className="divide-y divide-[#d8dee4]">
             {monthlyRows.filter((row) => month === "All Months" || row.month === month).map((row) => {
               const total = row.teamCost + row.otherTeamCharges + row.otherCharges - row.discounts;
-              return <tr key={row.month}><td className="px-4 py-3 font-black">{row.month}</td><td className="px-4 py-3">{row.teamSize}</td><td className="px-4 py-3">{moneyText(row.teamCost, "USD")}</td><td className="px-4 py-3">{moneyText(row.otherTeamCharges, "USD")}</td><td className="px-4 py-3">{moneyText(row.otherCharges, "USD")}</td><td className="px-4 py-3">{moneyText(row.discounts, "USD")}</td><td className="px-4 py-3 font-black">{moneyText(total, "USD")}</td></tr>;
+              return <tr key={row.month}><td className="px-4 py-3 font-semibold">{row.month}</td><td className="px-4 py-3">{row.teamSize}</td><td className="px-4 py-3">{moneyText(row.teamCost, "USD")}</td><td className="px-4 py-3">{moneyText(row.otherTeamCharges, "USD")}</td><td className="px-4 py-3">{moneyText(row.otherCharges, "USD")}</td><td className="px-4 py-3">{moneyText(row.discounts, "USD")}</td><td className="px-4 py-3 font-semibold">{moneyText(total, "USD")}</td></tr>;
             })}
           </tbody>
         </table>
       </div>
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
-        <article className="rounded-xl border border-[#d8dee4] bg-[#f6f8fa] p-5">
-          <p className="font-black">Invoice status</p>
-          <p className="mt-2 text-sm leading-6 text-[#57606a]">Stripe payment status can connect here once the Stripe customer ID is saved on the organization.</p>
+        <article className="rounded-xl border border-[#E5E4E0] bg-[#F5F4F0] p-5">
+          <p className="font-semibold">Invoice status</p>
+          <p className="mt-2 text-sm leading-6 text-[#555]">Stripe payment status can connect here once the Stripe customer ID is saved on the organization.</p>
           <div className="mt-4"><Badge tone="border-amber-200 bg-amber-50 text-amber-800">Stripe pending</Badge></div>
         </article>
-        <article className="rounded-xl border border-[#d8dee4] bg-[#f6f8fa] p-5">
-          <p className="font-black">Finance contact</p>
-          <p className="mt-2 text-sm text-[#57606a]">finance@nearwork.co</p>
-          <p className="mt-1 text-sm text-[#57606a]">Account manager: {accountManager.name} · {accountManager.email}</p>
+        <article className="rounded-xl border border-[#E5E4E0] bg-[#F5F4F0] p-5">
+          <p className="font-semibold">Finance contact</p>
+          <p className="mt-2 text-sm text-[#555]">finance@nearwork.co</p>
+          <p className="mt-1 text-sm text-[#555]">Account manager: {accountManager.name} · {accountManager.email}</p>
         </article>
       </div>
     </Panel>
@@ -2096,16 +2261,16 @@ function InviteUserModal({ orgName, onClose }: { orgName: string; onClose: () =>
   const [role, setRole] = useState("Hiring manager");
   return (
     <div className="fixed inset-0 z-40 grid place-items-center bg-black/20 p-4">
-      <section className="w-full max-w-lg rounded-xl border border-[#d8dee4] bg-white p-6 shadow-2xl">
+      <section className="w-full max-w-lg rounded-xl border border-[#E5E4E0] bg-white p-6 shadow-2xl">
         <div className="flex items-start justify-between gap-4">
-          <div><p className="text-xs font-black uppercase tracking-[0.16em] text-[#12866E]">Invite user</p><h2 className="mt-1 text-2xl font-black">{orgName}</h2></div>
-          <button onClick={onClose} className="rounded-md border border-[#d8dee4] px-3 py-1 text-sm font-black">Close</button>
+          <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#12866E]">Invite user</p><h2 className="mt-1 text-2xl font-semibold">{orgName}</h2></div>
+          <button onClick={onClose} className="rounded-md border border-[#E5E4E0] px-3 py-1 text-sm font-semibold">Close</button>
         </div>
         <div className="mt-5 grid gap-4">
-          <label className="text-sm font-black">Name<input className="mt-2 h-11 w-full rounded-md border border-[#d8dee4] px-3 font-normal outline-none focus:border-[#12866E]" placeholder="Full name" /></label>
-          <label className="text-sm font-black">Email<input type="email" className="mt-2 h-11 w-full rounded-md border border-[#d8dee4] px-3 font-normal outline-none focus:border-[#12866E]" placeholder="jane@company.com" /></label>
-          <label className="text-sm font-black">Role
-            <select value={role} onChange={(event) => setRole(event.target.value)} className="mt-2 h-11 w-full rounded-md border border-[#d8dee4] px-3 font-normal outline-none focus:border-[#12866E]">
+          <label className="text-sm font-semibold">Name<input className="mt-2 h-11 w-full rounded-md border border-[#E5E4E0] px-3 font-normal outline-none focus:border-[#12866E]" placeholder="Full name" /></label>
+          <label className="text-sm font-semibold">Email<input type="email" className="mt-2 h-11 w-full rounded-md border border-[#E5E4E0] px-3 font-normal outline-none focus:border-[#12866E]" placeholder="jane@company.com" /></label>
+          <label className="text-sm font-semibold">Role
+            <select value={role} onChange={(event) => setRole(event.target.value)} className="mt-2 h-11 w-full rounded-md border border-[#E5E4E0] px-3 font-normal outline-none focus:border-[#12866E]">
               <option>Hiring manager</option>
               <option>Operations manager</option>
               <option>Finance</option>
@@ -2114,8 +2279,8 @@ function InviteUserModal({ orgName, onClose }: { orgName: string; onClose: () =>
             </select>
           </label>
         </div>
-        <button onClick={onClose} className="mt-5 h-11 w-full rounded-md bg-[#12866E] text-sm font-black text-white">Create invite</button>
-        <p className="mt-3 text-xs leading-5 text-[#6e7781]">Invites are managed by Nearwork from the staff portal so every user is tied to the correct organization.</p>
+        <button onClick={onClose} className="mt-5 h-11 w-full rounded-md bg-[#12866E] text-sm font-semibold text-white">Create invite</button>
+        <p className="mt-3 text-xs leading-5 text-[#888]">Invites are managed by Nearwork from the staff portal so every user is tied to the correct organization.</p>
       </section>
     </div>
   );
@@ -2123,13 +2288,13 @@ function InviteUserModal({ orgName, onClose }: { orgName: string; onClose: () =>
 
 function GlobalSearchResults({ results, onClose }: { results: Array<{ key: string; type: string; title?: string; sub?: string; action: () => void }>; onClose: () => void }) {
   return (
-    <div className="absolute left-0 right-0 top-14 z-30 rounded-xl border border-[#d8dee4] bg-white p-2 shadow-xl">
+    <div className="absolute left-0 right-0 top-14 z-30 rounded-xl border border-[#E5E4E0] bg-white p-2 shadow-xl">
       {results.length ? results.map((result) => (
-        <button key={result.key} onClick={() => { result.action(); onClose(); }} className="flex w-full items-center justify-between gap-4 rounded-lg p-3 text-left hover:bg-[#eef8f5]">
-          <div><p className="font-black">{result.title}</p><p className="text-sm text-[#57606a]">{result.sub}</p></div>
+        <button key={result.key} onClick={() => { result.action(); onClose(); }} className="flex w-full items-center justify-between gap-4 rounded-lg p-3 text-left hover:bg-[#EEF6F3]">
+          <div><p className="font-semibold">{result.title}</p><p className="text-sm text-[#555]">{result.sub}</p></div>
           <Badge tone={searchTone(result.type)}>{result.type}</Badge>
         </button>
-      )) : <div className="p-4 text-sm text-[#6e7781]">No matches found.</div>}
+      )) : <div className="p-4 text-sm text-[#888]">No matches found.</div>}
     </div>
   );
 }
@@ -2139,7 +2304,7 @@ function searchTone(type: string) {
   if (type === "Employee") return "border-violet-200 bg-violet-50 text-violet-700";
   if (type === "Opening") return "border-sky-200 bg-sky-50 text-sky-700";
   if (type === "Partner") return "border-pink-200 bg-pink-50 text-pink-700";
-  return "border-[#d8dee4] bg-[#f6f8fa] text-[#24292f]";
+  return "border-[#E5E4E0] bg-[#F5F4F0] text-[#111]";
 }
 
 function CompanyUsers({ org, testMode }: { org: Organization; testMode: boolean }) {
@@ -2154,14 +2319,14 @@ function CompanyUsers({ org, testMode }: { org: Organization; testMode: boolean 
   }, [org.id, org.orgId, testMode]);
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-[#d8dee4] bg-white">
+    <div className="overflow-x-auto rounded-lg border border-[#E5E4E0] bg-white">
       <table className="w-full min-w-[680px] text-left text-sm">
-        <thead className="bg-[#f6f8fa] text-xs font-black uppercase tracking-wider text-[#57606a]">
+        <thead className="bg-[#F5F4F0] text-xs font-medium uppercase tracking-wider text-[#888]">
           <tr><th className="px-4 py-3">User</th><th className="px-4 py-3">Email</th><th className="px-4 py-3">Role</th><th className="px-4 py-3">Status</th></tr>
         </thead>
         <tbody className="divide-y divide-[#d8dee4]">
-          {users.map((item) => <tr key={item.id}><td className="px-4 py-3 font-bold">{item.name || [item.firstName, item.lastName].filter(Boolean).join(" ") || item.email}</td><td className="px-4 py-3 text-[#57606a]">{item.email}</td><td className="px-4 py-3"><Badge>{item.portalRole || item.role || "user"}</Badge></td><td className="px-4 py-3 text-[#12866E]">Active</td></tr>)}
-          {!users.length ? <tr><td colSpan={4} className="px-4 py-8 text-center text-[#6e7781]">No company users found yet.</td></tr> : null}
+          {users.map((item) => <tr key={item.id}><td className="px-4 py-3 font-medium">{item.name || [item.firstName, item.lastName].filter(Boolean).join(" ") || item.email}</td><td className="px-4 py-3 text-[#555]">{item.email}</td><td className="px-4 py-3"><Badge>{item.portalRole || item.role || "user"}</Badge></td><td className="px-4 py-3 text-[#12866E]">Active</td></tr>)}
+          {!users.length ? <tr><td colSpan={4} className="px-4 py-8 text-center text-[#888]">No company users found yet.</td></tr> : null}
         </tbody>
       </table>
     </div>
