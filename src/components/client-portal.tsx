@@ -28,7 +28,7 @@ import {
   X,
 } from "lucide-react";
 import { onAuthStateChanged, type User } from "firebase/auth";
-import { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   addClientNote,
   auth,
@@ -47,6 +47,8 @@ import {
   subscribeOpeningChat,
   subscribeNotifications,
   subscribeOrgCollection,
+  updateClientProfile,
+  readableRole,
   type ClientUser,
   type Organization,
   type PipelineCandidate,
@@ -110,30 +112,35 @@ const pipelineStages = [
 
 const emptyClientUsers: ClientUser[] = [];
 
+// Client-facing pipeline stages (admin stage → client stage mapping)
+// Screening = Background Check stage, Technical = Assessment stage,
+// Final Round = Presented stage, Offer = Hired stage
 const clientStages = [
-  { key: "applied",     label: "Applied"     },
-  { key: "screening",   label: "Screening"   },
-  { key: "technical",   label: "Technical"   },
-  { key: "final-round", label: "Final round" },
-  { key: "offer",       label: "Offer"       },
+  { key: "screening",     label: "Screening"     },
+  { key: "technical",     label: "Technical"     },
+  { key: "final-round",   label: "Final Round"   },
+  { key: "offer",         label: "Offer"         },
+  { key: "not-selected",  label: "Not Selected"  },
 ];
 
 function clientStageKey(stage?: string): string {
   const s = String(stage || "").toLowerCase().replace(/[-_ ]/g, "");
-  if (s.includes("applied"))  return "applied";
-  if (s.includes("screen") || s.includes("profile") || s.includes("background")) return "screening";
-  if (s.includes("tech") || s.includes("assess") || s.includes("test")) return "technical";
-  if (s.includes("interview") || s.includes("review") || s.includes("present") || s.includes("final") || s.includes("client")) return "final-round";
-  if (s.includes("offer") || s.includes("hired")) return "offer";
+  // Map admin-side stage names to client-visible labels
+  if (s.includes("background") || s.includes("bgcheck") || s.includes("screening") || s.includes("profile")) return "screening";
+  if (s.includes("assess") || s.includes("tech") || s.includes("test")) return "technical";
+  if (s.includes("present") || s.includes("clientview") || s.includes("clientreview") || s.includes("final") || s.includes("interview")) return "final-round";
+  if (s.includes("hired") || s.includes("offer")) return "offer";
+  if (s.includes("pass") || s.includes("reject") || s.includes("notselect") || s.includes("declined") || s.includes("disqualif")) return "not-selected";
+  // "applied" and early stages are filtered out — clients only see vetted candidates
   return "screening";
 }
 
 const clientStageTone: Record<string, string> = {
-  "applied":     "border-sky-200 bg-sky-50 text-sky-700",
-  "screening":   "border-violet-200 bg-violet-50 text-violet-700",
-  "technical":   "border-amber-200 bg-amber-50 text-amber-800",
-  "final-round": "border-teal-200 bg-teal-50 text-teal-700",
-  "offer":       "border-emerald-200 bg-emerald-50 text-emerald-700",
+  "screening":    "border-violet-200 bg-violet-50 text-violet-700",
+  "technical":    "border-amber-200 bg-amber-50 text-amber-800",
+  "final-round":  "border-teal-200 bg-teal-50 text-teal-700",
+  "offer":        "border-emerald-200 bg-emerald-50 text-emerald-700",
+  "not-selected": "border-red-200 bg-red-50 text-red-700",
 };
 
 const defaultAccountManager = {
@@ -1040,7 +1047,7 @@ export function ClientPortal() {
               <div className="grid size-8 shrink-0 place-items-center rounded-full bg-[#EEF6F3] text-xs font-medium text-[#12866E]">{initials(profile.name || profile.email)}</div>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium text-[#111]">{profile.name || profile.email}</p>
-                <p className="text-xs text-[#888]">{profile.portalRole || profile.role || "Company user"}</p>
+                <p className="text-xs text-[#888]">{profile.displayRole || profile.jobTitle || readableRole(profile.portalRole || profile.role)}</p>
               </div>
               <button onClick={leavePortal} title="Log out" className="grid size-7 place-items-center rounded border border-[#E5E4E0] bg-white text-[#888] hover:text-[#111]">
                 <LogOut className="size-3.5" />
@@ -1086,36 +1093,22 @@ export function ClientPortal() {
         <div className="mx-auto max-w-7xl space-y-6 px-5 py-7 lg:px-10">
           {showInvite ? <InviteUserModal orgName={org.name} onClose={() => setShowInvite(false)} /> : null}
           {active === "overview" ? (
-            <>
-              <section className="grid gap-4 md:grid-cols-4">
-                <Metric label="Active openings" value={activeOpenings.length} sub="" onClick={() => setActive("openings")} />
-                <Metric label="Needs action" value={reviewCount + ptoPending} sub="Reviews and PTO" />
-                <Metric label="Monthly savings" value={estimatedMonthlySavings} sub="Estimated with Nearwork" money />
-                <Metric label="Upcoming PTO" value={upcomingPto} sub="Pending or approved" />
-              </section>
-              <section className="grid gap-6 xl:grid-cols-[1.4fr_.8fr]">
-                <Panel title="Candidates needing review" eyebrow="Pipeline">
-                  <div className="space-y-3">
-                    {filteredCandidates.slice(0, 4).map(({ candidate, pipeline }) => (
-                      <CandidateCard key={`${pipeline.code}-${candidateKey(candidate)}`} candidate={candidate} pipeline={pipeline} selected={selected?.candidate.code === candidate.code} onSelect={() => { setSelectedPipelineCode(pipeline.code); setSelectedCode(candidate.code); setActive("candidate"); }} />
-                    ))}
-                    {!filteredCandidates.length ? <Empty title="No candidates in client review yet" text="When Nearwork adds candidates to your pipeline, they will appear here." /> : null}
-                  </div>
-                </Panel>
-                <Panel title="Nearwork updates" eyebrow="Notifications">
-                  <div className="space-y-3">
-                    {notifications.slice(0, 5).map((item) => (
-                      <div key={item.id} className="rounded-md border border-[#E5E4E0] bg-white p-3">
-                        <p className="font-medium text-[#111]">{item.title || "Nearwork update"}</p>
-                        <p className="mt-1 text-sm leading-6 text-[#555]">{item.message}</p>
-                        <p className="mt-2 text-xs text-[#888]">{dateTime(item.createdAt)}</p>
-                      </div>
-                    ))}
-                    {!notifications.length ? <Empty title="No updates yet" text="Your bell will show candidate movement, notes, mentions, and opening updates." /> : null}
-                  </div>
-                </Panel>
-              </section>
-            </>
+            <OverviewDashboard
+              profile={profile}
+              org={org}
+              activeOpenings={activeOpenings}
+              reviewCount={reviewCount}
+              ptoPending={ptoPending}
+              upcomingPto={upcomingPto}
+              estimatedMonthlySavings={estimatedMonthlySavings}
+              pipelineCandidates={filteredCandidates}
+              notifications={notifications}
+              accountManager={accountManager}
+              onGoToPipeline={() => setActive("pipeline")}
+              onGoToOpenings={() => setActive("openings")}
+              onSelectCandidate={(candidate, pipeline) => { setSelectedPipelineCode(pipeline.code); setSelectedCode(candidate.code); setActive("candidate"); }}
+              onMarkRead={markRead}
+            />
           ) : null}
 
           {active === "finance" ? (
@@ -1225,26 +1218,29 @@ export function ClientPortal() {
           ) : null}
 
           {active === "settings" ? (
-            <Panel title="Notification settings" eyebrow="Preferences">
-              <div className="grid gap-3">
-                {[
-                  ["candidateMovement", "Candidate movement"],
-                  ["openingUpdates", "Opening updates"],
-                  ["mentions", "Mentions"],
-                  ["interviews", "Interview reminders"],
-                ].map(([key, label]) => {
-                  const pref = profile.notificationPreferences?.[key] || {};
-                  return (
-                    <div key={key} className="grid gap-3 rounded-md border border-[#E5E4E0] bg-white p-4 md:grid-cols-[1fr_120px_120px]">
-                      <p className="font-semibold">{label}</p>
-                      <label className="text-sm"><input type="checkbox" defaultChecked={pref.app !== false} onChange={(event) => updatePreference(key, "app", event.target.checked)} /> In-app</label>
-                      <label className="text-sm"><input type="checkbox" defaultChecked={pref.email !== false} onChange={(event) => updatePreference(key, "email", event.target.checked)} /> Email</label>
-                    </div>
-                  );
-                })}
-              </div>
-              <p className="mt-4 text-sm leading-6 text-[#555]">Email notifications should be sent by the backend digest job with a 2-hour buffer. The bell shows the full notification history immediately.</p>
-            </Panel>
+            <div className="space-y-6">
+              <ProfileSettingsPanel profile={profile} userId={user.uid} onSave={(updated) => setProfile({ ...profile, ...updated })} />
+              <Panel title="Notification settings" eyebrow="Preferences">
+                <div className="grid gap-3">
+                  {[
+                    ["candidateMovement", "Candidate movement"],
+                    ["openingUpdates", "Opening updates"],
+                    ["mentions", "Mentions"],
+                    ["interviews", "Interview reminders"],
+                  ].map(([key, label]) => {
+                    const pref = profile.notificationPreferences?.[key] || {};
+                    return (
+                      <div key={key} className="grid gap-3 rounded-md border border-[#E5E4E0] bg-white p-4 md:grid-cols-[1fr_120px_120px]">
+                        <p className="font-semibold">{label}</p>
+                        <label className="text-sm"><input type="checkbox" defaultChecked={pref.app !== false} onChange={(event) => updatePreference(key, "app", event.target.checked)} /> In-app</label>
+                        <label className="text-sm"><input type="checkbox" defaultChecked={pref.email !== false} onChange={(event) => updatePreference(key, "email", event.target.checked)} /> Email</label>
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="mt-4 text-sm leading-6 text-[#555]">Email notifications should be sent by the backend digest job with a 2-hour buffer. The bell shows the full notification history immediately.</p>
+              </Panel>
+            </div>
           ) : null}
         </div>
       </main>
@@ -1254,6 +1250,205 @@ export function ClientPortal() {
 
 function Metric({ label, value, sub, money, onClick }: { label: string; value: number; sub: string; money?: boolean; onClick?: () => void }) {
   return <div onClick={onClick} className={cx("rounded-xl border border-[#E5E4E0] bg-white p-5", onClick && "cursor-pointer transition-shadow hover:border-[#12866E] hover:shadow-sm")}><p className="text-sm text-[#888]">{label}</p><p className="mt-3 text-3xl font-semibold text-[#111]">{money ? moneyText(value, "USD") : value}</p>{sub ? <p className="mt-2 text-xs text-[#12866E]">{sub}</p> : null}</div>;
+}
+
+function OverviewDashboard({
+  profile, org, activeOpenings, reviewCount, ptoPending, upcomingPto,
+  estimatedMonthlySavings, pipelineCandidates, notifications, accountManager,
+  onGoToPipeline, onGoToOpenings, onSelectCandidate, onMarkRead,
+}: {
+  profile: ClientUser;
+  org: Organization;
+  activeOpenings: PortalOpening[];
+  reviewCount: number;
+  ptoPending: number;
+  upcomingPto: number;
+  estimatedMonthlySavings: number;
+  pipelineCandidates: Array<{ candidate: PortalCandidate; pipeline: PortalPipeline }>;
+  notifications: PortalNotification[];
+  accountManager: { name: string; email: string; phone: string };
+  onGoToPipeline: () => void;
+  onGoToOpenings: () => void;
+  onSelectCandidate: (candidate: PortalCandidate, pipeline: PortalPipeline) => void;
+  onMarkRead: (id: string) => void;
+}) {
+  const firstName = profile.firstName || (profile.name || "").split(" ")[0] || "there";
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+  const reviewCandidates = pipelineCandidates.filter(({ candidate }) => ["final-round", "offer"].includes(clientStageKey(candidate.stage)));
+  const totalCandidates = pipelineCandidates.length;
+  const recentUpdates = notifications.filter((n) => !n.read).slice(0, 3);
+  const hasActionItems = reviewCount + ptoPending > 0;
+
+  return (
+    <div className="space-y-6">
+      {/* Greeting hero */}
+      <div className="rounded-2xl border border-[#E5E4E0] bg-gradient-to-br from-white via-[#F8F7F3] to-[#EEF6F3] p-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-sm font-medium text-[#12866E]">{greeting}, {firstName} 👋</p>
+            <h1 className="mt-1 text-2xl font-bold text-[#111]">{org.name}</h1>
+            <p className="mt-1 text-sm text-[#555]">Here&rsquo;s what&rsquo;s happening with your hiring pipeline today.</p>
+          </div>
+          {hasActionItems ? (
+            <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
+              <span className="size-2 rounded-full bg-amber-500" />
+              <span className="text-sm font-medium text-amber-800">{reviewCount + ptoPending} item{reviewCount + ptoPending !== 1 ? "s" : ""} need your attention</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2">
+              <span className="size-2 rounded-full bg-emerald-500" />
+              <span className="text-sm font-medium text-emerald-800">All caught up</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* KPI row */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Metric label="Active openings" value={activeOpenings.length} sub="Click to manage" onClick={onGoToOpenings} />
+        <Metric label="Candidates in pipeline" value={totalCandidates} sub="Click to view pipeline" onClick={onGoToPipeline} />
+        <Metric label="Needs your review" value={reviewCount + ptoPending} sub="Final round + PTO" />
+        <Metric label="Est. monthly savings" value={estimatedMonthlySavings} sub="vs. traditional hiring" money />
+      </div>
+
+      {/* Main content grid */}
+      <div className="grid gap-6 xl:grid-cols-[1.6fr_1fr]">
+        {/* Candidates needing review */}
+        <section className="rounded-xl border border-[#E5E4E0] bg-white p-5">
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-[0.14em] text-[#888]">Pipeline</p>
+              <h2 className="mt-1 text-lg font-semibold text-[#111]">Ready for your review</h2>
+            </div>
+            <button onClick={onGoToPipeline} className="text-sm font-medium text-[#12866E] hover:underline">View all →</button>
+          </div>
+          <div className="space-y-3">
+            {reviewCandidates.slice(0, 5).map(({ candidate, pipeline }) => (
+              <button
+                key={`${pipeline.code}-${candidateKey(candidate)}`}
+                onClick={() => onSelectCandidate(candidate, pipeline)}
+                className="flex w-full items-center gap-3 rounded-lg border border-[#E5E4E0] bg-[#F8F7F3] p-3 text-left transition hover:border-[#12866E] hover:bg-white"
+              >
+                <div className="grid size-9 shrink-0 place-items-center rounded-full bg-[#EEF6F3] text-xs font-semibold text-[#12866E]">
+                  {candidate.score || <Eye className="size-3.5" />}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold text-[#111]">{candidate.name}</p>
+                  <p className="truncate text-xs text-[#555]">{candidate.role} · {pipeline.openingTitle || pipeline.code}</p>
+                </div>
+                <Badge tone={clientStageTone[clientStageKey(candidate.stage)]}>{clientStageKey(candidate.stage).replace("-", " ")}</Badge>
+              </button>
+            ))}
+            {!reviewCandidates.length ? (
+              <Empty title="No candidates ready for review" text="When Nearwork presents candidates for your consideration they will appear here." />
+            ) : null}
+          </div>
+        </section>
+
+        {/* Right column: notifications + account manager */}
+        <div className="space-y-4">
+          {/* Recent updates */}
+          <section className="rounded-xl border border-[#E5E4E0] bg-white p-5">
+            <div className="mb-4 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-[0.14em] text-[#888]">Notifications</p>
+                <h2 className="mt-1 text-base font-semibold text-[#111]">Recent updates</h2>
+              </div>
+              {notifications.filter((n) => !n.read).length > 0 ? (
+                <span className="rounded-full bg-[#C73565] px-2 py-0.5 text-xs font-medium text-white">
+                  {notifications.filter((n) => !n.read).length} new
+                </span>
+              ) : null}
+            </div>
+            <div className="space-y-2.5">
+              {recentUpdates.length ? recentUpdates.map((item) => (
+                <div key={item.id} onClick={() => onMarkRead(item.id)} className="cursor-pointer rounded-lg border border-[#E5E4E0] bg-[#F8F7F3] p-3 transition hover:bg-white">
+                  <p className="text-sm font-medium text-[#111]">{item.title || "Nearwork update"}</p>
+                  <p className="mt-0.5 text-xs leading-5 text-[#555]">{item.message}</p>
+                  <p className="mt-1 text-[10px] text-[#888]">{dateTime(item.createdAt)}</p>
+                </div>
+              )) : (
+                <div className="rounded-lg border border-dashed border-[#E5E4E0] p-4 text-center text-sm text-[#888]">
+                  You&rsquo;re all caught up.
+                </div>
+              )}
+            </div>
+          </section>
+
+          {/* Account manager card */}
+          {accountManager.name ? (
+            <section className="rounded-xl border border-[#E5E4E0] bg-white p-5">
+              <p className="text-xs font-medium uppercase tracking-[0.14em] text-[#888]">Your Nearwork contact</p>
+              <div className="mt-3 flex items-center gap-3">
+                <div className="grid size-10 shrink-0 place-items-center rounded-full bg-[#EEF6F3] text-sm font-semibold text-[#12866E]">
+                  {initials(accountManager.name)}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-[#111]">{accountManager.name}</p>
+                  <p className="truncate text-xs text-[#888]">{accountManager.email || "support@nearwork.co"}</p>
+                </div>
+              </div>
+              {accountManager.email ? (
+                <a href={`mailto:${accountManager.email}`} className="mt-3 block w-full rounded-md border border-[#E5E4E0] py-2 text-center text-sm font-medium text-[#555] transition hover:border-[#12866E] hover:text-[#12866E]">
+                  Send a message
+                </a>
+              ) : null}
+            </section>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ProfileSettingsPanel({ profile, userId, onSave }: { profile: ClientUser; userId: string; onSave: (updated: Partial<ClientUser>) => void }) {
+  const [displayRole, setDisplayRole] = React.useState(profile.displayRole || profile.jobTitle || "");
+  const [saving, setSaving] = React.useState(false);
+  const [saved, setSaved] = React.useState(false);
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await updateClientProfile(userId, { displayRole: displayRole.trim() });
+      onSave({ displayRole: displayRole.trim() });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } finally {
+      setSaving(false);
+    }
+  }
+  return (
+    <Panel title="Your profile" eyebrow="Account">
+      <form onSubmit={handleSave} className="grid gap-4 md:grid-cols-2">
+        <div>
+          <p className="mb-1 text-xs font-medium text-[#555]">Display name</p>
+          <input disabled value={profile.name || profile.email || ""} className="h-9 w-full rounded-md border border-[#E5E4E0] bg-[#F5F4F0] px-3 text-sm text-[#888]" />
+          <p className="mt-1 text-xs text-[#888]">Name is set by your organization admin</p>
+        </div>
+        <div>
+          <p className="mb-1 text-xs font-medium text-[#555]">Email</p>
+          <input disabled value={profile.email || ""} className="h-9 w-full rounded-md border border-[#E5E4E0] bg-[#F5F4F0] px-3 text-sm text-[#888]" />
+        </div>
+        <div className="md:col-span-2">
+          <p className="mb-1 text-xs font-medium text-[#555]">Your role / title <span className="text-[#888] font-normal">(shown in sidebar)</span></p>
+          <input
+            value={displayRole}
+            onChange={(e) => setDisplayRole(e.target.value)}
+            placeholder="e.g. Hiring Manager, CEO, HR Lead..."
+            className="h-9 w-full rounded-md border border-[#E5E4E0] bg-white px-3 text-sm text-[#111] outline-none focus:border-[#12866E]"
+          />
+          <p className="mt-1 text-xs text-[#888]">This is how your role appears to team members and Nearwork</p>
+        </div>
+        <div className="md:col-span-2 flex items-center gap-3">
+          <button type="submit" disabled={saving} className="inline-flex h-9 items-center gap-2 rounded-md bg-[#111] px-4 text-sm font-medium text-white disabled:opacity-60">
+            {saving ? "Saving…" : "Save changes"}
+          </button>
+          {saved ? <span className="text-sm text-[#12866E]">Saved!</span> : null}
+        </div>
+      </form>
+    </Panel>
+  );
 }
 
 function Panel({ eyebrow, title, children }: { eyebrow: string; title: string; children: React.ReactNode }) {
@@ -1354,7 +1549,7 @@ function KanbanBoard({
   if (!rows.length) return <Empty title="No candidates yet" text="When Nearwork adds candidates to your pipeline they will appear here." />;
   return (
     <div className="overflow-x-auto pb-2">
-      <div className="grid min-w-[900px] grid-cols-5 gap-3">
+      <div className="grid min-w-[1100px] grid-cols-5 gap-3">
         {clientStages.map((stage) => {
           const stageRows = rows.filter(({ candidate }) => clientStageKey(candidate.stage) === stage.key);
           return (
@@ -1424,7 +1619,7 @@ function OpeningsView({
           const candidates = rows.filter((row) => row.pipeline.code === pipeline.code);
           const isActive = !["closed", "cancelled", "archived", "lost"].includes(String(pipeline.status || "").toLowerCase());
           return (
-            <button key={pipeline.code} onClick={() => onOpenPipeline(pipeline.code)} className="rounded-xl border border-[#E5E4E0] bg-white p-5 text-left transition hover:-translate-y-0.5 hover:border-[#12866E] hover:shadow-sm">
+            <div key={pipeline.code} className="rounded-xl border border-[#E5E4E0] bg-white p-5 transition hover:-translate-y-0.5 hover:border-[#12866E] hover:shadow-sm">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-[#12866E]">{isActive ? "Active" : "Closed"}</p>
@@ -1438,10 +1633,15 @@ function OpeningsView({
                 <MiniStat label="In review" value={candidates.filter(({ candidate }) => ["final-round", "offer"].includes(clientStageKey(candidate.stage))).length} />
                 <MiniStat label="Hired" value={candidates.filter(({ candidate }) => clientStageKey(candidate.stage) === "offer").length} />
               </div>
-              <div className="mt-3 flex items-center gap-1 text-xs font-medium text-[#12866E]">
-                <span>View pipeline →</span>
+              <div className="mt-3 flex items-center gap-3">
+                <button onClick={() => onOpenPipeline(pipeline.code)} className="text-xs font-medium text-[#12866E] hover:underline">
+                  View in pipeline →
+                </button>
+                <a href={`/pipeline/${pipeline.code}`} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-xs font-medium text-[#555] hover:text-[#12866E]">
+                  <ExternalLink className="size-3" /> Dedicated page
+                </a>
               </div>
-            </button>
+            </div>
           );
         })}
         {openings.filter((opening) => !pipelines.some((pipeline) => pipeline.openingCode === opening.code || pipeline.openingTitle === opening.title)).map((opening) => (

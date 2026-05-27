@@ -63,6 +63,8 @@ export type ClientUser = {
   email?: string;
   role?: string;
   portalRole?: string;
+  displayRole?: string;
+  jobTitle?: string;
   orgId?: string;
   orgName?: string;
   organizationId?: string;
@@ -363,6 +365,23 @@ export async function createClientAccount(email: string, password: string, invit
       console.warn("[ClientInvite] Could not mirror accepted invite status.", error);
     }
   }
+  // HubSpot sync (fire-and-forget)
+  if (invite?.orgId) {
+    fetch("https://admin.nearwork.co/api/sync-hubspot-client", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        client: {
+          email: normalizedEmail,
+          name: [invite.firstName, invite.lastName].filter(Boolean).join(" ") || normalizedEmail,
+          orgId: invite.orgId,
+          orgName: invite.orgName || "",
+          businessRole: invite.businessRole || "",
+        },
+        event: "signup",
+      }),
+    }).catch(() => null);
+  }
   return credential;
 }
 
@@ -655,4 +674,27 @@ export async function saveNotificationPreferences(uid: string, preferences: Clie
     preferences,
     updatedAt: serverTimestamp(),
   }, { merge: true });
+}
+
+export async function updateClientProfile(uid: string, updates: { displayRole?: string; jobTitle?: string; name?: string }) {
+  const clean: Record<string, unknown> = { updatedAt: serverTimestamp() };
+  if (updates.displayRole !== undefined) clean.displayRole = updates.displayRole;
+  if (updates.jobTitle !== undefined) clean.jobTitle = updates.jobTitle;
+  if (updates.name !== undefined) clean.name = updates.name;
+  await setDoc(doc(db, "users", uid), clean, { merge: true });
+}
+
+export function readableRole(raw?: string): string {
+  const r = String(raw || "").toLowerCase().replace(/[-_ ]+/g, "_");
+  if (r.includes("owner")) return "Owner";
+  if (r.includes("ceo") || r.includes("founder")) return "CEO";
+  if (r.includes("cto")) return "CTO";
+  if (r.includes("hiring_manager") || r.includes("hiring")) return "Hiring Manager";
+  if (r.includes("admin")) return "Admin";
+  if (r.includes("finance")) return "Finance";
+  if (r.includes("recruiter")) return "Recruiter";
+  if (r.includes("viewer")) return "Viewer";
+  if (r.includes("hr")) return "HR";
+  if (raw && raw.length > 0) return raw.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  return "Company user";
 }
