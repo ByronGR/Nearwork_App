@@ -1132,7 +1132,11 @@ export function ClientPortal() {
                   All roles
                 </button>
                 {pipelines.map((pl) => (
-                  <button key={pl.code} onClick={() => setPipelineFilter(pipelineFilter === pl.code ? "" : pl.code)} className={cx("whitespace-nowrap rounded-full border px-3 py-1 text-sm transition", pipelineFilter === pl.code ? "border-[#111] bg-[#111] font-medium text-white" : "border-[#E5E4E0] bg-white font-normal text-[#555] hover:border-[#111]")}>
+                  <button key={pl.code} onClick={() => {
+                    const next = pipelineFilter === pl.code ? "" : pl.code;
+                    setPipelineFilter(next);
+                    setSelectedPipelineCode(next); // also drive the chat subscription
+                  }} className={cx("whitespace-nowrap rounded-full border px-3 py-1 text-sm transition", pipelineFilter === pl.code ? "border-[#111] bg-[#111] font-medium text-white" : "border-[#E5E4E0] bg-white font-normal text-[#555] hover:border-[#111]")}>
                     {pl.openingTitle || pl.code}
                   </button>
                 ))}
@@ -1145,6 +1149,16 @@ export function ClientPortal() {
                   setActive("candidate");
                 }}
               />
+              {selectedPipeline ? (
+                <OpeningChatPanel
+                  companyName={org.name}
+                  recruiter={selectedPipeline.recruiter || "Nearwork"}
+                  messages={openingChat}
+                  value={chatText}
+                  setValue={setChatText}
+                  onSend={sendChatMessage}
+                />
+              ) : null}
             </div>
           ) : null}
 
