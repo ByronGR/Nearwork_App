@@ -367,10 +367,11 @@ export async function createClientAccount(email: string, password: string, invit
   }
   // HubSpot sync (fire-and-forget)
   if (invite?.orgId) {
-    fetch("https://admin.nearwork.co/api/sync-hubspot-client", {
+    fetch("https://admin.nearwork.co/api/sync-hubspot", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        type: "client",
         client: {
           email: normalizedEmail,
           name: [invite.firstName, invite.lastName].filter(Boolean).join(" ") || normalizedEmail,
