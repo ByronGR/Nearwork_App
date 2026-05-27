@@ -495,10 +495,16 @@ export function PipelinePage({ code }: { code: string }) {
                     <h1 className="mt-1 text-xl font-bold text-[#111]">{pipeline.openingTitle || pipeline.code}</h1>
                     <p className="mt-1 text-sm text-[#555]">{org.name} · Code: {pipeline.openingCode || pipeline.code}</p>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
                       {String(pipeline.status || "active")}
                     </span>
+                    <a
+                      href={`/pipeline/${code}/kickoff`}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-[#E5E4E0] bg-white px-3 py-1.5 text-xs font-semibold text-[#555] hover:border-[#16A085] hover:text-[#16A085] transition-colors"
+                    >
+                      📋 Kick-off Brief
+                    </a>
                   </div>
                 </div>
                 <div className="mt-4 grid grid-cols-2 gap-3 border-t border-[#E5E4E0] pt-4 sm:grid-cols-4">
