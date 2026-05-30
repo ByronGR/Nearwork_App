@@ -677,6 +677,8 @@ export function ClientPortal() {
       // Self-heal: if this authenticated user has no profile but we have a stashed
       // invite for their email, write the users doc now (token is fully valid here)
       // and re-read. This recovers accounts whose setup-time write never landed.
+      let healError = "";
+      let healAttempted = false;
       if (!nextProfile && typeof window !== "undefined") {
         try {
           const stashed = localStorage.getItem("nw_invite_payload");
@@ -684,19 +686,29 @@ export function ClientPortal() {
             const payload = JSON.parse(stashed) as { email?: string; orgId?: string };
             const sameEmail = (payload.email || "").toLowerCase() === (nextUser.email || "").toLowerCase();
             if (sameEmail && payload.orgId) {
+              healAttempted = true;
               await writeClientProfile(nextUser, payload);
               localStorage.removeItem("nw_invite_payload");
               nextProfile = await getClientUser(nextUser);
             }
           }
         } catch (repairErr) {
+          healError = (repairErr as { code?: string })?.code
+            || (repairErr instanceof Error ? repairErr.message : String(repairErr));
           console.warn("[ClientPortal] Profile self-heal failed:", repairErr);
         }
       }
       const role = String(nextProfile?.role || nextProfile?.portalRole || "").toLowerCase();
       const allowed = role.includes("client") || role.includes("org") || role === "viewer" || role === "user" || role === "admin";
       if (!nextProfile || !allowed) {
-        setAuthMessage("This email is not invited to the client portal yet. Ask Nearwork to add it under the company users page.");
+        // Surface the real cause on screen so it can be diagnosed without dev tools.
+        if (healError) {
+          setAuthMessage(`Setup error while creating your access: ${healError}. Please screenshot this message and send it to Nearwork.`);
+        } else if (!healAttempted) {
+          setAuthMessage("This email is not invited to the client portal yet. Please open your most recent Nearwork invite link in this same browser, set your password, then log in.");
+        } else {
+          setAuthMessage("This email is not invited to the client portal yet. Ask Nearwork to add it under the company users page.");
+        }
         await logoutClient();
         return;
       }
