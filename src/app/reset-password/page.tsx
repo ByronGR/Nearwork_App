@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import {
   confirmClientPasswordReset,
   loginWithEmail,
@@ -22,6 +23,8 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [ready, setReady] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const isRequestMode = !oobCode;
 
   useEffect(() => {
@@ -111,11 +114,21 @@ export default function ResetPasswordPage() {
           <>
             <label className="mt-4 block text-sm font-bold">
               New password
-              <input value={password} onChange={(event) => setPassword(event.target.value)} disabled={!ready || busy} type="password" className="mt-2 h-11 w-full rounded-md border border-[#d8dee4] px-3 outline-none focus:border-[#12866E] disabled:bg-[#f6f8fa]" required />
+              <div className="relative mt-2">
+                <input value={password} onChange={(event) => setPassword(event.target.value)} disabled={!ready || busy} type={showPassword ? "text" : "password"} className="h-11 w-full rounded-md border border-[#d8dee4] px-3 pr-11 outline-none focus:border-[#12866E] disabled:bg-[#f6f8fa]" required />
+                <button type="button" onClick={() => setShowPassword((value) => !value)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#57606a] hover:text-[#24292f]" aria-label={showPassword ? "Hide password" : "Show password"}>
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
+              </div>
             </label>
             <label className="mt-4 block text-sm font-bold">
               Confirm password
-              <input value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} disabled={!ready || busy} type="password" className="mt-2 h-11 w-full rounded-md border border-[#d8dee4] px-3 outline-none focus:border-[#12866E] disabled:bg-[#f6f8fa]" required />
+              <div className="relative mt-2">
+                <input value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} disabled={!ready || busy} type={showConfirmPassword ? "text" : "password"} className="h-11 w-full rounded-md border border-[#d8dee4] px-3 pr-11 outline-none focus:border-[#12866E] disabled:bg-[#f6f8fa]" required />
+                <button type="button" onClick={() => setShowConfirmPassword((value) => !value)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#57606a] hover:text-[#24292f]" aria-label={showConfirmPassword ? "Hide password" : "Show password"}>
+                  {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
+              </div>
             </label>
           </>
         ) : null}

@@ -34,6 +34,7 @@ import {
   type Unsubscribe,
   type QueryConstraint,
 } from "firebase/firestore";
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyApRNyW8PoP28E0x77dUB5jOgHuTqA2by4",
@@ -47,6 +48,7 @@ const firebaseConfig = {
 export const firebaseApp = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 export const auth = getAuth(firebaseApp);
 export const db = getFirestore(firebaseApp);
+export const storage = getStorage(firebaseApp);
 export const googleProvider = new GoogleAuthProvider();
 
 setPersistence(auth, browserLocalPersistence).catch(() => null);
@@ -62,6 +64,7 @@ export type ClientUser = {
   firstName?: string;
   lastName?: string;
   email?: string;
+  photoUrl?: string;
   role?: string;
   portalRole?: string;
   displayRole?: string;
@@ -749,12 +752,26 @@ export async function saveNotificationPreferences(uid: string, preferences: Clie
   }, { merge: true });
 }
 
-export async function updateClientProfile(uid: string, updates: { displayRole?: string; jobTitle?: string; name?: string }) {
+export async function updateClientProfile(
+  uid: string,
+  updates: { displayRole?: string; jobTitle?: string; name?: string; firstName?: string; lastName?: string; photoUrl?: string },
+) {
   const clean: Record<string, unknown> = { updatedAt: serverTimestamp() };
   if (updates.displayRole !== undefined) clean.displayRole = updates.displayRole;
   if (updates.jobTitle !== undefined) clean.jobTitle = updates.jobTitle;
   if (updates.name !== undefined) clean.name = updates.name;
+  if (updates.firstName !== undefined) clean.firstName = updates.firstName;
+  if (updates.lastName !== undefined) clean.lastName = updates.lastName;
+  if (updates.photoUrl !== undefined) clean.photoUrl = updates.photoUrl;
   await setDoc(doc(db, "users", uid), clean, { merge: true });
+}
+
+export async function uploadClientAvatar(uid: string, file: File): Promise<string> {
+  const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+  const path = `userAvatars/${uid}/avatar.${ext}`;
+  const fileRef = storageRef(storage, path);
+  await uploadBytes(fileRef, file, { contentType: file.type });
+  return getDownloadURL(fileRef);
 }
 
 export function readableRole(raw?: string): string {

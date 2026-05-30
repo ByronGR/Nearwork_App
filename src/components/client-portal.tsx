@@ -53,6 +53,7 @@ import {
   subscribeOrganization,
   subscribeClientProfile,
   updateClientProfile,
+  uploadClientAvatar,
   readableRole,
   type ClientUser,
   type Organization,
@@ -1166,7 +1167,12 @@ export function ClientPortal() {
               <p className="truncate text-xs text-[#888]">{accountManager.email || "support@nearwork.co"}</p>
             </div>
             <div className="flex items-center gap-2.5">
-              <div className="grid size-8 shrink-0 place-items-center rounded-full bg-[#EEF6F3] text-xs font-medium text-[#12866E]">{initials(profile.name || profile.email)}</div>
+              {profile.photoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={profile.photoUrl} alt="Profile" className="size-8 shrink-0 rounded-full object-cover" />
+              ) : (
+                <div className="grid size-8 shrink-0 place-items-center rounded-full bg-[#EEF6F3] text-xs font-medium text-[#12866E]">{initials(profile.name || profile.email)}</div>
+              )}
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium text-[#111]">{profile.name || profile.email}</p>
                 <p className="text-xs text-[#888]">{profile.displayRole || profile.jobTitle || readableRole(profile.portalRole || profile.role)}</p>
@@ -1541,28 +1547,88 @@ function OverviewDashboard({
 }
 
 function ProfileSettingsPanel({ profile, userId, onSave }: { profile: ClientUser; userId: string; onSave: (updated: Partial<ClientUser>) => void }) {
+  const [name, setName] = React.useState(profile.name || "");
   const [displayRole, setDisplayRole] = React.useState(profile.displayRole || profile.jobTitle || "");
+  const [photoUrl, setPhotoUrl] = React.useState(profile.photoUrl || "");
   const [saving, setSaving] = React.useState(false);
+  const [uploading, setUploading] = React.useState(false);
   const [saved, setSaved] = React.useState(false);
+  const [error, setError] = React.useState("");
+  const fileRef = React.useRef<HTMLInputElement>(null);
+
+  async function handlePhoto(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setError("Please choose an image file.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Image must be smaller than 5 MB.");
+      return;
+    }
+    setError("");
+    setUploading(true);
+    try {
+      const url = await uploadClientAvatar(userId, file);
+      setPhotoUrl(url);
+      await updateClientProfile(userId, { photoUrl: url });
+      onSave({ photoUrl: url });
+    } catch {
+      setError("Could not upload the picture. Please try again.");
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  }
+
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
+    if (!name.trim()) {
+      setError("Name cannot be empty.");
+      return;
+    }
+    setError("");
     setSaving(true);
     try {
-      await updateClientProfile(userId, { displayRole: displayRole.trim() });
-      onSave({ displayRole: displayRole.trim() });
+      const parts = name.trim().split(/\s+/);
+      const firstName = parts[0] || "";
+      const lastName = parts.slice(1).join(" ");
+      await updateClientProfile(userId, { name: name.trim(), firstName, lastName, displayRole: displayRole.trim() });
+      onSave({ name: name.trim(), firstName, lastName, displayRole: displayRole.trim() });
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     } finally {
       setSaving(false);
     }
   }
+
   return (
     <Panel title="Your profile" eyebrow="Account">
+      <div className="mb-5 flex items-center gap-4">
+        {photoUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={photoUrl} alt="Profile" className="size-16 shrink-0 rounded-full object-cover" />
+        ) : (
+          <div className="grid size-16 shrink-0 place-items-center rounded-full bg-[#EEF6F3] text-lg font-medium text-[#12866E]">{initials(name || profile.email)}</div>
+        )}
+        <div>
+          <input ref={fileRef} type="file" accept="image/*" onChange={handlePhoto} className="hidden" />
+          <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading} className="inline-flex h-9 items-center gap-2 rounded-md border border-[#E5E4E0] bg-white px-4 text-sm font-medium text-[#111] hover:bg-[#F5F4F0] disabled:opacity-60">
+            {uploading ? "Uploading…" : photoUrl ? "Change picture" : "Upload picture"}
+          </button>
+          <p className="mt-1 text-xs text-[#888]">JPG or PNG, up to 5 MB</p>
+        </div>
+      </div>
       <form onSubmit={handleSave} className="grid gap-4 md:grid-cols-2">
         <div>
           <p className="mb-1 text-xs font-medium text-[#555]">Display name</p>
-          <input disabled value={profile.name || profile.email || ""} className="h-9 w-full rounded-md border border-[#E5E4E0] bg-[#F5F4F0] px-3 text-sm text-[#888]" />
-          <p className="mt-1 text-xs text-[#888]">Name is set by your organization admin</p>
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Your full name"
+            className="h-9 w-full rounded-md border border-[#E5E4E0] bg-white px-3 text-sm text-[#111] outline-none focus:border-[#12866E]"
+          />
         </div>
         <div>
           <p className="mb-1 text-xs font-medium text-[#555]">Email</p>
@@ -1578,6 +1644,7 @@ function ProfileSettingsPanel({ profile, userId, onSave }: { profile: ClientUser
           />
           <p className="mt-1 text-xs text-[#888]">This is how your role appears to team members and Nearwork</p>
         </div>
+        {error ? <p className="md:col-span-2 text-sm text-rose-600">{error}</p> : null}
         <div className="md:col-span-2 flex items-center gap-3">
           <button type="submit" disabled={saving} className="inline-flex h-9 items-center gap-2 rounded-md bg-[#111] px-4 text-sm font-medium text-white disabled:opacity-60">
             {saving ? "Saving…" : "Save changes"}
