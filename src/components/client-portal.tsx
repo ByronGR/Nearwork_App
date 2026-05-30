@@ -717,12 +717,14 @@ export function ClientPortal() {
       const role = String(nextProfile?.role || nextProfile?.portalRole || "").toLowerCase();
       const allowed = role.includes("client") || role.includes("org") || role === "viewer" || role === "user" || role === "admin";
       if (!nextProfile || !allowed) {
-        // Surface the real cause on screen so it can be diagnosed without dev tools.
+        // Log the technical detail to the console for support, but keep the
+        // on-screen message clean for real clients.
         const debug = await debugProfileLookup(nextUser).catch((e) => `debug-failed:${String(e)}`);
+        console.warn("[ClientPortal] Access denied at gate:", debug, { healError });
         if (healError) {
-          setAuthMessage(`Setup error while creating your access: ${healError}. [${debug}] Please screenshot this and send to Nearwork.`);
+          setAuthMessage("We couldn't finish setting up your access. Please contact support@nearwork.co and we'll get you in.");
         } else {
-          setAuthMessage(`This email is not invited to the client portal yet. [${debug}] Please screenshot this message and send it to Nearwork.`);
+          setAuthMessage("This email is not invited to the client portal yet. Please contact support@nearwork.co if you believe this is a mistake.");
         }
         await logoutClient();
         return;
