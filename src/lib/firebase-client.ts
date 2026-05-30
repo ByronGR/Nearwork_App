@@ -634,6 +634,31 @@ export function subscribeOrgCollection<T>(
   return () => unsubscribers.forEach((unsubscribe) => unsubscribe());
 }
 
+// Real-time watch on the organization doc so an admin suspending or deleting the org
+// takes effect immediately for clients who are already signed in (not just at next login).
+export function subscribeOrganization(orgId: string, callback: (org: Organization | null) => void) {
+  if (!orgId) return () => null;
+  return onSnapshot(
+    doc(db, "organizations", orgId),
+    (snap) => {
+      if (!snap.exists()) { callback(null); return; }
+      const data = snap.data();
+      callback({ id: snap.id, orgId: data.orgId || snap.id, name: data.name || "Client organization", ...data } as Organization);
+    },
+    () => callback(null),
+  );
+}
+
+// Real-time watch on the signed-in user's own profile doc, so suspending/removing the
+// user (or deleting their profile) logs them out immediately.
+export function subscribeClientProfile(user: User, callback: (profile: ClientUser | null) => void) {
+  return onSnapshot(
+    doc(db, "users", user.uid),
+    (snap) => callback(snap.exists() ? ({ id: snap.id, ...snap.data() } as ClientUser) : null),
+    () => callback(null),
+  );
+}
+
 export function subscribeNotifications(user: User, callback: (items: PortalNotification[]) => void) {
   return onSnapshot(
     query(collection(db, "notifications"), where("recipientUid", "==", user.uid), limit(50)),

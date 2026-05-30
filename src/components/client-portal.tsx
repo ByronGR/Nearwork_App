@@ -49,6 +49,8 @@ import {
   subscribeOpeningChat,
   subscribeNotifications,
   subscribeOrgCollection,
+  subscribeOrganization,
+  subscribeClientProfile,
   updateClientProfile,
   readableRole,
   type ClientUser,
@@ -757,6 +759,33 @@ export function ClientPortal() {
     ];
     return () => unsubscribers.forEach((unsub) => unsub());
   }, [org, testMode]);
+
+  // Live enforcement: if the org is suspended/deleted or this user is suspended/removed
+  // while they're signed in, kick them out immediately with the right message.
+  useEffect(() => {
+    if (!org || !user || testMode) return;
+    const orgKey = (org as { id?: string; orgId?: string }).orgId || (org as { id?: string }).id;
+    if (!orgKey) return;
+    const unsubOrg = subscribeOrganization(orgKey, async (liveOrg) => {
+      if (liveOrg === null) {
+        setAuthMessage("Your company's workspace is no longer available. Please contact support@nearwork.co for more information.");
+        await logoutClient().catch(() => null);
+      } else if ((liveOrg as { status?: string }).status === "suspended") {
+        setAuthMessage("Your company's access has been suspended. Please contact support@nearwork.co for more information.");
+        await logoutClient().catch(() => null);
+      }
+    });
+    const unsubProfile = subscribeClientProfile(user, async (liveProfile) => {
+      if (liveProfile === null) {
+        setAuthMessage("Your access has been removed. Please contact support@nearwork.co for more information.");
+        await logoutClient().catch(() => null);
+      } else if ((liveProfile as { suspended?: boolean }).suspended === true) {
+        setAuthMessage("Your access has been paused. Please contact support@nearwork.co for more information.");
+        await logoutClient().catch(() => null);
+      }
+    });
+    return () => { unsubOrg(); unsubProfile(); };
+  }, [org, user, testMode]);
 
   useEffect(() => {
     function closeSearch(event: MouseEvent) {
