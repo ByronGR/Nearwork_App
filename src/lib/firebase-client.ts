@@ -421,22 +421,30 @@ export async function sendClientPasswordReset(email: string) {
   const normalizedEmail = email.trim().toLowerCase();
   // Send the branded Nearwork reset email via the Admin API, which generates the
   // reset link with the Firebase Admin SDK (Vercel OIDC → GCP Workload Identity).
-  // If that path is unavailable we fall back to Firebase's own (plain but working)
-  // reset email so users are never locked out.
-  try {
-    const response = await fetch("https://admin.nearwork.co/api/send-reset", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: normalizedEmail,
-        continueUrl: "https://app.nearwork.co/reset-password",
-      }),
-    });
-    if (response.ok) return; // branded email sent successfully
-  } catch {
-    // network error — fall through to Firebase fallback
+  // We retry briefly to ride out a serverless cold start, and only fall back to
+  // Firebase's plain email as a true last resort so users are never locked out —
+  // the branded email is what should normally always go out.
+  let lastError: unknown = null;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const response = await fetch("https://admin.nearwork.co/api/send-reset", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: normalizedEmail,
+          continueUrl: "https://app.nearwork.co/reset-password",
+        }),
+      });
+      if (response.ok) return; // branded email sent successfully
+      lastError = new Error(`send-reset responded ${response.status}`);
+    } catch (err) {
+      lastError = err; // network error — retry, then fall back
+    }
+    if (attempt === 0) await new Promise((resolve) => setTimeout(resolve, 800));
   }
-  // Fallback: Firebase's built-in reset email (no Admin SDK credentials required)
+  // Last-resort fallback: Firebase's built-in (plain) reset email. Should be rare;
+  // log it so a failing branded path is visible in the console.
+  console.warn("[sendClientPasswordReset] Branded email failed, using Firebase fallback:", lastError);
   await sendPasswordResetEmail(auth, normalizedEmail, {
     url: "https://app.nearwork.co/reset-password",
     handleCodeInApp: false,
