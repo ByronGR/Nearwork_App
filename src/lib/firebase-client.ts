@@ -21,6 +21,7 @@ import {
   collection,
   doc,
   getDoc,
+  getDocFromServer,
   getDocs,
   getFirestore,
   limit,
@@ -483,16 +484,25 @@ export async function debugProfileLookup(user: User): Promise<string> {
 
 export async function getClientUser(user: User): Promise<ClientUser | null> {
   const email = user.email?.toLowerCase();
-  // The very first Firestore read right after onAuthStateChanged can fire before the
-  // freshly-issued auth token is fully attached, so it misses an existing users/{uid}
-  // doc (returns "not found" rather than denying). Ensure the token is ready, and if
-  // the doc still appears missing, refresh the token and retry once before giving up.
+  // Read the profile authoritatively from the server. The plain getDoc() right after
+  // onAuthStateChanged can resolve against the still-empty local cache while the
+  // connection is coming up and report the doc as "not found" — which previously
+  // gated valid clients out as "not invited". getDocFromServer forces a real server
+  // round-trip; if the connection/token isn't ready yet it throws, so we retry a few
+  // times before falling back to the cache-aware read.
   try { await user.getIdToken(); } catch { /* token already cached */ }
-  let snap = await getDoc(doc(db, "users", user.uid));
-  if (!snap.exists()) {
-    try { await user.getIdToken(true); } catch { /* ignore */ }
-    snap = await getDoc(doc(db, "users", user.uid));
+  const userRef = doc(db, "users", user.uid);
+  async function readUserSnap() {
+    for (let attempt = 0; attempt < 4; attempt++) {
+      try {
+        return await getDocFromServer(userRef);
+      } catch {
+        await new Promise((resolve) => setTimeout(resolve, 250 * (attempt + 1)));
+      }
+    }
+    return getDoc(userRef);
   }
+  const snap = await readUserSnap();
   const directProfile = snap.exists() ? ({ id: snap.id, ...snap.data() } as ClientUser) : null;
 
   const memberships = await getClientMemberships(user);
