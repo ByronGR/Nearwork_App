@@ -419,18 +419,17 @@ export async function createClientAccount(email: string, password: string, invit
 
 export async function sendClientPasswordReset(email: string) {
   const normalizedEmail = email.trim().toLowerCase();
-  // Try the Admin email API first so the user receives the branded Nearwork email.
-  // This requires Firebase Admin credentials on the Admin Vercel deployment; if they
-  // are not configured the API returns an error and we fall back to Firebase's own
-  // password reset flow, which delivers a plain but functional reset email.
+  // Send the branded Nearwork reset email via the Admin API, which generates the
+  // reset link with the Firebase Admin SDK (Vercel OIDC → GCP Workload Identity).
+  // If that path is unavailable we fall back to Firebase's own (plain but working)
+  // reset email so users are never locked out.
   try {
-    const response = await fetch("https://admin.nearwork.co/api/send-email", {
+    const response = await fetch("https://admin.nearwork.co/api/send-reset", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        to: normalizedEmail,
-        templateId: "password_reset",
-        data: { continueUrl: "https://app.nearwork.co/reset-password" },
+        email: normalizedEmail,
+        continueUrl: "https://app.nearwork.co/reset-password",
       }),
     });
     if (response.ok) return; // branded email sent successfully
