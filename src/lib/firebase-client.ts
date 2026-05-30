@@ -471,15 +471,24 @@ export async function linkExistingAccountToOrg(email: string, password: string, 
 // when it looks up the logged-in user's profile, so a single screenshot reveals
 // whether the runtime UID matches the Firestore doc and whether the read is denied.
 export async function debugProfileLookup(user: User): Promise<string> {
+  const errCode = (e: unknown) => (e as { code?: string })?.code || (e instanceof Error ? e.message : String(e));
+  const parts: string[] = [`uid=${user.uid}`];
+  // Cache-aware read (what the original diagnostic used).
   try {
-    const snap = await getDoc(doc(db, "users", user.uid));
-    if (!snap.exists()) return `uid=${user.uid} | doc=MISSING | email=${user.email}`;
-    const d = snap.data() as { role?: string; orgId?: string; organizationId?: string };
-    return `uid=${user.uid} | doc=FOUND role=${d.role} orgId=${d.orgId || d.organizationId} | email=${user.email}`;
-  } catch (err) {
-    const code = (err as { code?: string })?.code || (err instanceof Error ? err.message : String(err));
-    return `uid=${user.uid} | READ-ERROR=${code} | email=${user.email}`;
-  }
+    const s = await getDoc(doc(db, "users", user.uid));
+    parts.push(`cache=${s.exists() ? `FOUND(role=${(s.data() as { role?: string })?.role})` : "MISSING"}`);
+  } catch (e) { parts.push(`cache=ERR(${errCode(e)})`); }
+  // Authoritative server read (what the login gate now uses).
+  try {
+    const s = await getDocFromServer(doc(db, "users", user.uid));
+    parts.push(`server=${s.exists() ? `FOUND(role=${(s.data() as { role?: string })?.role})` : "MISSING"}`);
+  } catch (e) { parts.push(`server=ERR(${errCode(e)})`); }
+  // What the gate function actually returns for this user.
+  try {
+    const p = await getClientUser(user);
+    parts.push(`getClientUser=${p ? `role=${p.role},orgId=${p.orgId}` : "null"}`);
+  } catch (e) { parts.push(`getClientUser=THREW(${errCode(e)})`); }
+  return parts.join(" | ");
 }
 
 export async function getClientUser(user: User): Promise<ClientUser | null> {
