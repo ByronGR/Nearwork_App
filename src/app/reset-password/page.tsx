@@ -39,9 +39,10 @@ export default function ResetPasswordPage() {
         if (!active) return;
         setEmail(resetEmail);
         setReady(true);
-      } catch {
+      } catch (err) {
         if (!active) return;
-        setError("This password setup link is invalid or expired. Ask Nearwork to resend your invitation.");
+        const code = (err as { code?: string })?.code ?? (err instanceof Error ? err.message : String(err));
+        setError(`This reset link is invalid or expired (${code}). Request a new one below.`);
       }
     }
     verify();
