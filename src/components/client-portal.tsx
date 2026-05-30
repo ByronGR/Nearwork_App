@@ -368,6 +368,7 @@ function timestampMs(value: unknown) {
 }
 
 function friendlyAuthError(raw: string): string {
+  if (raw.includes("invite-missing-org")) return "This invitation link is missing its company details. Please open the most recent invite email from Nearwork and use that link, or ask Nearwork to resend your invitation.";
   if (raw.includes("auth/invalid-credential") || raw.includes("auth/wrong-password") || raw.includes("auth/user-not-found")) return "Incorrect email or password.";
   if (raw.includes("auth/too-many-requests")) return "Too many failed attempts. Please wait a few minutes and try again.";
   if (raw.includes("auth/network-request-failed")) return "Network error. Check your connection and try again.";

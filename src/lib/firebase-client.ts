@@ -321,6 +321,14 @@ export async function createClientAccount(email: string, password: string, invit
   token?: string;
 }) {
   const normalizedEmail = email.trim().toLowerCase();
+  // Guard: never create a login we can't attach to a company. Without orgId the
+  // Firestore users doc can't be written (and security rules would reject it),
+  // which previously left "zombie" accounts that exist in Auth but can never log
+  // in. Fail before creating the Auth account so the user can retry with a valid
+  // (most-recent) invite link instead of getting permanently stuck.
+  if (!invite?.orgId) {
+    throw new Error("invite-missing-org");
+  }
   const credential = await createUserWithEmailAndPassword(auth, normalizedEmail, password);
   if (invite?.orgId) {
     const inviteDocId = ("invite_" + invite.orgId + "_" + normalizedEmail).replace(/[^a-z0-9_-]+/g, "_").slice(0, 150);
