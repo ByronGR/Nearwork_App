@@ -40,6 +40,7 @@ import {
   loginWithGoogle,
   logoutClient,
   writeClientProfile,
+  debugProfileLookup,
   markNotificationRead,
   saveNotificationPreferences,
   sendClientPasswordReset,
@@ -702,12 +703,11 @@ export function ClientPortal() {
       const allowed = role.includes("client") || role.includes("org") || role === "viewer" || role === "user" || role === "admin";
       if (!nextProfile || !allowed) {
         // Surface the real cause on screen so it can be diagnosed without dev tools.
+        const debug = await debugProfileLookup(nextUser).catch((e) => `debug-failed:${String(e)}`);
         if (healError) {
-          setAuthMessage(`Setup error while creating your access: ${healError}. Please screenshot this message and send it to Nearwork.`);
-        } else if (!healAttempted) {
-          setAuthMessage("This email is not invited to the client portal yet. Please open your most recent Nearwork invite link in this same browser, set your password, then log in.");
+          setAuthMessage(`Setup error while creating your access: ${healError}. [${debug}] Please screenshot this and send to Nearwork.`);
         } else {
-          setAuthMessage("This email is not invited to the client portal yet. Ask Nearwork to add it under the company users page.");
+          setAuthMessage(`This email is not invited to the client portal yet. [${debug}] Please screenshot this message and send it to Nearwork.`);
         }
         await logoutClient();
         return;

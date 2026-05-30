@@ -466,6 +466,21 @@ export async function linkExistingAccountToOrg(email: string, password: string, 
   await signOut(auth);
 }
 
+// Temporary diagnostic: returns a one-line summary of exactly what the app sees
+// when it looks up the logged-in user's profile, so a single screenshot reveals
+// whether the runtime UID matches the Firestore doc and whether the read is denied.
+export async function debugProfileLookup(user: User): Promise<string> {
+  try {
+    const snap = await getDoc(doc(db, "users", user.uid));
+    if (!snap.exists()) return `uid=${user.uid} | doc=MISSING | email=${user.email}`;
+    const d = snap.data() as { role?: string; orgId?: string; organizationId?: string };
+    return `uid=${user.uid} | doc=FOUND role=${d.role} orgId=${d.orgId || d.organizationId} | email=${user.email}`;
+  } catch (err) {
+    const code = (err as { code?: string })?.code || (err instanceof Error ? err.message : String(err));
+    return `uid=${user.uid} | READ-ERROR=${code} | email=${user.email}`;
+  }
+}
+
 export async function getClientUser(user: User): Promise<ClientUser | null> {
   const email = user.email?.toLowerCase();
   const snap = await getDoc(doc(db, "users", user.uid));
