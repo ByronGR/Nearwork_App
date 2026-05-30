@@ -483,7 +483,16 @@ export async function debugProfileLookup(user: User): Promise<string> {
 
 export async function getClientUser(user: User): Promise<ClientUser | null> {
   const email = user.email?.toLowerCase();
-  const snap = await getDoc(doc(db, "users", user.uid));
+  // The very first Firestore read right after onAuthStateChanged can fire before the
+  // freshly-issued auth token is fully attached, so it misses an existing users/{uid}
+  // doc (returns "not found" rather than denying). Ensure the token is ready, and if
+  // the doc still appears missing, refresh the token and retry once before giving up.
+  try { await user.getIdToken(); } catch { /* token already cached */ }
+  let snap = await getDoc(doc(db, "users", user.uid));
+  if (!snap.exists()) {
+    try { await user.getIdToken(true); } catch { /* ignore */ }
+    snap = await getDoc(doc(db, "users", user.uid));
+  }
   const directProfile = snap.exists() ? ({ id: snap.id, ...snap.data() } as ClientUser) : null;
 
   const memberships = await getClientMemberships(user);
