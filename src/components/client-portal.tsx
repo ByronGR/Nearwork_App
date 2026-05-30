@@ -787,7 +787,8 @@ export function ClientPortal() {
       setOrg(nextOrg);
     } catch (err) {
       console.error("[ClientPortal] Error loading portal:", err);
-      setAuthMessage("Something went wrong loading your portal. Please refresh the page and try again.");
+      const detail = (err as { code?: string })?.code ?? (err instanceof Error ? err.message : String(err));
+      setAuthMessage(`Something went wrong loading your portal (${detail}). Please refresh the page and try again.`);
       await logoutClient().catch(() => null);
     }
   }), [testMode]);

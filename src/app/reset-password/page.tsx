@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { Check, Eye, EyeOff } from "lucide-react";
 import {
   confirmClientPasswordReset,
   loginWithEmail,
@@ -26,6 +26,19 @@ export default function ResetPasswordPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const isRequestMode = !oobCode;
+
+  const passwordRules = useMemo(
+    () => [
+      { label: "At least 8 characters", met: password.length >= 8 },
+      { label: "One uppercase letter (A–Z)", met: /[A-Z]/.test(password) },
+      { label: "One lowercase letter (a–z)", met: /[a-z]/.test(password) },
+      { label: "One number (0–9)", met: /[0-9]/.test(password) },
+      { label: "One special character (!@#$…)", met: /[^A-Za-z0-9]/.test(password) },
+    ],
+    [password],
+  );
+  const allRulesMet = passwordRules.every((rule) => rule.met);
+  const passwordsMatch = confirmPassword.length > 0 && password === confirmPassword;
 
   useEffect(() => {
     let active = true;
@@ -72,8 +85,8 @@ export default function ResetPasswordPage() {
       }
       return;
     }
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters.");
+    if (!allRulesMet) {
+      setError("Please meet all the password requirements below.");
       return;
     }
     if (password !== confirmPassword) {
@@ -131,11 +144,27 @@ export default function ResetPasswordPage() {
                 </button>
               </div>
             </label>
+            <ul className="mt-4 space-y-1.5">
+              {passwordRules.map((rule) => (
+                <li key={rule.label} className="flex items-center gap-2 text-sm">
+                  <span className={`grid h-5 w-5 place-items-center rounded-full ${rule.met ? "bg-[#12866E] text-white" : "border border-[#d8dee4] text-transparent"}`}>
+                    <Check className="h-3.5 w-3.5" strokeWidth={3} />
+                  </span>
+                  <span className={rule.met ? "text-[#12866E]" : "text-[#57606a]"}>{rule.label}</span>
+                </li>
+              ))}
+              <li className="flex items-center gap-2 text-sm">
+                <span className={`grid h-5 w-5 place-items-center rounded-full ${passwordsMatch ? "bg-[#12866E] text-white" : "border border-[#d8dee4] text-transparent"}`}>
+                  <Check className="h-3.5 w-3.5" strokeWidth={3} />
+                </span>
+                <span className={passwordsMatch ? "text-[#12866E]" : "text-[#57606a]"}>Passwords match</span>
+              </li>
+            </ul>
           </>
         ) : null}
         {message ? <div className="mt-4 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">{message}</div> : null}
         {error ? <div className="mt-4 rounded-md border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">{error}</div> : null}
-        <button disabled={(!isRequestMode && !ready) || busy} className="mt-5 h-11 w-full rounded-md bg-[#12866E] text-sm font-black text-white disabled:opacity-60">
+        <button disabled={(!isRequestMode && (!ready || !allRulesMet || !passwordsMatch)) || busy} className="mt-5 h-11 w-full rounded-md bg-[#12866E] text-sm font-black text-white disabled:opacity-60">
           {busy ? "Working..." : isRequestMode ? "Send setup link" : ready ? "Save password" : "Checking link..."}
         </button>
       </form>
