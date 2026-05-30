@@ -39,6 +39,7 @@ import {
   loginWithEmail,
   loginWithGoogle,
   logoutClient,
+  writeClientProfile,
   markNotificationRead,
   saveNotificationPreferences,
   sendClientPasswordReset,
@@ -415,15 +416,23 @@ function LoginScreen({ message }: { message?: string }) {
         // triggers onAuthStateChanged before our Firestore doc write completes —
         // without this flag the handler signs them back out and the doc write fails.
         if (typeof window !== "undefined") sessionStorage.setItem("nw_creating_account", "1");
-        await createClientAccount(email, password, {
+        const invitePayload = {
           token: inviteToken,
+          email: email.trim().toLowerCase(),
           orgId: inviteOrgId,
           orgName: inviteOrgName,
           portalRole: inviteRole,
           firstName: inviteFirstName,
           lastName: inviteLastName,
           businessRole: inviteBusinessRole,
-        });
+        };
+        // Persist the invite so we can self-heal at login: if the setup-time profile
+        // write doesn't land (token timing, deleted/recreated account, etc.), the
+        // first authenticated login re-writes the users doc with a fully valid token.
+        if (typeof window !== "undefined" && inviteOrgId) {
+          try { localStorage.setItem("nw_invite_payload", JSON.stringify(invitePayload)); } catch {}
+        }
+        await createClientAccount(email, password, invitePayload);
         if (typeof window !== "undefined") sessionStorage.removeItem("nw_creating_account");
         await logoutClient();
         if (typeof window !== "undefined") {
@@ -664,7 +673,26 @@ export function ClientPortal() {
     setUser(nextUser);
     setAuthMessage("");
     try {
-      const nextProfile = await getClientUser(nextUser);
+      let nextProfile = await getClientUser(nextUser);
+      // Self-heal: if this authenticated user has no profile but we have a stashed
+      // invite for their email, write the users doc now (token is fully valid here)
+      // and re-read. This recovers accounts whose setup-time write never landed.
+      if (!nextProfile && typeof window !== "undefined") {
+        try {
+          const stashed = localStorage.getItem("nw_invite_payload");
+          if (stashed) {
+            const payload = JSON.parse(stashed) as { email?: string; orgId?: string };
+            const sameEmail = (payload.email || "").toLowerCase() === (nextUser.email || "").toLowerCase();
+            if (sameEmail && payload.orgId) {
+              await writeClientProfile(nextUser, payload);
+              localStorage.removeItem("nw_invite_payload");
+              nextProfile = await getClientUser(nextUser);
+            }
+          }
+        } catch (repairErr) {
+          console.warn("[ClientPortal] Profile self-heal failed:", repairErr);
+        }
+      }
       const role = String(nextProfile?.role || nextProfile?.portalRole || "").toLowerCase();
       const allowed = role.includes("client") || role.includes("org") || role === "viewer" || role === "user" || role === "admin";
       if (!nextProfile || !allowed) {
@@ -672,6 +700,8 @@ export function ClientPortal() {
         await logoutClient();
         return;
       }
+      // Clear any stale stashed invite once we have a valid profile.
+      if (typeof window !== "undefined") { try { localStorage.removeItem("nw_invite_payload"); } catch {} }
       if ((nextProfile as any).suspended === true) {
         setAuthMessage("Your access has been paused. Please contact support@nearwork.co for more information.");
         await logoutClient();

@@ -311,7 +311,7 @@ export async function loginWithEmail(email: string, password: string) {
   return credential;
 }
 
-export async function createClientAccount(email: string, password: string, invite?: {
+export type ClientInvite = {
   orgId?: string;
   orgName?: string;
   portalRole?: string;
@@ -319,7 +319,64 @@ export async function createClientAccount(email: string, password: string, invit
   lastName?: string;
   businessRole?: string;
   token?: string;
-}) {
+  email?: string;
+};
+
+// Writes the Firestore users/{uid} profile for an authenticated client. Forcing a
+// fresh ID token first guarantees the auth token carries the `email` claim that the
+// security rule checks (`request.resource.data.email == email()`); the very first
+// token after createUserWithEmailAndPassword can briefly lack it, which silently
+// rejects the create and leaves a profile-less ("zombie") account. Safe to call
+// again at login time to repair such accounts.
+export async function writeClientProfile(user: User, invite: ClientInvite) {
+  if (!invite?.orgId) throw new Error("invite-missing-org");
+  const normalizedEmail = (invite.email || user.email || "").trim().toLowerCase();
+  // Force-refresh so the token used for the Firestore write definitely has the email claim.
+  await user.getIdToken(true);
+  const name = [invite.firstName, invite.lastName].filter(Boolean).join(" ") || user.displayName || normalizedEmail;
+  await setDoc(doc(db, "users", user.uid), {
+    uid: user.uid,
+    email: normalizedEmail,
+    name,
+    firstName: invite.firstName || "",
+    lastName: invite.lastName || "",
+    role: "client",
+    portalRole: invite.portalRole || "viewer_client",
+    orgId: invite.orgId,
+    organizationId: invite.orgId,
+    orgName: invite.orgName || "",
+    businessRole: invite.businessRole || "",
+    title: invite.businessRole || "",
+    source: "app.nearwork.co",
+    invitePending: false,
+    onboarded: true,
+    createdFromInvite: true,
+    acceptedInviteId: invite.token || "",
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  }, { merge: true });
+  const inviteDocId = ("invite_" + invite.orgId + "_" + normalizedEmail).replace(/[^a-z0-9_-]+/g, "_").slice(0, 150);
+  try {
+    await setDoc(doc(db, "orgInvites", inviteDocId), {
+      email: normalizedEmail,
+      uid: user.uid,
+      orgId: invite.orgId,
+      organizationId: invite.orgId,
+      orgName: invite.orgName || "",
+      businessRole: invite.businessRole || "",
+      title: invite.businessRole || "",
+      status: "active",
+      invitePending: false,
+      acceptedAt: serverTimestamp(),
+      acceptedInviteId: invite.token || "",
+      updatedAt: serverTimestamp(),
+    }, { merge: true });
+  } catch (error) {
+    console.warn("[ClientInvite] Could not mirror accepted invite status.", error);
+  }
+}
+
+export async function createClientAccount(email: string, password: string, invite?: ClientInvite) {
   const normalizedEmail = email.trim().toLowerCase();
   // Guard: never create a login we can't attach to a company. Without orgId the
   // Firestore users doc can't be written (and security rules would reject it),
@@ -330,49 +387,7 @@ export async function createClientAccount(email: string, password: string, invit
     throw new Error("invite-missing-org");
   }
   const credential = await createUserWithEmailAndPassword(auth, normalizedEmail, password);
-  if (invite?.orgId) {
-    const inviteDocId = ("invite_" + invite.orgId + "_" + normalizedEmail).replace(/[^a-z0-9_-]+/g, "_").slice(0, 150);
-    const name = [invite.firstName, invite.lastName].filter(Boolean).join(" ") || credential.user.displayName || normalizedEmail;
-    await setDoc(doc(db, "users", credential.user.uid), {
-      uid: credential.user.uid,
-      email: normalizedEmail,
-      name,
-      firstName: invite.firstName || "",
-      lastName: invite.lastName || "",
-      role: "client",
-      portalRole: invite.portalRole || "viewer_client",
-      orgId: invite.orgId,
-      organizationId: invite.orgId,
-      orgName: invite.orgName || "",
-      businessRole: invite.businessRole || "",
-      title: invite.businessRole || "",
-      source: "app.nearwork.co",
-      invitePending: false,
-      onboarded: true,
-      createdFromInvite: true,
-      acceptedInviteId: invite.token || "",
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    }, { merge: true });
-    try {
-      await setDoc(doc(db, "orgInvites", inviteDocId), {
-        email: normalizedEmail,
-        uid: credential.user.uid,
-        orgId: invite.orgId,
-        organizationId: invite.orgId,
-        orgName: invite.orgName || "",
-        businessRole: invite.businessRole || "",
-        title: invite.businessRole || "",
-        status: "active",
-        invitePending: false,
-        acceptedAt: serverTimestamp(),
-        acceptedInviteId: invite.token || "",
-        updatedAt: serverTimestamp(),
-      }, { merge: true });
-    } catch (error) {
-      console.warn("[ClientInvite] Could not mirror accepted invite status.", error);
-    }
-  }
+  await writeClientProfile(credential.user, { ...invite, email: normalizedEmail });
   // HubSpot sync (fire-and-forget)
   if (invite?.orgId) {
     fetch("https://admin.nearwork.co/api/sync-hubspot", {
@@ -439,37 +454,14 @@ export async function logoutClient() {
   return signOut(auth);
 }
 
-export async function linkExistingAccountToOrg(email: string, password: string, invite?: {
-  orgId?: string;
-  orgName?: string;
-  portalRole?: string;
-  firstName?: string;
-  lastName?: string;
-  businessRole?: string;
-  token?: string;
-}) {
+export async function linkExistingAccountToOrg(email: string, password: string, invite?: ClientInvite) {
   const normalizedEmail = email.trim().toLowerCase();
   // Sign in with their existing password to verify they own this account
   const credential = await signInWithEmailAndPassword(auth, normalizedEmail, password);
-  const uid = credential.user.uid;
   // Write (or overwrite) the org association — uses create rule if doc was deleted,
   // or update rule if doc still exists with a client role
   if (invite?.orgId) {
-    await setDoc(doc(db, "users", uid), {
-      uid,
-      email: normalizedEmail,
-      role: "client",
-      portalRole: invite.portalRole || "viewer_client",
-      orgId: invite.orgId,
-      organizationId: invite.orgId,
-      orgName: invite.orgName || "",
-      businessRole: invite.businessRole || "",
-      title: invite.businessRole || "",
-      invitePending: false,
-      onboarded: true,
-      acceptedInviteId: invite.token || "",
-      updatedAt: serverTimestamp(),
-    }, { merge: true });
+    await writeClientProfile(credential.user, { ...invite, email: normalizedEmail });
   }
   await signOut(auth);
 }
