@@ -216,7 +216,7 @@ export function KickoffBriefPage({ code }: { code: string }) {
     if (!user) return;
     (async () => {
       try {
-        const p = await getClientUser(user.uid);
+        const p = await getClientUser(user);
         setProfile(p);
         await fetchBrief(user);
       } catch (e) {
