@@ -394,6 +394,9 @@ function LoginScreen({ message }: { message?: string }) {
   const [inviteComplete, setInviteComplete] = useState(false);
   const isInvite = !inviteComplete && Boolean(inviteToken || inviteEmail);
   const [email, setEmail] = useState(inviteEmail);
+  const [firstName, setFirstName] = useState(inviteFirstName);
+  const [lastName, setLastName] = useState(inviteLastName);
+  const [jobTitle, setJobTitle] = useState(inviteBusinessRole);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -414,6 +417,8 @@ function LoginScreen({ message }: { message?: string }) {
     try {
       await setClientRememberMe(rememberMe);
       if (isInvite) {
+        if (!firstName.trim()) throw new Error("Please enter your first name.");
+        if (!jobTitle.trim()) throw new Error("Please enter your role or job title.");
         if (password.length < 8) throw new Error("Password must be at least 8 characters.");
         if (password !== confirmPassword) throw new Error("Passwords do not match.");
         // Signal to onAuthStateChanged to skip profile loading while we're mid-creation.
@@ -427,9 +432,9 @@ function LoginScreen({ message }: { message?: string }) {
           orgId: inviteOrgId,
           orgName: inviteOrgName,
           portalRole: inviteRole,
-          firstName: inviteFirstName,
-          lastName: inviteLastName,
-          businessRole: inviteBusinessRole,
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          businessRole: jobTitle.trim(),
         };
         // Persist the invite so we can self-heal at login: if the setup-time profile
         // write doesn't land (token timing, deleted/recreated account, etc.), the
@@ -463,9 +468,9 @@ function LoginScreen({ message }: { message?: string }) {
             orgId: inviteOrgId,
             orgName: inviteOrgName,
             portalRole: inviteRole,
-            firstName: inviteFirstName,
-            lastName: inviteLastName,
-            businessRole: inviteBusinessRole,
+            firstName: firstName.trim() || inviteFirstName,
+            lastName: lastName.trim() || inviteLastName,
+            businessRole: jobTitle.trim() || inviteBusinessRole,
           });
           if (typeof window !== "undefined") {
             sessionStorage.removeItem("nw_creating_account");
@@ -529,13 +534,31 @@ function LoginScreen({ message }: { message?: string }) {
       <section className="flex items-center justify-center px-0 py-8 lg:px-10">
         <form onSubmit={submit} className="w-full rounded-lg border border-[#E5E4E0] bg-white p-6 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#12866E]">app.nearwork.co</p>
-          <h1 className="mt-2 text-3xl font-semibold">{isInvite ? "Create your password" : "Company login"}</h1>
-          <p className="mt-2 text-sm leading-6 text-[#555]">{isInvite ? "Use the invited email and choose a password to enter your company workspace." : "Use the email invited by Nearwork for your company portal."}</p>
+          <h1 className="mt-2 text-3xl font-semibold">{isInvite ? "Create your account" : "Company login"}</h1>
+          <p className="mt-2 text-sm leading-6 text-[#555]">{isInvite ? "Tell us a little about yourself and choose a password to enter your company workspace." : "Use the email invited by Nearwork for your company portal."}</p>
           {localMessage ? <div className="mt-4 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">{localMessage}</div> : null}
           {!localMessage && message ? <div className="mt-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">{message}</div> : null}
-          <label className="mt-5 block text-sm font-medium">
+          {isInvite ? (
+            <>
+              <div className="mt-5 grid grid-cols-2 gap-3">
+                <label className="block text-sm font-medium">
+                  First name
+                  <input value={firstName} onChange={(event) => setFirstName(event.target.value)} type="text" autoComplete="given-name" className="mt-2 h-11 w-full rounded-md border border-[#E5E4E0] px-3 outline-none focus:border-[#12866E]" required />
+                </label>
+                <label className="block text-sm font-medium">
+                  Last name
+                  <input value={lastName} onChange={(event) => setLastName(event.target.value)} type="text" autoComplete="family-name" className="mt-2 h-11 w-full rounded-md border border-[#E5E4E0] px-3 outline-none focus:border-[#12866E]" />
+                </label>
+              </div>
+              <label className="mt-4 block text-sm font-medium">
+                Your role
+                <input value={jobTitle} onChange={(event) => setJobTitle(event.target.value)} type="text" placeholder="e.g. CEO, Hiring Manager" autoComplete="organization-title" className="mt-2 h-11 w-full rounded-md border border-[#E5E4E0] px-3 outline-none focus:border-[#12866E]" required />
+              </label>
+            </>
+          ) : null}
+          <label className="mt-4 block text-sm font-medium">
             Email
-            <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" className="mt-2 h-11 w-full rounded-md border border-[#E5E4E0] px-3 outline-none focus:border-[#12866E]" required />
+            <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" autoComplete="email" className="mt-2 h-11 w-full rounded-md border border-[#E5E4E0] px-3 outline-none focus:border-[#12866E]" required />
           </label>
           <label className="mt-4 block text-sm font-medium">
             {isInvite ? "Create password" : "Password"}
