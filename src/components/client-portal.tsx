@@ -676,7 +676,20 @@ export function ClientPortal() {
     setUser(nextUser);
     setAuthMessage("");
     try {
+      // Cold-start race guard: the very first getClientUser() right after
+      // onAuthStateChanged can resolve against a still-connecting Firestore and
+      // return null even though the server has a valid profile (proven by the
+      // diagnostic, where a slightly-later call reliably returns role=client).
+      // Retry the whole lookup a few times before treating it as "no profile".
+      const profileIsAllowed = (p: ClientUser | null) => {
+        const r = String(p?.role || p?.portalRole || "").toLowerCase();
+        return !!p && (r.includes("client") || r.includes("org") || r === "viewer" || r === "user" || r === "admin");
+      };
       let nextProfile = await getClientUser(nextUser);
+      for (let attempt = 0; attempt < 5 && !profileIsAllowed(nextProfile); attempt++) {
+        await new Promise((resolve) => setTimeout(resolve, 400 * (attempt + 1)));
+        nextProfile = await getClientUser(nextUser);
+      }
       // Self-heal: if this authenticated user has no profile but we have a stashed
       // invite for their email, write the users doc now (token is fully valid here)
       // and re-read. This recovers accounts whose setup-time write never landed.
