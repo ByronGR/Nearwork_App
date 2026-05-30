@@ -348,6 +348,10 @@ export async function writeClientProfile(user: User, invite: ClientInvite) {
     orgName: invite.orgName || "",
     businessRole: invite.businessRole || "",
     title: invite.businessRole || "",
+    // jobTitle/displayRole drive the title shown in the portal sidebar — keep them
+    // in sync with the business role chosen at invite time (e.g. "CEO", "Hiring Manager").
+    jobTitle: invite.businessRole || "",
+    displayRole: invite.businessRole || "",
     source: "app.nearwork.co",
     invitePending: false,
     onboarded: true,

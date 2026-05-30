@@ -8,6 +8,7 @@ import {
   CalendarDays,
   ExternalLink,
   Eye,
+  EyeOff,
   FileText,
   Handshake,
   Kanban,
@@ -395,6 +396,7 @@ function LoginScreen({ message }: { message?: string }) {
   const [email, setEmail] = useState(inviteEmail);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [localMessage, setLocalMessage] = useState(() => {
     if (typeof window === "undefined") return "";
@@ -537,12 +539,22 @@ function LoginScreen({ message }: { message?: string }) {
           </label>
           <label className="mt-4 block text-sm font-medium">
             {isInvite ? "Create password" : "Password"}
-            <input value={password} onChange={(event) => setPassword(event.target.value)} type="password" className="mt-2 h-11 w-full rounded-md border border-[#E5E4E0] px-3 outline-none focus:border-[#12866E]" required />
+            <div className="relative mt-2">
+              <input value={password} onChange={(event) => setPassword(event.target.value)} type={showPassword ? "text" : "password"} className="h-11 w-full rounded-md border border-[#E5E4E0] pl-3 pr-11 outline-none focus:border-[#12866E]" required />
+              <button type="button" onClick={() => setShowPassword((v) => !v)} aria-label={showPassword ? "Hide password" : "Show password"} className="absolute inset-y-0 right-0 grid w-11 place-items-center text-[#888] hover:text-[#111]">
+                {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+              </button>
+            </div>
           </label>
           {isInvite ? (
             <label className="mt-4 block text-sm font-medium">
               Confirm password
-              <input value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} type="password" className="mt-2 h-11 w-full rounded-md border border-[#E5E4E0] px-3 outline-none focus:border-[#12866E]" required />
+              <div className="relative mt-2">
+                <input value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} type={showPassword ? "text" : "password"} className="h-11 w-full rounded-md border border-[#E5E4E0] pl-3 pr-11 outline-none focus:border-[#12866E]" required />
+                <button type="button" onClick={() => setShowPassword((v) => !v)} aria-label={showPassword ? "Hide password" : "Show password"} className="absolute inset-y-0 right-0 grid w-11 place-items-center text-[#888] hover:text-[#111]">
+                  {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                </button>
+              </div>
             </label>
           ) : null}
           <label className="mt-4 flex items-center gap-2 text-sm font-medium text-[#555]">
@@ -1373,9 +1385,11 @@ function OverviewDashboard({
   onSelectCandidate: (candidate: PortalCandidate, pipeline: PortalPipeline) => void;
   onMarkRead: (id: string) => void;
 }) {
-  const firstName = profile.firstName || (profile.name || "").split(" ")[0] || "there";
+  const rawFirstName = profile.firstName || (profile.name || "").split(" ")[0] || "";
+  // Never greet someone with a raw email address — fall back to a friendly default.
+  const firstName = rawFirstName && !rawFirstName.includes("@") ? rawFirstName : "there";
   const hour = new Date().getHours();
-  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+  const greeting = hour < 5 ? "Good evening" : hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
   const reviewCandidates = pipelineCandidates.filter(({ candidate }) => ["final-round", "offer"].includes(clientStageKey(candidate.stage)));
   const totalCandidates = pipelineCandidates.length;
   const recentUpdates = notifications.filter((n) => !n.read).slice(0, 3);
