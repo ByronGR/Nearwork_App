@@ -792,10 +792,15 @@ function chatInitials(name: string) {
 }
 
 export function subscribePipelineChat(pipelineCode: string, callback: (items: PipelineMessage[]) => void) {
-  if (!pipelineCode) return () => null;
+  if (!pipelineCode) {
+    console.warn("[pipeline-chat] no pipelineCode — cannot subscribe to chat thread");
+    callback([]);
+    return () => null;
+  }
   // Clients only ever query non-internal messages. This lets Firestore rules
   // safely deny client reads on internal Nearwork-only notes (internal === true)
-  // without those notes ever leaving the server.
+  // without those notes ever leaving the server. Two equality filters do not
+  // require a composite index; we sort client-side.
   return onSnapshot(
     query(
       collection(db, "pipeline_messages"),
@@ -804,7 +809,10 @@ export function subscribePipelineChat(pipelineCode: string, callback: (items: Pi
       limit(300),
     ),
     (snapshot) => callback(snapshot.docs.map((item) => withId<PipelineMessage>(item.id, item.data()))),
-    () => callback([]),
+    (err) => {
+      console.error("[pipeline-chat] failed to read pipeline_messages", err);
+      callback([]);
+    },
   );
 }
 
