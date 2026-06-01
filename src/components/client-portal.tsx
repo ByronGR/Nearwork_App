@@ -6,6 +6,7 @@ import {
   BriefcaseBusiness,
   CalendarCheck,
   CalendarDays,
+  ChevronRight,
   ExternalLink,
   Eye,
   EyeOff,
@@ -685,7 +686,6 @@ export function ClientPortal() {
   const [sidebarPinned, setSidebarPinned] = useState(true);
   const [sidebarHover, setSidebarHover] = useState(false);
   const [selectedPipelineCode, setSelectedPipelineCode] = useState("");
-  const [pipelineFilter, setPipelineFilter] = useState("");
   const [selectedHireId, setSelectedHireId] = useState("");
   const [compareCodes, setCompareCodes] = useState<string[]>([]);
   const [favoriteCodes, setFavoriteCodes] = useState<string[]>([]);
@@ -693,6 +693,76 @@ export function ClientPortal() {
   const [showInvite, setShowInvite] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const sidebarOpen = sidebarPinned || sidebarHover;
+
+  // ── URL <-> view sync ──────────────────────────────────────────────────────
+  // The portal is a single mounted shell; we keep state but mirror the current
+  // view into the address bar so every entity has a shareable, reload-safe URL.
+  // Internal navigation uses pushState (integrates with the Next router) so the
+  // shell never remounts (no re-auth / re-subscribe on each navigation).
+  function goToPipelines() { setSelectedPipelineCode(""); setSelectedCode(""); setActive("pipeline"); }
+  function goToPipeline(code: string) { setSelectedPipelineCode(code); setSelectedCode(""); setActive("pipeline"); }
+  function goToCandidate(code: string, pipelineCode: string) { setSelectedPipelineCode(pipelineCode); setSelectedCode(code); setActive("candidate"); }
+
+  function buildPath(): string {
+    switch (active) {
+      case "overview": return "/";
+      case "pipeline": return selectedPipelineCode ? `/pipelines/${selectedPipelineCode}` : "/pipelines";
+      case "candidate": return selectedCode ? `/candidates/${selectedCode}` : "/pipelines";
+      case "openings": return "/openings";
+      case "hires": return "/hired";
+      case "hire": return selectedHireId ? `/hired/${selectedHireId}` : "/hired";
+      case "finance": return "/finance";
+      case "services": return "/services";
+      case "timeoff": return "/timeoff";
+      case "notes": return "/notes";
+      case "users": return "/team";
+      case "settings": return "/settings";
+      default: return "/";
+    }
+  }
+
+  function applyPath(pathname: string) {
+    const [seg, id] = pathname.split("/").filter(Boolean);
+    switch (seg) {
+      case undefined: setActive("overview"); break;
+      case "pipelines":
+        setSelectedCode("");
+        setSelectedPipelineCode(id || "");
+        setActive("pipeline");
+        break;
+      case "candidates":
+        if (id) { setSelectedCode(id); setActive("candidate"); } else { setActive("pipeline"); }
+        break;
+      case "hired":
+        if (id) { setSelectedHireId(id); setActive("hire"); } else { setActive("hires"); }
+        break;
+      case "openings": setActive("openings"); break;
+      case "finance": setActive("finance"); break;
+      case "services": setActive("services"); break;
+      case "timeoff": setActive("timeoff"); break;
+      case "notes": setActive("notes"); break;
+      case "team": case "users": setActive("users"); break;
+      case "settings": setActive("settings"); break;
+      default: setActive("overview");
+    }
+  }
+
+  const didInitRoute = useRef(false);
+  useEffect(() => {
+    applyPath(window.location.pathname);
+    const onPop = () => applyPath(window.location.pathname);
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    // Skip the mount run so the initial deep link (parsed above) is not clobbered.
+    if (!didInitRoute.current) { didInitRoute.current = true; return; }
+    const next = buildPath();
+    if (window.location.pathname !== next) window.history.pushState(null, "", next);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active, selectedCode, selectedPipelineCode, selectedHireId]);
 
   useEffect(() => onAuthStateChanged(auth, async (nextUser) => {
     if (testMode) return;
@@ -1017,7 +1087,7 @@ export function ClientPortal() {
         action: () => {
           const pipeline = pipelines.find((item) => item.openingCode === opening.code || item.openingTitle === opening.title);
           if (pipeline) {
-            setPipelineFilter(pipeline.code);
+            setSelectedPipelineCode(pipeline.code);
             setActive("pipeline");
           } else {
             setActive("openings");
@@ -1206,52 +1276,53 @@ export function ClientPortal() {
             <FinanceView org={org} hires={visibleHires} accountManager={accountManager} profile={profile} />
           ) : null}
 
-          {active === "pipeline" ? (
+          {active === "pipeline" && !selectedPipeline ? (
             <div className="space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <h1 className="text-lg font-semibold text-[#111]">Pipeline</h1>
-                  <p className="text-sm text-[#555]">{filteredCandidates.length} candidate{filteredCandidates.length !== 1 ? "s" : ""} across all openings</p>
+                  <h1 className="text-lg font-semibold text-[#111]">Pipelines</h1>
+                  <p className="text-sm text-[#555]">{pipelines.length} role{pipelines.length !== 1 ? "s" : ""} · {filteredCandidates.length} candidate{filteredCandidates.length !== 1 ? "s" : ""}</p>
+                </div>
+                <div className="flex items-center gap-2 rounded-md border border-[#E5E4E0] bg-white px-3">
+                  <Search className="size-3.5 text-[#888]" />
+                  <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search roles or candidates..." className="h-9 w-52 bg-transparent text-sm text-[#111] outline-none placeholder:text-[#888]" />
+                </div>
+              </div>
+              <PipelineRows
+                pipelines={search ? pipelines.filter((pl) => filteredCandidates.some((r) => r.pipeline.code === pl.code) || [pl.openingTitle, pl.code, pl.recruiter].join(" ").toLowerCase().includes(search.toLowerCase())) : pipelines}
+                rows={filteredCandidates}
+                onOpen={(code) => goToPipeline(code)}
+              />
+            </div>
+          ) : null}
+
+          {active === "pipeline" && selectedPipeline ? (
+            <div className="space-y-4">
+              <button onClick={() => goToPipelines()} className="flex items-center gap-1.5 text-sm font-medium text-[#555] transition hover:text-[#111]">
+                <ArrowLeft className="size-4" /> All pipelines
+              </button>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h1 className="text-lg font-semibold text-[#111]">{selectedPipeline.openingTitle || selectedPipeline.code}</h1>
+                  <p className="text-sm text-[#555]">{selectedPipeline.code} · {pipelineRows.length} candidate{pipelineRows.length !== 1 ? "s" : ""}</p>
                 </div>
                 <div className="flex items-center gap-2 rounded-md border border-[#E5E4E0] bg-white px-3">
                   <Search className="size-3.5 text-[#888]" />
                   <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search candidates..." className="h-9 w-44 bg-transparent text-sm text-[#111] outline-none placeholder:text-[#888]" />
                 </div>
               </div>
-              <div className="flex gap-2 overflow-x-auto pb-1">
-                <button onClick={() => setPipelineFilter("")} className={cx("whitespace-nowrap rounded-full border px-3 py-1 text-sm transition", !pipelineFilter ? "border-[#111] bg-[#111] font-medium text-white" : "border-[#E5E4E0] bg-white font-normal text-[#555] hover:border-[#111]")}>
-                  All roles
-                </button>
-                {pipelines.map((pl) => (
-                  <button key={pl.code} onClick={() => {
-                    const next = pipelineFilter === pl.code ? "" : pl.code;
-                    setPipelineFilter(next);
-                    setSelectedPipelineCode(next); // also drive the chat subscription
-                  }} className={cx("whitespace-nowrap rounded-full border px-3 py-1 text-sm transition", pipelineFilter === pl.code ? "border-[#111] bg-[#111] font-medium text-white" : "border-[#E5E4E0] bg-white font-normal text-[#555] hover:border-[#111]")}>
-                    {pl.openingTitle || pl.code}
-                  </button>
-                ))}
-              </div>
               <KanbanBoard
-                rows={pipelineFilter ? filteredCandidates.filter((r) => r.pipeline.code === pipelineFilter) : filteredCandidates}
-                onSelect={(candidate, pipeline) => {
-                  setSelectedPipelineCode(pipeline.code);
-                  setSelectedCode(candidate.code);
-                  setActive("candidate");
-                }}
+                rows={pipelineRows}
+                onSelect={(candidate, pipeline) => goToCandidate(candidate.code, pipeline.code)}
               />
-              {selectedPipeline && profile ? (
+              {profile ? (
                 <div className="h-[560px] overflow-hidden rounded-xl border border-[#E5E4E0] bg-white">
                   <PipelineChatPanel
                     pipeline={selectedPipeline}
                     org={org}
                     candidates={selectedPipeline.candidates || []}
                     profile={profile}
-                    onOpenCandidate={(c) => {
-                      setSelectedPipelineCode(selectedPipeline.code);
-                      setSelectedCode(c.code || c.candidateCode || c.email || "");
-                      setActive("candidate");
-                    }}
+                    onOpenCandidate={(c) => goToCandidate(c.code || c.candidateCode || c.email || "", selectedPipeline.code)}
                   />
                 </div>
               ) : null}
@@ -1259,7 +1330,7 @@ export function ClientPortal() {
           ) : null}
 
           {active === "openings" ? (
-            <OpeningsView openings={openings} pipelines={pipelines} rows={pipelineCandidates} onOpenPipeline={(code) => { setPipelineFilter(code); setActive("pipeline"); }} />
+            <OpeningsView openings={openings} pipelines={pipelines} rows={pipelineCandidates} onOpenPipeline={(code) => goToPipeline(code)} />
           ) : null}
 
           {active === "candidate" && selected ? (
@@ -1273,12 +1344,21 @@ export function ClientPortal() {
               setNoteText={setNoteText}
               setNoteScope={setNoteScope}
               saveNote={saveNote}
-              onBack={() => setActive("pipeline")}
+              onBack={() => goToPipeline(selected.pipeline.code)}
               onFavorite={() => toggleFavorite(selected.candidate.code)}
               onInterview={() => toggleInterview(selected.candidate.code)}
               favorite={favoriteCodes.includes(selected.candidate.code)}
               interview={interviewCodes.includes(selected.candidate.code)}
             />
+          ) : null}
+
+          {active === "candidate" && !selected ? (
+            <div className="space-y-4">
+              <button onClick={() => goToPipelines()} className="flex items-center gap-1.5 text-sm font-medium text-[#555] transition hover:text-[#111]">
+                <ArrowLeft className="size-4" /> All pipelines
+              </button>
+              <Empty title="Candidate not found" text="This candidate may still be loading, or isn’t part of your pipelines." />
+            </div>
           ) : null}
 
           {active === "hires" ? (
@@ -1705,6 +1785,72 @@ function PipelineBoard({
                 {!stageRows.length ? <div className="rounded-md border border-dashed border-[#E5E4E0] bg-white p-3 text-center text-xs text-[#888]">No candidates</div> : null}
               </div>
             </section>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function PipelineRows({
+  pipelines,
+  rows,
+  onOpen,
+}: {
+  pipelines: PortalPipeline[];
+  rows: Array<{ candidate: PortalCandidate; pipeline: PortalPipeline }>;
+  onOpen: (code: string) => void;
+}) {
+  if (!pipelines.length) {
+    return <Empty title="No pipelines yet" text="When Nearwork opens a role for your company it will appear here." />;
+  }
+  return (
+    <div className="overflow-hidden rounded-xl border border-[#E5E4E0] bg-white">
+      <div className="hidden grid-cols-[1fr_120px_110px_140px_110px_32px] gap-3 border-b border-[#E5E4E0] bg-[#F8F7F3] px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.08em] text-[#888] md:grid">
+        <span>Role</span>
+        <span>Code</span>
+        <span className="text-center">Candidates</span>
+        <span className="text-center">Action needed</span>
+        <span>Status</span>
+        <span />
+      </div>
+      <div className="divide-y divide-[#E5E4E0]">
+        {pipelines.map((pipeline) => {
+          const pipeRows = rows.filter((row) => row.pipeline.code === pipeline.code);
+          const actionNeeded = pipeRows.filter(({ candidate }) =>
+            ["final-round", "offer"].includes(clientStageKey(candidate.stage)),
+          ).length;
+          const isActive = !["closed", "cancelled", "archived", "lost"].includes(
+            String(pipeline.status || "").toLowerCase(),
+          );
+          return (
+            <button
+              key={pipeline.code}
+              onClick={() => onOpen(pipeline.code)}
+              className="grid w-full grid-cols-1 items-center gap-1 px-4 py-3 text-left transition hover:bg-[#F8F7F3] md:grid-cols-[1fr_120px_110px_140px_110px_32px] md:gap-3"
+            >
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium text-[#111]">{pipeline.openingTitle || pipeline.code}</p>
+                <p className="truncate text-xs text-[#555]">{pipeline.recruiter || "Nearwork team"}</p>
+              </div>
+              <span className="text-xs text-[#555] md:text-sm">{pipeline.code}</span>
+              <span className="text-sm text-[#111] md:text-center">{pipeRows.length}</span>
+              <div className="md:text-center">
+                {actionNeeded > 0 ? (
+                  <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-800">
+                    {actionNeeded} to review
+                  </span>
+                ) : (
+                  <span className="text-xs text-[#888]">—</span>
+                )}
+              </div>
+              <div>
+                <Badge tone={isActive ? "border-teal-200 bg-teal-50 text-teal-700" : "border-stone-200 bg-stone-50 text-stone-600"}>
+                  {pipeline.status || "Active"}
+                </Badge>
+              </div>
+              <ChevronRight className="hidden size-4 text-[#888] md:block" />
+            </button>
           );
         })}
       </div>
