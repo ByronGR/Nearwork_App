@@ -29,6 +29,7 @@ import {
   query,
   serverTimestamp,
   setDoc,
+  updateDoc,
   where,
   type DocumentData,
   type Unsubscribe,
@@ -146,6 +147,7 @@ export type PortalPipeline = {
   openingCode?: string;
   openingTitle?: string;
   recruiter?: string;
+  accountManager?: string;
   status?: string;
   candidates?: PipelineCandidate[];
 };
@@ -748,6 +750,106 @@ export async function sendOpeningChatMessage(input: {
     createdAt: serverTimestamp(),
     channel: "app.nearwork.co"
   });
+}
+
+// ─── Shared pipeline chat (pipeline_messages) ──────────────────────────────
+// This is the SAME collection Admin (admin.nearwork.co) reads/writes, keyed by
+// the pipeline code, so Nearwork staff and the client see one shared thread.
+// Internal Nearwork-only notes (internal === true) are filtered out for clients.
+
+export type PipelineMessageReaction = { emoji: string; userIds: string[] };
+
+export type PipelineMessage = {
+  id: string;
+  pipelineCode?: string;
+  kind?: "msg" | "system" | "interview";
+  authorId?: string;
+  authorName?: string;
+  authorInitials?: string;
+  authorOrg?: "nearwork" | "client";
+  body?: string;
+  text?: string;
+  internal?: boolean;
+  pinned?: boolean;
+  reactions?: PipelineMessageReaction[];
+  candidateId?: string;
+  candidateName?: string;
+  when?: string;
+  withWho?: string[];
+  createdAt?: unknown;
+};
+
+function chatInitials(name: string) {
+  return (
+    name
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((p) => p[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2) || "NW"
+  );
+}
+
+export function subscribePipelineChat(pipelineCode: string, callback: (items: PipelineMessage[]) => void) {
+  if (!pipelineCode) return () => null;
+  // Clients only ever query non-internal messages. This lets Firestore rules
+  // safely deny client reads on internal Nearwork-only notes (internal === true)
+  // without those notes ever leaving the server.
+  return onSnapshot(
+    query(
+      collection(db, "pipeline_messages"),
+      where("pipelineCode", "==", pipelineCode),
+      where("internal", "==", false),
+      limit(300),
+    ),
+    (snapshot) => callback(snapshot.docs.map((item) => withId<PipelineMessage>(item.id, item.data()))),
+    () => callback([]),
+  );
+}
+
+export async function sendPipelineChatMessage(input: {
+  pipelineCode: string;
+  profile: ClientUser;
+  orgName?: string;
+  text: string;
+}) {
+  const name = input.profile.name || input.profile.email || "Company user";
+  await addDoc(collection(db, "pipeline_messages"), {
+    pipelineCode: input.pipelineCode,
+    kind: "msg",
+    authorId: input.profile.id || input.profile.uid || "",
+    authorName: name,
+    authorInitials: chatInitials(name),
+    authorOrg: "client",
+    body: input.text.trim(),
+    internal: false,
+    pinned: false,
+    reactions: [],
+    orgName: input.orgName || "",
+    channel: "app.nearwork.co",
+    createdAt: serverTimestamp(),
+  });
+}
+
+export async function togglePipelineMessageReaction(
+  messageId: string,
+  emoji: string,
+  userId: string,
+  current: PipelineMessageReaction[],
+) {
+  const reactions = (current || []).map((r) => ({ ...r, userIds: [...r.userIds] }));
+  const idx = reactions.findIndex((r) => r.emoji === emoji);
+  if (idx === -1) {
+    reactions.push({ emoji, userIds: [userId] });
+  } else {
+    const has = reactions[idx].userIds.includes(userId);
+    reactions[idx].userIds = has
+      ? reactions[idx].userIds.filter((u) => u !== userId)
+      : [...reactions[idx].userIds, userId];
+    if (reactions[idx].userIds.length === 0) reactions.splice(idx, 1);
+  }
+  await updateDoc(doc(db, "pipeline_messages", messageId), { reactions });
 }
 
 export async function saveNotificationPreferences(uid: string, preferences: ClientUser["notificationPreferences"]) {
