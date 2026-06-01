@@ -46,8 +46,6 @@ import {
   saveNotificationPreferences,
   sendClientPasswordReset,
   setClientRememberMe,
-  sendOpeningChatMessage,
-  subscribeOpeningChat,
   subscribeNotifications,
   subscribeOrgCollection,
   subscribeOrganization,
@@ -63,12 +61,12 @@ import {
   type PortalAssessmentInsight,
   type PortalNotification,
   type PortalNote,
-  type OpeningChatMessage,
   type PortalHire,
   type PortalOpening,
   type PortalPipeline,
   type TimeOffRequest,
 } from "@/lib/firebase-client";
+import { PipelineChatPanel } from "@/components/pipeline-chat-panel";
 
 const tabs = [
   { id: "overview",  label: "Overview",   icon: LayoutDashboard,   section: "Hiring" },
@@ -673,8 +671,6 @@ export function ClientPortal() {
   const [hires, setHires] = useState<PortalHire[]>([]);
   const [timeOff, setTimeOff] = useState<TimeOffRequest[]>([]);
   const [notes, setNotes] = useState<PortalNote[]>([]);
-  const [openingChat, setOpeningChat] = useState<OpeningChatMessage[]>([]);
-  const [chatText, setChatText] = useState("");
   const [notifications, setNotifications] = useState<PortalNotification[]>([]);
   const [loggingOut, setLoggingOut] = useState(false);
   const [active, setActive] = useState<TabId>("overview");
@@ -941,40 +937,6 @@ export function ClientPortal() {
     email: org?.accountManagerEmail || defaultAccountManager.email,
     phone: org?.accountManagerPhone || defaultAccountManager.phone,
   };
-
-  useEffect(() => {
-    const openingCode = selectedPipeline?.openingCode || selectedPipeline?.code;
-    if (!org || !openingCode || testMode) {
-      setOpeningChat([]);
-      return;
-    }
-    return subscribeOpeningChat(org, openingCode, (items) => {
-      setOpeningChat(items.sort((a, b) => timestampMs(a.createdAt) - timestampMs(b.createdAt)));
-    });
-  }, [org, selectedPipeline?.openingCode, selectedPipeline?.code, testMode]);
-
-  async function sendChatMessage() {
-    if (!org || !profile || !selectedPipeline || !chatText.trim()) return;
-    const text = chatText.trim();
-    if (testMode) {
-      setOpeningChat((items) => [...items, {
-        id: `local-chat-${Date.now()}`,
-        orgId: org.orgId,
-        orgName: org.name,
-        openingCode: selectedPipeline.openingCode || selectedPipeline.code,
-        pipelineCode: selectedPipeline.code,
-        text,
-        author: profile.name || profile.email || "Company user",
-        authorEmail: profile.email,
-        authorType: "client",
-        createdAt: new Date().toISOString(),
-      }]);
-      setChatText("");
-      return;
-    }
-    await sendOpeningChatMessage({ org, profile, openingCode: selectedPipeline.openingCode || selectedPipeline.code, pipelineCode: selectedPipeline.code, text });
-    setChatText("");
-  }
 
   async function saveNote() {
     if (!org || !profile || !selected || !noteText.trim()) return;
@@ -1278,15 +1240,20 @@ export function ClientPortal() {
                   setActive("candidate");
                 }}
               />
-              {selectedPipeline ? (
-                <OpeningChatPanel
-                  companyName={org.name}
-                  recruiter={selectedPipeline.recruiter || "Nearwork"}
-                  messages={openingChat}
-                  value={chatText}
-                  setValue={setChatText}
-                  onSend={sendChatMessage}
-                />
+              {selectedPipeline && profile ? (
+                <div className="h-[560px] overflow-hidden rounded-xl border border-[#E5E4E0] bg-white">
+                  <PipelineChatPanel
+                    pipeline={selectedPipeline}
+                    org={org}
+                    candidates={selectedPipeline.candidates || []}
+                    profile={profile}
+                    onOpenCandidate={(c) => {
+                      setSelectedPipelineCode(selectedPipeline.code);
+                      setSelectedCode(c.code || c.candidateCode || c.email || "");
+                      setActive("candidate");
+                    }}
+                  />
+                </div>
               ) : null}
             </div>
           ) : null}
@@ -1862,62 +1829,6 @@ function OpeningsView({
             </div>
           </article>
         ))}
-      </div>
-    </Panel>
-  );
-}
-
-function OpeningChatPanel({
-  companyName,
-  recruiter,
-  messages,
-  value,
-  setValue,
-  onSend,
-}: {
-  companyName: string;
-  recruiter: string;
-  messages: OpeningChatMessage[];
-  value: string;
-  setValue: (value: string) => void;
-  onSend: () => void;
-}) {
-  return (
-    <Panel title="Opening chat" eyebrow={`${companyName} + Nearwork`}>
-      <div className="rounded-lg border border-[#E5E4E0] bg-[#F5F4F0] p-4">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="font-semibold">Shared conversation for this opening</p>
-            <p className="text-sm text-[#555]">Nearwork recruiter: {recruiter}. Messages stay attached to this opening.</p>
-          </div>
-          <Badge tone="border-teal-200 bg-teal-50 text-teal-700">Group chat</Badge>
-        </div>
-        <div className="max-h-72 space-y-3 overflow-auto rounded-md border border-[#E5E4E0] bg-white p-3">
-          {messages.map((message) => {
-            const client = message.authorType !== "nearwork";
-            return (
-              <article key={message.id} className={cx("max-w-[82%] rounded-lg p-3", client ? "ml-auto bg-[#EEF6F3]" : "bg-[#F5F4F0]")}>
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-sm font-semibold">{message.author || (client ? companyName : "Nearwork")}</p>
-                  <p className="text-[11px] font-medium text-[#888]">{dateTime(message.createdAt)}</p>
-                </div>
-                <p className="mt-2 text-sm leading-6 text-[#555]">{message.text}</p>
-              </article>
-            );
-          })}
-          {!messages.length ? <Empty title="No messages yet" text="Start the opening conversation here. Nearwork will see the message on this opening thread." /> : null}
-        </div>
-        <div className="mt-4 grid gap-3 md:grid-cols-[1fr_auto]">
-          <textarea
-            value={value}
-            onChange={(event) => setValue(event.target.value)}
-            placeholder="Ask Nearwork about this opening, timeline, candidate feedback, or next steps..."
-            className="min-h-24 resize-none rounded-md border border-[#E5E4E0] bg-white p-3 text-sm outline-none focus:border-[#12866E]"
-          />
-          <button onClick={onSend} disabled={!value.trim()} className="h-11 self-end rounded-md bg-[#12866E] px-5 text-sm font-semibold text-white disabled:opacity-50">
-            Send message
-          </button>
-        </div>
       </div>
     </Panel>
   );
