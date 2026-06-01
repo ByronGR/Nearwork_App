@@ -215,7 +215,7 @@ export function PipelineChatPanel({ pipeline, org, candidates, profile, onOpenCa
     setSending(true);
     setSendError("");
     try {
-      await sendPipelineChatMessage({ pipelineCode: pipeline.code, profile, orgName: org.name, text: body });
+      await sendPipelineChatMessage({ pipelineCode: pipeline.code, orgId: pipeline.orgId || org.orgId || "", profile, orgName: org.name, text: body });
       setDraft("");
       setSlashKind(null);
     } catch (err) {

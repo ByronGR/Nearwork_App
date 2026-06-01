@@ -818,6 +818,7 @@ export function subscribePipelineChat(pipelineCode: string, callback: (items: Pi
 
 export async function sendPipelineChatMessage(input: {
   pipelineCode: string;
+  orgId: string;
   profile: ClientUser;
   orgName?: string;
   text: string;
@@ -825,6 +826,7 @@ export async function sendPipelineChatMessage(input: {
   const name = input.profile.name || input.profile.email || "Company user";
   await addDoc(collection(db, "pipeline_messages"), {
     pipelineCode: input.pipelineCode,
+    orgId: input.orgId || "",
     kind: "msg",
     authorId: input.profile.id || input.profile.uid || "",
     authorName: name,

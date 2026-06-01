@@ -387,23 +387,27 @@ service cloud.firestore {
       // Nearwork staff: full access, including internal-only notes.
       allow read, write: if isStaff();
 
-      // Clients/partners: only the non-internal shared thread. Because the
-      // client app always queries internal == false, internal notes never
-      // leave the server.
-      allow read: if isClient() && resource.data.internal == false;
+      // Clients/partners: only the non-internal shared thread, and only for
+      // their own organisation. Access is gated on org membership via
+      // sameOrg() (which has a non-client branch keyed on the user's own
+      // userDoc.orgId), so invited partners with any portalRole work as long
+      // as the message carries their orgId. Because the client app always
+      // queries internal == false, internal notes never leave the server.
+      allow read: if resource.data.internal == false
+        && sameOrg(resource.data);
 
-      allow create: if isClient()
-        && request.resource.data.internal == false
+      allow create: if request.resource.data.internal == false
         && request.resource.data.authorOrg == 'client'
         && request.resource.data.authorId == request.auth.uid
+        && sameOrg(request.resource.data)
         && request.resource.data.body is string
         && request.resource.data.body.size() > 0
         && request.resource.data.body.size() <= 5000;
 
       // Clients may only toggle reactions — never edit/delete staff messages.
       allow update: if isAdmin() || (
-        isClient()
-        && resource.data.internal == false
+        resource.data.internal == false
+        && sameOrg(resource.data)
         && request.resource.data.diff(resource.data).changedKeys().hasOnly(['reactions'])
       );
     }
