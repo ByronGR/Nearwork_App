@@ -381,6 +381,33 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
+    // Shared pipeline chat — the SAME thread used by Admin (admin.nearwork.co)
+    // and the client portal (app.nearwork.co), keyed by pipeline code.
+    match /pipeline_messages/{messageId} {
+      // Nearwork staff: full access, including internal-only notes.
+      allow read, write: if isStaff();
+
+      // Clients/partners: only the non-internal shared thread. Because the
+      // client app always queries internal == false, internal notes never
+      // leave the server.
+      allow read: if isClient() && resource.data.internal == false;
+
+      allow create: if isClient()
+        && request.resource.data.internal == false
+        && request.resource.data.authorOrg == 'client'
+        && request.resource.data.authorId == request.auth.uid
+        && request.resource.data.body is string
+        && request.resource.data.body.size() > 0
+        && request.resource.data.body.size() <= 5000;
+
+      // Clients may only toggle reactions — never edit/delete staff messages.
+      allow update: if isAdmin() || (
+        isClient()
+        && resource.data.internal == false
+        && request.resource.data.diff(resource.data).changedKeys().hasOnly(['reactions'])
+      );
+    }
+
     match /notifications/{notificationId} {
       allow read: if isStaff()
         || (
