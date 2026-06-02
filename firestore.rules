@@ -412,6 +412,18 @@ service cloud.firestore {
       );
     }
 
+    // Kick-off briefs — keyed by pipeline/opening code. All writes (and all client
+    // reads) go through the server-side /api/kickoff endpoint, which uses the Admin
+    // SDK and bypasses these rules; it verifies the caller's token, enforces
+    // staff-vs-client permissions, and strips internal-only notes before a client
+    // ever sees the brief. The only direct client-SDK access is the Admin editor's
+    // live onSnapshot read, so Nearwork staff need read; clients never read this
+    // collection directly, and nobody writes it from the browser.
+    match /kickoffBriefs/{code} {
+      allow read: if isStaff();
+      allow write: if false;
+    }
+
     match /notifications/{notificationId} {
       allow read: if isStaff()
         || (
