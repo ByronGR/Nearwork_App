@@ -3,7 +3,6 @@
 import {
   ArrowLeft,
   Bell,
-  BriefcaseBusiness,
   CalendarCheck,
   CalendarDays,
   ChevronRight,
@@ -72,7 +71,6 @@ import { PipelineChatPanel } from "@/components/pipeline-chat-panel";
 const tabs = [
   { id: "overview",  label: "Overview",   icon: LayoutDashboard,   section: "Hiring" },
   { id: "pipeline",  label: "Pipeline",   icon: Kanban,            section: "Hiring" },
-  { id: "openings",  label: "Open roles", icon: BriefcaseBusiness, section: "Hiring" },
   { id: "hires",     label: "Hires",      icon: Handshake,         section: "Team" },
   { id: "services",  label: "Services",   icon: ShieldCheck,       section: "Team" },
   { id: "timeoff",   label: "PTO",        icon: CalendarCheck,     section: "Team" },
@@ -708,7 +706,6 @@ export function ClientPortal() {
       case "overview": return "/";
       case "pipeline": return selectedPipelineCode ? `/pipelines/${selectedPipelineCode}` : "/pipelines";
       case "candidate": return selectedCode ? `/candidates/${selectedCode}` : "/pipelines";
-      case "openings": return "/openings";
       case "hires": return "/hired";
       case "hire": return selectedHireId ? `/hired/${selectedHireId}` : "/hired";
       case "finance": return "/finance";
@@ -736,7 +733,7 @@ export function ClientPortal() {
       case "hired":
         if (id) { setSelectedHireId(id); setActive("hire"); } else { setActive("hires"); }
         break;
-      case "openings": setActive("openings"); break;
+      case "openings": goToPipelines(); break;
       case "finance": setActive("finance"); break;
       case "services": setActive("services"); break;
       case "timeoff": setActive("timeoff"); break;
@@ -1087,10 +1084,9 @@ export function ClientPortal() {
         action: () => {
           const pipeline = pipelines.find((item) => item.openingCode === opening.code || item.openingTitle === opening.title);
           if (pipeline) {
-            setSelectedPipelineCode(pipeline.code);
-            setActive("pipeline");
+            goToPipeline(pipeline.code);
           } else {
-            setActive("openings");
+            goToPipelines();
           }
           setSelectedCode("");
         },
@@ -1266,7 +1262,7 @@ export function ClientPortal() {
               notifications={notifications}
               accountManager={accountManager}
               onGoToPipeline={() => setActive("pipeline")}
-              onGoToOpenings={() => setActive("openings")}
+              onGoToOpenings={goToPipelines}
               onSelectCandidate={(candidate, pipeline) => { setSelectedPipelineCode(pipeline.code); setSelectedCode(candidate.code); setActive("candidate"); }}
               onMarkRead={markRead}
             />
@@ -1277,23 +1273,12 @@ export function ClientPortal() {
           ) : null}
 
           {active === "pipeline" && !selectedPipeline ? (
-            <div className="space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <h1 className="text-lg font-semibold text-[#111]">Pipelines</h1>
-                  <p className="text-sm text-[#555]">{pipelines.length} role{pipelines.length !== 1 ? "s" : ""} · {filteredCandidates.length} candidate{filteredCandidates.length !== 1 ? "s" : ""}</p>
-                </div>
-                <div className="flex items-center gap-2 rounded-md border border-[#E5E4E0] bg-white px-3">
-                  <Search className="size-3.5 text-[#888]" />
-                  <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search roles or candidates..." className="h-9 w-52 bg-transparent text-sm text-[#111] outline-none placeholder:text-[#888]" />
-                </div>
-              </div>
-              <PipelineRows
-                pipelines={search ? pipelines.filter((pl) => filteredCandidates.some((r) => r.pipeline.code === pl.code) || [pl.openingTitle, pl.code, pl.recruiter].join(" ").toLowerCase().includes(search.toLowerCase())) : pipelines}
-                rows={filteredCandidates}
-                onOpen={(code) => goToPipeline(code)}
-              />
-            </div>
+            <OpeningsView
+              openings={openings}
+              pipelines={pipelines}
+              rows={pipelineCandidates}
+              onOpenPipeline={(code) => goToPipeline(code)}
+            />
           ) : null}
 
           {active === "pipeline" && selectedPipeline ? (
@@ -1327,10 +1312,6 @@ export function ClientPortal() {
                 </div>
               ) : null}
             </div>
-          ) : null}
-
-          {active === "openings" ? (
-            <OpeningsView openings={openings} pipelines={pipelines} rows={pipelineCandidates} onOpenPipeline={(code) => goToPipeline(code)} />
           ) : null}
 
           {active === "candidate" && selected ? (
