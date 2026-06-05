@@ -636,9 +636,11 @@ function CandidateCard({
 function NotificationPanel({
   notifications,
   onRead,
+  onNavigate,
 }: {
   notifications: PortalNotification[];
   onRead: (id: string) => void;
+  onNavigate?: (pipelineCode: string) => void;
 }) {
   return (
     <div className="absolute right-0 top-12 z-30 w-[min(360px,calc(100vw-32px))] rounded-xl border border-[#E5E4E0] bg-white shadow-xl">
@@ -648,9 +650,19 @@ function NotificationPanel({
       </div>
       <div className="max-h-96 overflow-auto">
         {notifications.length ? notifications.map((item) => (
-          <button key={item.id} onClick={() => onRead(item.id)} className={cx("block w-full border-b border-[#E5E4E0] p-4 text-left last:border-b-0", item.read ? "bg-white" : "bg-[#EEF6F3]")}>
+          <button
+            key={item.id}
+            onClick={() => {
+              onRead(item.id);
+              if (item.pipelineCode && onNavigate) onNavigate(item.pipelineCode);
+            }}
+            className={cx("block w-full border-b border-[#E5E4E0] p-4 text-left last:border-b-0", item.read ? "bg-white" : "bg-[#EEF6F3]")}
+          >
             <p className="text-sm font-medium text-[#111]">{item.title || "Nearwork update"}</p>
             <p className="mt-1 text-sm leading-5 text-[#555]">{item.message || ""}</p>
+            {item.pipelineCode && (
+              <p className="mt-1.5 text-xs font-medium text-[#16A085]">Tap to review →</p>
+            )}
             <p className="mt-2 text-xs text-[#888]">{dateTime(item.createdAt)}</p>
           </button>
         )) : <div className="p-6 text-center text-sm text-[#888]">No notifications yet.</div>}
@@ -1245,7 +1257,18 @@ export function ClientPortal() {
                 <Bell className="size-4" />
                 {unread ? <span className="absolute -right-1 -top-1 grid min-w-5 place-items-center rounded-full bg-[#C73565] px-1 text-xs font-medium text-white">{unread}</span> : null}
               </button>
-              {showBell ? <NotificationPanel notifications={notifications} onRead={markRead} /> : null}
+              {showBell ? (
+                <NotificationPanel
+                  notifications={notifications}
+                  onRead={markRead}
+                  onNavigate={(code) => {
+                    setActive("pipeline");
+                    setSelectedPipelineCode(code);
+                    setPipelineTab("brief");
+                    setShowBell(false);
+                  }}
+                />
+              ) : null}
               <button onClick={() => setShowInvite(true)} className="inline-flex h-9 items-center gap-2 rounded-md bg-[#111] px-3 text-sm font-medium text-white">
                 <UserPlus className="size-4" /> Invite user
               </button>
