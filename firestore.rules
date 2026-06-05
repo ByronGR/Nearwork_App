@@ -261,6 +261,14 @@ service cloud.firestore {
     match /pipelines/{pipelineId} {
       allow read: if isStaff() || sameOrg(resource.data);
       allow write: if isAdmin();
+      // Candidates can append themselves to the candidates array when applying
+      // from jobs.nearwork.co — strictly constrained to prevent abuse:
+      // only candidates, only updatedAt+candidates, +1 entry, their own email, stage=applied.
+      allow update: if isAuth()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['candidates', 'updatedAt'])
+        && request.resource.data.candidates.size() == resource.data.candidates.size() + 1
+        && request.resource.data.candidates[request.resource.data.candidates.size() - 1].email == request.auth.token.email
+        && request.resource.data.candidates[request.resource.data.candidates.size() - 1].stage == 'applied';
     }
 
     match /clientAccountPeople/{personId} {

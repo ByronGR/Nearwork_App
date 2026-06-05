@@ -128,13 +128,15 @@ const clientStages = [
 
 function clientStageKey(stage?: string): string {
   const s = String(stage || "").toLowerCase().replace(/[-_ ]/g, "");
-  // Map admin-side stage names to client-visible labels
+  // Map admin-side stage names to client-visible labels.
+  // Admin stages: applied, background-check, assessment, interview,
+  //               partner-review, partner-interview, hired, not-selected
   if (s.includes("background") || s.includes("bgcheck") || s.includes("screening") || s.includes("profile")) return "screening";
   if (s.includes("assess") || s.includes("tech") || s.includes("test")) return "technical";
-  if (s.includes("present") || s.includes("clientview") || s.includes("clientreview") || s.includes("final") || s.includes("interview")) return "final-round";
+  if (s.includes("present") || s.includes("partner") || s.includes("clientview") || s.includes("clientreview") || s.includes("final") || s.includes("interview")) return "final-round";
   if (s.includes("hired") || s.includes("offer")) return "offer";
   if (s.includes("pass") || s.includes("reject") || s.includes("notselect") || s.includes("declined") || s.includes("disqualif")) return "not-selected";
-  // "applied" and early stages are filtered out — clients only see vetted candidates
+  // "applied" and other early stages default to Screening — clients see vetted candidates
   return "screening";
 }
 
