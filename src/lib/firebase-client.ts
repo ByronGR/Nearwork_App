@@ -149,6 +149,7 @@ export type PortalPipeline = {
   recruiter?: string;
   accountManager?: string;
   status?: string;
+  briefStatus?: string; // synced from kickoffBriefs by the admin API on every status change
   candidates?: PipelineCandidate[];
 };
 

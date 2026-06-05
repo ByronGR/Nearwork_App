@@ -685,6 +685,7 @@ export function ClientPortal() {
   const [sidebarHover, setSidebarHover] = useState(false);
   const [selectedPipelineCode, setSelectedPipelineCode] = useState("");
   const [selectedHireId, setSelectedHireId] = useState("");
+  const [pipelineTab, setPipelineTab] = useState<"candidates" | "brief">("candidates");
   const [compareCodes, setCompareCodes] = useState<string[]>([]);
   const [favoriteCodes, setFavoriteCodes] = useState<string[]>([]);
   const [interviewCodes, setInterviewCodes] = useState<string[]>([]);
@@ -1176,10 +1177,15 @@ export function ClientPortal() {
               <div className="space-y-0.5">
                 {tabs.filter((tab) => tab.section === section).map((tab) => {
                   const Icon = tab.icon;
+                  const hasPendingBrief = tab.id === "pipeline" && pipelines.some((p) => p.briefStatus === "submitted");
                   return (
-                    <button key={tab.id} onClick={() => setActive(tab.id)} className={cx("flex h-9 w-full items-center gap-2.5 rounded-md px-2.5 text-sm", sidebarOpen ? "justify-start" : "justify-center", active === tab.id ? "bg-[#EEF6F3] font-medium text-[#12866E]" : "font-normal text-[#555] hover:bg-[#F5F4F0] hover:text-[#111]")}>
-                      <Icon className="size-4 shrink-0" />
-                      {sidebarOpen ? <span>{tab.label}</span> : null}
+                    <button key={tab.id} onClick={() => setActive(tab.id)} className={cx("relative flex h-9 w-full items-center gap-2.5 rounded-md px-2.5 text-sm", sidebarOpen ? "justify-start" : "justify-center", active === tab.id ? "bg-[#EEF6F3] font-medium text-[#12866E]" : "font-normal text-[#555] hover:bg-[#F5F4F0] hover:text-[#111]")}>
+                      <span className="relative shrink-0">
+                        <Icon className="size-4" />
+                        {hasPendingBrief && <span className="absolute -right-1 -top-1 size-2 rounded-full bg-red-500" />}
+                      </span>
+                      {sidebarOpen ? <span className="flex-1">{tab.label}</span> : null}
+                      {sidebarOpen && hasPendingBrief ? <span className="ml-auto rounded-full bg-red-100 px-1.5 py-0.5 text-[9px] font-700 text-red-600">Review</span> : null}
                     </button>
                   );
                 })}
@@ -1291,26 +1297,55 @@ export function ClientPortal() {
                   <h1 className="text-lg font-semibold text-[#111]">{selectedPipeline.openingTitle || selectedPipeline.code}</h1>
                   <p className="text-sm text-[#555]">{selectedPipeline.code} · {pipelineRows.length} candidate{pipelineRows.length !== 1 ? "s" : ""}</p>
                 </div>
-                <div className="flex items-center gap-2 rounded-md border border-[#E5E4E0] bg-white px-3">
-                  <Search className="size-3.5 text-[#888]" />
-                  <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search candidates..." className="h-9 w-44 bg-transparent text-sm text-[#111] outline-none placeholder:text-[#888]" />
+                <div className="flex items-center gap-2">
+                  {/* Tab toggle */}
+                  <div className="flex items-center rounded-lg border border-[#E5E4E0] bg-white p-0.5">
+                    <button
+                      onClick={() => setPipelineTab("candidates")}
+                      className={cx("rounded-md px-3 py-1.5 text-xs font-medium transition", pipelineTab === "candidates" ? "bg-[#12866E] text-white" : "text-[#555] hover:text-[#111]")}
+                    >
+                      Candidates
+                    </button>
+                    <button
+                      onClick={() => setPipelineTab("brief")}
+                      className={cx("relative flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition", pipelineTab === "brief" ? "bg-[#12866E] text-white" : "text-[#555] hover:text-[#111]")}
+                    >
+                      Kick-off Brief
+                      {selectedPipeline.briefStatus === "submitted" && (
+                        <span className="size-1.5 rounded-full bg-red-500" />
+                      )}
+                    </button>
+                  </div>
+                  {pipelineTab === "candidates" && (
+                    <div className="flex items-center gap-2 rounded-md border border-[#E5E4E0] bg-white px-3">
+                      <Search className="size-3.5 text-[#888]" />
+                      <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search candidates..." className="h-9 w-44 bg-transparent text-sm text-[#111] outline-none placeholder:text-[#888]" />
+                    </div>
+                  )}
                 </div>
               </div>
-              <KanbanBoard
-                rows={pipelineRows}
-                onSelect={(candidate, pipeline) => goToCandidate(candidate.code, pipeline.code)}
-              />
-              {profile ? (
-                <div className="h-[560px] overflow-hidden rounded-xl border border-[#E5E4E0] bg-white">
-                  <PipelineChatPanel
-                    pipeline={selectedPipeline}
-                    org={org}
-                    candidates={selectedPipeline.candidates || []}
-                    profile={profile}
-                    onOpenCandidate={(c) => goToCandidate(c.code || c.candidateCode || c.email || "", selectedPipeline.code)}
+
+              {pipelineTab === "candidates" ? (
+                <>
+                  <KanbanBoard
+                    rows={pipelineRows}
+                    onSelect={(candidate, pipeline) => goToCandidate(candidate.code, pipeline.code)}
                   />
-                </div>
-              ) : null}
+                  {profile ? (
+                    <div className="h-[560px] overflow-hidden rounded-xl border border-[#E5E4E0] bg-white">
+                      <PipelineChatPanel
+                        pipeline={selectedPipeline}
+                        org={org}
+                        candidates={selectedPipeline.candidates || []}
+                        profile={profile}
+                        onOpenCandidate={(c) => goToCandidate(c.code || c.candidateCode || c.email || "", selectedPipeline.code)}
+                      />
+                    </div>
+                  ) : null}
+                </>
+              ) : (
+                <KickoffBriefPanel pipeline={selectedPipeline} user={user} />
+              )}
             </div>
           ) : null}
 
@@ -1893,6 +1928,296 @@ function KanbanBoard({
   );
 }
 
+// ── Kickoff Brief Panel ───────────────────────────────────────────────────────
+// Shown in the pipeline detail view under the "Kick-off Brief" tab.
+// Fetches the brief from the admin API, displays key sections, and lets
+// the client approve or request changes when status === 'submitted'.
+const ADMIN_API = "https://admin.nearwork.co";
+
+type BriefData = Record<string, unknown>;
+
+function KickoffBriefPanel({ pipeline, user }: { pipeline: PortalPipeline; user: User | null }) {
+  const code = pipeline.openingCode || pipeline.code;
+  const [brief, setBrief] = useState<BriefData | null>(null);
+  const [status, setStatus] = useState<string | null>(pipeline.briefStatus ?? null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [acting, setActing] = useState(false);
+  const [changeNote, setChangeNote] = useState("");
+  const [showChangeForm, setShowChangeForm] = useState(false);
+  const [done, setDone] = useState("");
+
+  useEffect(() => {
+    let alive = true;
+    setLoading(true);
+    setError("");
+    (async () => {
+      try {
+        const token = await user?.getIdToken();
+        const res = await fetch(`${ADMIN_API}/api/kickoff`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ action: "get", code }),
+        });
+        const data = await res.json() as { ok: boolean; brief?: BriefData; error?: string };
+        if (!alive) return;
+        if (data.ok) {
+          setBrief(data.brief ?? null);
+          setStatus(data.brief ? String(data.brief.status ?? "draft") : null);
+        } else {
+          setError(data.error ?? "Failed to load brief");
+        }
+      } catch {
+        if (alive) setError("Failed to load brief");
+      } finally {
+        if (alive) setLoading(false);
+      }
+    })();
+    return () => { alive = false; };
+  }, [code, user]);
+
+  async function act(action: "approve" | "request_changes", note?: string) {
+    setActing(true);
+    try {
+      const token = await user?.getIdToken();
+      const res = await fetch(`${ADMIN_API}/api/kickoff`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ action, code, ...(note ? { note } : {}) }),
+      });
+      const data = await res.json() as { ok: boolean; error?: string };
+      if (data.ok) {
+        setDone(action === "approve" ? "approved" : "changes_requested");
+        setStatus(action === "approve" ? "approved" : "changes_requested");
+        setShowChangeForm(false);
+      } else {
+        setError(data.error ?? "Action failed");
+      }
+    } catch {
+      setError("Action failed");
+    } finally {
+      setActing(false);
+    }
+  }
+
+  if (loading) return (
+    <div className="flex h-40 items-center justify-center">
+      <div className="size-5 animate-spin rounded-full border-2 border-[#E5E4E0] border-t-[#12866E]" />
+    </div>
+  );
+
+  if (error) return (
+    <div className="rounded-xl border border-red-100 bg-red-50 p-6 text-sm text-red-700">{error}</div>
+  );
+
+  if (!brief) return (
+    <div className="rounded-xl border border-[#E5E4E0] bg-white p-8 text-center">
+      <p className="text-sm font-medium text-[#111]">Brief not started yet</p>
+      <p className="mt-1 text-xs text-[#888]">Your Nearwork team will prepare the kick-off brief and send it to you for review before sourcing begins.</p>
+    </div>
+  );
+
+  if (done === "approved") return (
+    <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-8 text-center">
+      <p className="text-2xl mb-2">✅</p>
+      <p className="text-sm font-semibold text-emerald-800">Brief approved — thank you!</p>
+      <p className="mt-1 text-xs text-emerald-700">Your Nearwork recruiter will now begin sourcing candidates.</p>
+    </div>
+  );
+
+  if (done === "changes_requested") return (
+    <div className="rounded-xl border border-amber-200 bg-amber-50 p-8 text-center">
+      <p className="text-2xl mb-2">📝</p>
+      <p className="text-sm font-semibold text-amber-800">Changes requested — we&apos;ll update the brief and resend.</p>
+    </div>
+  );
+
+  const str = (k: string) => brief[k] ? String(brief[k]) : null;
+  const arr = (k: string): string[] => Array.isArray(brief[k]) ? (brief[k] as string[]).filter(Boolean) : [];
+
+  return (
+    <div className="space-y-4">
+      {/* Status banner */}
+      {status === "submitted" && (
+        <div className="flex items-center gap-3 rounded-xl border border-blue-200 bg-blue-50 px-5 py-3">
+          <span className="text-lg">📋</span>
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-blue-800">This brief is ready for your review</p>
+            <p className="text-xs text-blue-700">Please review the details below and approve or request changes.</p>
+          </div>
+        </div>
+      )}
+      {status === "approved" && (
+        <div className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-3">
+          <span className="text-lg">✅</span>
+          <p className="text-sm font-semibold text-emerald-800">Brief approved — sourcing in progress</p>
+        </div>
+      )}
+      {status === "changes_requested" && (
+        <div className="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-5 py-3">
+          <span className="text-lg">⚠️</span>
+          <p className="text-sm font-semibold text-amber-800">Changes requested — brief is being updated by the Nearwork team</p>
+        </div>
+      )}
+      {(status === "draft" || status === null) && (
+        <div className="flex items-center gap-3 rounded-xl border border-[#E5E4E0] bg-white px-5 py-3">
+          <span className="text-lg">📝</span>
+          <p className="text-sm text-[#555]">Brief is being prepared — you&apos;ll receive it for review shortly</p>
+        </div>
+      )}
+
+      {/* Brief content */}
+      <div className="rounded-xl border border-[#E5E4E0] bg-white divide-y divide-[#F0EFEB]">
+        {/* Header */}
+        <div className="px-6 py-5">
+          <h2 className="text-lg font-semibold text-[#111]">{str("jobTitle") || pipeline.openingTitle || "Role"}</h2>
+          <div className="mt-1 flex flex-wrap gap-3 text-sm text-[#555]">
+            {str("department") && <span>🏢 {str("department")}</span>}
+            {str("locationPolicy") && <span>📍 {str("locationPolicy")}</span>}
+            {str("employmentType") && <span>📄 {str("employmentType")}</span>}
+            {str("urgency") && <span>⚡ {str("urgency")} urgency</span>}
+            {str("targetStartDate") && <span>📅 Start: {str("targetStartDate")}</span>}
+          </div>
+        </div>
+
+        {/* Compensation */}
+        {(str("salaryMin") || str("salaryMax")) ? (
+          <div className="px-6 py-4">
+            <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#888]">Compensation</p>
+            <p className="text-sm font-medium text-[#111]">
+              {str("salaryMin") && str("salaryMax")
+                ? `${str("currency") || "USD"} ${Number(str("salaryMin")).toLocaleString()} – ${Number(str("salaryMax")).toLocaleString()} / ${str("payFrequency") || "month"}`
+                : str("salaryMin")
+                  ? `From ${str("currency") || "USD"} ${Number(str("salaryMin")).toLocaleString()}`
+                  : `Up to ${str("currency") || "USD"} ${Number(str("salaryMax")).toLocaleString()}`}
+            </p>
+            {str("variablePay") && <p className="mt-1 text-xs text-[#555]">Variable pay: {str("variablePay")}</p>}
+            {str("equity") && <p className="mt-0.5 text-xs text-[#555]">Equity: {str("equity")}</p>}
+          </div>
+        ) : null}
+
+        {/* Role summary */}
+        {str("roleSummary") && (
+          <div className="px-6 py-4">
+            <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#888]">About the role</p>
+            <p className="text-sm text-[#333] leading-relaxed">{str("roleSummary")}</p>
+          </div>
+        )}
+
+        {/* Responsibilities */}
+        {arr("keyResponsibilities").length > 0 && (
+          <div className="px-6 py-4">
+            <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#888]">Key responsibilities</p>
+            <ul className="space-y-1">
+              {arr("keyResponsibilities").map((r, i) => (
+                <li key={i} className="flex gap-2 text-sm text-[#333]"><span className="shrink-0 text-[#12866E]">•</span>{r}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Must-have skills */}
+        {arr("mustHaveSkills").length > 0 && (
+          <div className="px-6 py-4">
+            <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#888]">Must have</p>
+            <div className="flex flex-wrap gap-1.5">
+              {arr("mustHaveSkills").map((s) => (
+                <span key={s} className="rounded-full border border-[#E5E4E0] bg-[#F5F4F0] px-2.5 py-0.5 text-xs font-medium text-[#333]">{s}</span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Nice-to-have skills */}
+        {arr("niceToHaveSkills").length > 0 && (
+          <div className="px-6 py-4">
+            <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#888]">Nice to have</p>
+            <div className="flex flex-wrap gap-1.5">
+              {arr("niceToHaveSkills").map((s) => (
+                <span key={s} className="rounded-full border border-[#E5E4E0] bg-white px-2.5 py-0.5 text-xs text-[#555]">{s}</span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Requirements */}
+        {(str("yearsOfExperience") || str("educationLevel") || str("englishLevel")) && (
+          <div className="px-6 py-4">
+            <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#888]">Requirements</p>
+            <div className="flex flex-wrap gap-4 text-sm text-[#333]">
+              {str("yearsOfExperience") && <span>🕐 {str("yearsOfExperience")} years exp.</span>}
+              {str("educationLevel") && <span>🎓 {str("educationLevel")}</span>}
+              {str("englishLevel") && <span>🗣 English: {str("englishLevel")}</span>}
+            </div>
+          </div>
+        )}
+
+        {/* Interview process */}
+        {(str("interviewLanguage") || str("timeToOffer") || str("totalInterviewStages")) && (
+          <div className="px-6 py-4">
+            <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#888]">Interview process</p>
+            <div className="flex flex-wrap gap-4 text-sm text-[#333]">
+              {str("totalInterviewStages") && <span>📋 {str("totalInterviewStages")} stages</span>}
+              {str("interviewLanguage") && <span>🗣 {str("interviewLanguage")}</span>}
+              {str("timeToOffer") && <span>⏱ {str("timeToOffer")} weeks to offer</span>}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Action buttons — only visible when brief is submitted */}
+      {status === "submitted" && (
+        <div className="rounded-xl border border-[#E5E4E0] bg-white p-5 space-y-4">
+          {error && <p className="text-sm text-red-600">{error}</p>}
+          {!showChangeForm ? (
+            <div className="flex flex-wrap gap-3">
+              <button
+                onClick={() => act("approve")}
+                disabled={acting}
+                className="flex items-center gap-2 rounded-lg bg-[#12866E] px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60 hover:bg-[#0f7561]"
+              >
+                {acting ? <span className="size-4 animate-spin rounded-full border-2 border-white/30 border-t-white" /> : null}
+                ✅ Approve brief
+              </button>
+              <button
+                onClick={() => setShowChangeForm(true)}
+                disabled={acting}
+                className="rounded-lg border border-[#E5E4E0] px-5 py-2.5 text-sm font-medium text-[#555] hover:border-amber-400 hover:text-amber-700"
+              >
+                ✏️ Request changes
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <label className="block text-sm font-medium text-[#111]">What would you like us to change?</label>
+              <textarea
+                value={changeNote}
+                onChange={(e) => setChangeNote(e.target.value)}
+                rows={4}
+                placeholder="Please describe the changes you'd like us to make to the brief..."
+                className="w-full resize-none rounded-lg border border-[#E5E4E0] bg-[#F5F4F0] px-4 py-3 text-sm text-[#111] outline-none focus:border-[#12866E] focus:bg-white"
+              />
+              <div className="flex gap-2">
+                <button
+                  onClick={() => { if (changeNote.trim()) act("request_changes", changeNote.trim()); }}
+                  disabled={acting || !changeNote.trim()}
+                  className="flex items-center gap-2 rounded-lg bg-amber-600 px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50 hover:bg-amber-700"
+                >
+                  {acting ? <span className="size-4 animate-spin rounded-full border-2 border-white/30 border-t-white" /> : null}
+                  Send request
+                </button>
+                <button onClick={() => setShowChangeForm(false)} className="rounded-lg border border-[#E5E4E0] px-5 py-2.5 text-sm text-[#555] hover:text-[#111]">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function OpeningsView({
   openings,
   pipelines,
@@ -1926,7 +2251,15 @@ function OpeningsView({
                   <h3 className="mt-1.5 text-base font-semibold text-[#111]">{pipeline.openingTitle || pipeline.code}</h3>
                   <p className="mt-1 text-sm text-[#555]">{opening?.code || pipeline.openingCode || pipeline.code} · {pipeline.recruiter || "Nearwork team"}</p>
                 </div>
-                <Badge tone={isActive ? "border-teal-200 bg-teal-50 text-teal-700" : "border-stone-200 bg-stone-50 text-stone-600"}>{pipeline.status || "Active"}</Badge>
+                <div className="flex flex-col items-end gap-1.5">
+                  <Badge tone={isActive ? "border-teal-200 bg-teal-50 text-teal-700" : "border-stone-200 bg-stone-50 text-stone-600"}>{pipeline.status || "Active"}</Badge>
+                  {pipeline.briefStatus === "submitted" && (
+                    <span className="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-700">📋 Review pending</span>
+                  )}
+                  {pipeline.briefStatus === "approved" && (
+                    <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">✅ Brief approved</span>
+                  )}
+                </div>
               </div>
               <div className="mt-4 grid grid-cols-3 gap-2">
                 <MiniStat label="Candidates" value={candidates.length} />
