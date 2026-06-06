@@ -55,9 +55,15 @@ const clientStages = [
   { key: "not-selected", label: "Not Selected" },
 ];
 
-function clientStageKey(stage?: string): string {
+// Candidates in "applied" stage are internal-only — not shown to clients.
+// They're still reviewed by Nearwork before being shared with the partner.
+const ADMIN_ONLY_STAGES = new Set(["applied"]);
+
+function clientStageKey(stage?: string): string | null {
   const s = String(stage || "").toLowerCase().replace(/[-_ ]/g, "");
-  // Admin stages: applied, background-check, assessment, interview,
+  // Internal stages visible to admin only — return null to hide from client view
+  if (s === "applied") return null;
+  // Admin stages: background-check, assessment, interview,
   //               partner-review, partner-interview, hired, not-selected
   if (s.includes("background") || s.includes("screening") || s.includes("profile")) return "screening";
   if (s.includes("assess") || s.includes("tech") || s.includes("test")) return "technical";
@@ -349,7 +355,11 @@ export function PipelinePage({ code }: { code: string }) {
     );
   }
 
-  const pipelineItems = pipeline?.candidates || [];
+  // Filter out admin-internal stages (Applied) — clients only see candidates
+  // once Nearwork has reviewed them and moved them past the initial intake.
+  const pipelineItems = (pipeline?.candidates || []).filter(
+    c => !ADMIN_ONLY_STAGES.has(String(c.stage || "").toLowerCase())
+  );
 
   return (
     <div className="min-h-screen bg-[#F8F7F3] text-[#111]">
