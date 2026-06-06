@@ -176,7 +176,7 @@ function CandidateDrawer({ item, candidates, pipeline, onClose }: {
             <Score value={score} />
             <div>
               <p className="text-xs text-[#888]">Stage</p>
-              <Badge tone={stageTone[stageKey]}>{stageLabel}</Badge>
+              <Badge tone={stageTone[stageKey ?? "screening"]}>{stageLabel}</Badge>
             </div>
             {full?.discProfile?.label ? (
               <div>
