@@ -55,16 +55,11 @@ const clientStages = [
   { key: "not-selected", label: "Not Selected" },
 ];
 
-// Candidates in "applied" stage are internal-only — not shown to clients.
-// They're still reviewed by Nearwork before being shared with the partner.
-const ADMIN_ONLY_STAGES = new Set(["applied"]);
-
-function clientStageKey(stage?: string): string | null {
+function clientStageKey(stage?: string): string {
   const s = String(stage || "").toLowerCase().replace(/[-_ ]/g, "");
-  // Internal stages visible to admin only — return null to hide from client view
-  if (s === "applied") return null;
-  // Admin stages: background-check, assessment, interview,
+  // Admin stages: applied, background-check, assessment, interview,
   //               partner-review, partner-interview, hired, not-selected
+  if (s === "applied") return "screening";
   if (s.includes("background") || s.includes("screening") || s.includes("profile")) return "screening";
   if (s.includes("assess") || s.includes("tech") || s.includes("test")) return "technical";
   if (s.includes("present") || s.includes("partner") || s.includes("clientview") || s.includes("final") || s.includes("interview")) return "final-round";
@@ -355,10 +350,10 @@ export function PipelinePage({ code }: { code: string }) {
     );
   }
 
-  // Filter out admin-internal stages (Applied) — clients only see candidates
-  // once Nearwork has reviewed them and moved them past the initial intake.
+  // Only show candidates that have been reviewed and approved into the pipeline.
+  // (pendingReview: true means they're still in the Applicants inbox in Admin.)
   const pipelineItems = (pipeline?.candidates || []).filter(
-    c => !ADMIN_ONLY_STAGES.has(String(c.stage || "").toLowerCase())
+    (c) => !(c as { pendingReview?: boolean }).pendingReview
   );
 
   return (
