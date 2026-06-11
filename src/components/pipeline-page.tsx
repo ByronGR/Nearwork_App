@@ -12,6 +12,8 @@ import {
   auth,
   getClientUser,
   getOrganization,
+  getOrgForPipelineCode,
+  isNearworkEmail,
   logoutClient,
   subscribeOrgCollection,
   type ClientUser,
@@ -267,21 +269,23 @@ export function PipelinePage({ code }: { code: string }) {
     setUser(nextUser);
     try {
       const nextProfile = await getClientUser(nextUser);
+      const staff = isNearworkEmail(nextProfile?.email);
       const role = String(nextProfile?.role || nextProfile?.portalRole || "").toLowerCase();
-      const allowed = role.includes("client") || role.includes("org") || role === "viewer" || role === "user" || role === "admin";
+      const allowed = staff || (role.includes("client") || role.includes("org") || role === "viewer" || role === "user" || role === "admin");
       if (!nextProfile || !allowed) {
         setAuthMessage("This email is not invited to the client portal.");
         await logoutClient();
         return;
       }
-      const nextOrg = await getOrganization(nextProfile);
+      // Staff have no fixed org — resolve it from the pipeline they're opening.
+      const nextOrg = staff ? await getOrgForPipelineCode(code) : await getOrganization(nextProfile);
       if (!nextOrg) { setAuthMessage("No organization found for this account."); await logoutClient(); return; }
       setProfile(nextProfile);
       setOrg(nextOrg);
     } catch {
       setAuthMessage("Could not load your profile. Please refresh.");
     }
-  }), []);
+  }), [code]);
 
   // Org data
   useEffect(() => {

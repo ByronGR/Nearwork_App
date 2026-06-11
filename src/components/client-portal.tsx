@@ -3,6 +3,7 @@
 import {
   ArrowLeft,
   Bell,
+  Building2,
   CalendarCheck,
   CalendarDays,
   ChevronRight,
@@ -42,6 +43,9 @@ import {
   logoutClient,
   writeClientProfile,
   debugProfileLookup,
+  isNearworkEmail,
+  listAllOrganizations,
+  setStaffActiveOrg,
   markNotificationRead,
   saveNotificationPreferences,
   sendClientPasswordReset,
@@ -673,6 +677,82 @@ function NotificationPanel({
   );
 }
 
+// Shown to @nearwork.co staff after they sign in: lets them pick which client
+// organization's workspace to view. The choice is saved as activeOrgId so
+// future logins land directly in that org until they switch again.
+function StaffOrgPicker({ profile, onSelect }: { profile: ClientUser; onSelect: (org: Organization) => void }) {
+  const [orgs, setOrgs] = useState<Organization[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    listAllOrganizations()
+      .then((list) => { if (alive) setOrgs(list); })
+      .finally(() => { if (alive) setLoading(false); });
+    return () => { alive = false; };
+  }, []);
+
+  const filtered = orgs.filter((o) => !search.trim() || (o.name || "").toLowerCase().includes(search.trim().toLowerCase()));
+
+  async function pick(picked: Organization) {
+    setBusyId(picked.id);
+    try {
+      await setStaffActiveOrg(profile.id, picked.id);
+      onSelect(picked);
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  return (
+    <main className="grid min-h-screen place-items-center bg-[#F8F7F3] px-4 text-[#111]">
+      <div className="w-full max-w-md rounded-lg border border-[#E5E4E0] bg-white p-6 shadow-sm">
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <div>
+            <p className="text-base font-semibold">Near<span className="text-[#12866E]">work</span> staff access</p>
+            <p className="mt-1 text-sm text-[#555]">Select a client organization to view its workspace.</p>
+          </div>
+          <button onClick={() => logoutClient()} title="Log out" className="grid size-8 shrink-0 place-items-center rounded border border-[#E5E4E0] bg-white text-[#888] hover:text-[#111]">
+            <LogOut className="size-4" />
+          </button>
+        </div>
+        <div className="relative mb-3">
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#888]" />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search organizations…"
+            className="h-10 w-full rounded-md border border-[#E5E4E0] bg-white pl-9 pr-3 text-sm outline-none focus:border-[#12866E]"
+          />
+        </div>
+        <div className="max-h-80 space-y-1 overflow-auto">
+          {loading ? (
+            <p className="p-4 text-center text-sm text-[#888]">Loading organizations…</p>
+          ) : filtered.length ? filtered.map((o) => (
+            <button
+              key={o.id}
+              onClick={() => pick(o)}
+              disabled={busyId === o.id}
+              className="flex w-full items-center gap-3 rounded-md border border-[#E5E4E0] px-3 py-2.5 text-left text-sm hover:border-[#12866E] hover:bg-[#EEF6F3] disabled:opacity-50"
+            >
+              <span className="grid size-8 shrink-0 place-items-center rounded-md bg-[#F5F4F0] text-[#555]"><Building2 className="size-4" /></span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate font-medium text-[#111]">{o.name}</span>
+                {o.status ? <span className="block text-xs capitalize text-[#888]">{o.status}</span> : null}
+              </span>
+              {busyId === o.id ? <div className="size-4 shrink-0 animate-spin rounded-full border-2 border-[#E5E4E0] border-t-[#12866E]" /> : null}
+            </button>
+          )) : (
+            <p className="p-4 text-center text-sm text-[#888]">No organizations found.</p>
+          )}
+        </div>
+      </div>
+    </main>
+  );
+}
+
 export function ClientPortal() {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<ClientUser | null>(null);
@@ -796,8 +876,12 @@ export function ClientPortal() {
       // diagnostic, where a slightly-later call reliably returns role=client).
       // Retry the whole lookup a few times before treating it as "no profile".
       const profileIsAllowed = (p: ClientUser | null) => {
+        if (!p) return false;
+        // Nearwork staff (any @nearwork.co account) always get portal access —
+        // they pick which client organization's workspace to view.
+        if (isNearworkEmail(p.email)) return true;
         const r = String(p?.role || p?.portalRole || "").toLowerCase();
-        return !!p && (r.includes("client") || r.includes("org") || r === "viewer" || r === "user" || r === "admin");
+        return r.includes("client") || r.includes("org") || r === "viewer" || r === "user" || r === "admin";
       };
       let nextProfile = await getClientUser(nextUser);
       for (let attempt = 0; attempt < 5 && !profileIsAllowed(nextProfile); attempt++) {
@@ -828,8 +912,7 @@ export function ClientPortal() {
           console.warn("[ClientPortal] Profile self-heal failed:", repairErr);
         }
       }
-      const role = String(nextProfile?.role || nextProfile?.portalRole || "").toLowerCase();
-      const allowed = role.includes("client") || role.includes("org") || role === "viewer" || role === "user" || role === "admin";
+      const allowed = profileIsAllowed(nextProfile);
       if (!nextProfile || !allowed) {
         // Log the technical detail to the console for support, but keep the
         // on-screen message clean for real clients.
@@ -852,6 +935,12 @@ export function ClientPortal() {
       }
       const nextOrg = await getOrganization(nextProfile);
       if (!nextOrg) {
+        // Staff have no fixed org — let them through to pick one from the org switcher.
+        if (isNearworkEmail(nextProfile.email)) {
+          setProfile(nextProfile);
+          setOrg(null);
+          return;
+        }
         setAuthMessage("This email is invited, but it is not connected to a company workspace yet. Ask Nearwork to add the user to an organization.");
         await logoutClient();
         return;
@@ -1149,7 +1238,26 @@ export function ClientPortal() {
 
   if (!user || authMessage) return <LoginScreen message={authMessage} />;
 
-  if (!profile || !org) {
+  if (!profile) {
+    return (
+      <main className="grid min-h-screen place-items-center bg-[#F8F7F3] text-[#111]">
+        <div className="flex flex-col items-center gap-3 rounded-lg border border-[#E5E4E0] bg-white px-10 py-8 text-sm text-[#555] shadow-sm">
+          <div className="size-6 animate-spin rounded-full border-2 border-[#E5E4E0] border-t-[#12866E]" />
+          <span>Loading your portal…</span>
+        </div>
+      </main>
+    );
+  }
+
+  if (!org) {
+    if (isNearworkEmail(profile.email)) {
+      return (
+        <StaffOrgPicker
+          profile={profile}
+          onSelect={(picked) => { setOrg(picked); setProfile((p) => p ? { ...p, activeOrgId: picked.id } : p); }}
+        />
+      );
+    }
     return (
       <main className="grid min-h-screen place-items-center bg-[#F8F7F3] text-[#111]">
         <div className="flex flex-col items-center gap-3 rounded-lg border border-[#E5E4E0] bg-white px-10 py-8 text-sm text-[#555] shadow-sm">
@@ -1177,6 +1285,14 @@ export function ClientPortal() {
               <div className="min-w-0 flex-1">
                 <p className="text-base font-semibold">Near<span className="text-[#12866E]">work</span></p>
                 <p className="truncate text-xs text-[#888]">{org.name}</p>
+                {isNearworkEmail(profile.email) ? (
+                  <button
+                    onClick={() => { setStaffActiveOrg(profile.id, null).catch(() => null); setOrg(null); }}
+                    className="mt-0.5 text-[10px] font-medium text-[#12866E] hover:underline"
+                  >
+                    Switch organization
+                  </button>
+                ) : null}
               </div>
             ) : null}
             <button onClick={() => setSidebarPinned(!sidebarPinned)} className={cx("grid size-7 place-items-center rounded border border-[#E5E4E0] bg-white text-[#888]", sidebarPinned && "border-[#12866E] text-[#12866E]")}>

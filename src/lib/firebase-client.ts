@@ -626,6 +626,45 @@ function withId<T>(id: string, data: DocumentData): T {
   return { id, ...data } as T;
 }
 
+// Nearwork staff (any @nearwork.co account) get portal access without needing
+// a client/org role — they pick which organization's workspace to view.
+export function isNearworkEmail(email?: string | null): boolean {
+  return String(email || "").trim().toLowerCase().endsWith("@nearwork.co");
+}
+
+export async function listAllOrganizations(): Promise<Organization[]> {
+  const snap = await getDocs(collection(db, "organizations"));
+  return snap.docs
+    .map((d) => {
+      const data = d.data();
+      return { id: d.id, orgId: data.orgId || d.id, name: data.name || "Untitled organization", ...data } as Organization;
+    })
+    .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+}
+
+export async function setStaffActiveOrg(uid: string, orgId: string | null) {
+  await setDoc(doc(db, "users", uid), { activeOrgId: orgId, updatedAt: serverTimestamp() }, { merge: true });
+}
+
+// For staff opening a deep link to a specific pipeline (e.g. via a notification),
+// resolve the owning organization directly from the pipeline rather than the
+// staff member's own profile (which has no fixed org).
+export async function getOrgForPipelineCode(code: string): Promise<Organization | null> {
+  try {
+    const snap = await getDocs(query(collection(db, "pipelines"), where("code", "==", code), limit(1)));
+    if (snap.empty) return null;
+    const data = snap.docs[0].data();
+    const orgId = data.orgId || data.organizationId;
+    if (!orgId) return null;
+    const orgSnap = await getDoc(doc(db, "organizations", orgId));
+    if (!orgSnap.exists()) return null;
+    const orgData = orgSnap.data();
+    return { id: orgSnap.id, orgId: orgData.orgId || orgSnap.id, name: orgData.name || "Client organization", ...orgData };
+  } catch {
+    return null;
+  }
+}
+
 export function subscribeOrgCollection<T>(
   collectionName: string,
   org: Organization,
