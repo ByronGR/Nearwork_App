@@ -212,6 +212,10 @@ function salaryTextUsd(candidate: PortalCandidate | PipelineCandidate) {
   return `USD ${new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(Math.round(amount))}/mo`;
 }
 
+function englishLevelText(candidate: PortalCandidate, fallback: string) {
+  return candidate.englishScore?.level || candidate.english || fallback;
+}
+
 function moneyText(amount?: number, currency = "USD") {
   const value = Number(amount || 0);
   if (!value) return "Not shared";
@@ -354,6 +358,7 @@ function normalizeCandidate(item: PipelineCandidate, candidate?: PortalCandidate
     status: item.status || candidate?.status || "active",
     score: Number(item.score || candidate?.score || candidate?.lastAssessmentScore || 0),
     english: item.english || candidate?.english || "—",
+    englishScore: candidate?.englishScore,
     salary: item.salary || candidate?.salary || "",
     expectedSalary: item.expectedSalary || candidate?.expectedSalary || "",
     expectedSalaryAmount: item.expectedSalaryAmount || candidate?.expectedSalaryAmount,
@@ -629,7 +634,7 @@ function CandidateCard({
       </div>
       <div className="mt-3 grid gap-3 text-sm sm:grid-cols-3">
         <div><p className="text-[10px] font-medium uppercase tracking-wider text-[#888]">Expected pay</p><p className="mt-0.5 font-medium text-[#111]">{salaryTextUsd(candidate)}</p></div>
-        <div><p className="text-[10px] font-medium uppercase tracking-wider text-[#888]">English</p><p className="mt-0.5 font-medium text-[#111]">{candidate.english || "—"}</p></div>
+        <div><p className="text-[10px] font-medium uppercase tracking-wider text-[#888]">English</p><p className="mt-0.5 font-medium text-[#111]">{englishLevelText(candidate, "—")}</p></div>
         <div><p className="text-[10px] font-medium uppercase tracking-wider text-[#888]">DISC</p><p className="mt-0.5 font-medium text-[#111]">{candidate.discProfile?.label || "Pending"}</p></div>
       </div>
       <div className="mt-3 flex flex-wrap gap-1.5">
@@ -2805,7 +2810,7 @@ function CandidateCompare({
                 </div>
                 <div className="mt-5 grid gap-3 text-sm">
                   <Detail label="Experience signal" value={candidate.status || "Active profile"} />
-                  <Detail label="English" value={candidate.english || "Pending"} />
+                  <Detail label="English" value={englishLevelText(candidate, "Pending")} />
                   <Detail label="Expected pay" value={salaryTextUsd(candidate)} />
                   <Detail label="Location" value={candidate.location || "Colombia"} />
                   <Detail label="Technical" value={`${breakdown.technical || "Pending"} · ${breakdown.signal}`} />
@@ -2890,8 +2895,14 @@ function CandidateFullPage({
           <Metric label="Nearwork score" value={candidate.score || 0} sub="Overall match" />
           <Metric label="Technical" value={breakdown.technical || 0} sub={breakdown.signal} />
           <div className="rounded-xl border border-[#E5E4E0] bg-[#F5F4F0] p-4"><Detail label="Expected pay" value={salaryTextUsd(candidate)} /></div>
-          <div className="rounded-xl border border-[#E5E4E0] bg-[#F5F4F0] p-4"><Detail label="English" value={candidate.english || "Pending"} /></div>
+          <div className="rounded-xl border border-[#E5E4E0] bg-[#F5F4F0] p-4"><Detail label="English" value={englishLevelText(candidate, "Pending")} /></div>
         </div>
+        {candidate.englishScore?.feedback ? (
+          <div className="mt-3 rounded-xl border border-[#E5E4E0] bg-[#F5F4F0] p-4">
+            <p className="text-xs font-medium uppercase tracking-wider text-[#888]">English assessment notes</p>
+            <p className="mt-1 text-sm leading-6 text-[#555]">{candidate.englishScore.feedback}</p>
+          </div>
+        ) : null}
         {/* Action buttons */}
         <div className="mt-6 flex flex-wrap gap-2">
           <button onClick={onFavorite} className={cx("inline-flex h-10 items-center gap-2 rounded-lg border px-4 text-sm font-medium", favorite ? "border-amber-200 bg-amber-50 text-amber-800" : "border-[#E5E4E0] bg-white text-[#555] hover:border-[#111]")}><Star className="size-4" /> {favorite ? "Favorited" : "Favorite"}</button>

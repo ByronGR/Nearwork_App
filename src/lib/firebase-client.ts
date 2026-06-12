@@ -220,6 +220,7 @@ export type PortalCandidate = {
   lastAssessmentScore?: number;
   lastTechnicalScore?: number;
   english?: string;
+  englishScore?: { level: 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2'; feedback?: string; assessedAt?: string; assessedBy?: string };
   salary?: string;
   expectedSalary?: string;
   expectedSalaryAmount?: number;
