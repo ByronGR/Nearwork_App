@@ -84,7 +84,7 @@ function salaryText(candidate: PipelineCandidate | PortalCandidate) {
   if (!amount && !(candidate as PortalCandidate).expectedSalary) return "Not shared";
   const usdAmount = currency === "COP" ? amount / 3900 : amount;
   if (!usdAmount) return (candidate as PortalCandidate).expectedSalary || "USD pending";
-  return `USD ${new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(Math.round(usdAmount))}/mo`;
+  return `$${new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(Math.round(usdAmount))} USD/mo`;
 }
 
 // ─── sub-components ────────────────────────────────────────────────────────

@@ -5,6 +5,17 @@ import { onAuthStateChanged, type User } from "firebase/auth";
 import { ArrowLeft, ClipboardList, CheckCircle2, AlertTriangle, Clock, RefreshCw } from "lucide-react";
 import { auth, getClientUser, logoutClient, type ClientUser } from "@/lib/firebase-client";
 
+// ─── Helpers ───────────────────────────────────────────────────────────────
+
+function fmtSalaryRange(min?: number, max?: number, currency = "USD", payFrequency = "mo"): string | undefined {
+  if (!min) return undefined;
+  const code = (currency || "USD").toUpperCase();
+  const locale = code === "COP" ? "es-CO" : "en-US";
+  const fmt = (n: number) => new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(n);
+  const amount = max && max !== min ? `$${fmt(min)} – $${fmt(max)}` : `$${fmt(min)}`;
+  return `${amount} ${code} / ${payFrequency}`;
+}
+
 // ─── Types ─────────────────────────────────────────────────────────────────
 
 interface HistoryEntry {
@@ -341,11 +352,7 @@ export function KickoffBriefPage({ code }: { code: string }) {
   const canAct = status === "submitted";
   const isApproved = status === "approved";
   const lastChangeRequest = [...(brief.history || [])].reverse().find(h => h.action === "changes_requested");
-  const salary = brief.salaryMin && brief.salaryMax
-    ? `${brief.currency || "USD"} ${brief.salaryMin.toLocaleString()} – ${brief.salaryMax.toLocaleString()} / ${brief.payFrequency || "mo"}`
-    : brief.salaryMin
-    ? `${brief.currency || "USD"} ${brief.salaryMin.toLocaleString()} / ${brief.payFrequency || "mo"}`
-    : undefined;
+  const salary = fmtSalaryRange(brief.salaryMin, brief.salaryMax, brief.currency, brief.payFrequency || "mo");
 
   return (
     <div className="min-h-screen bg-[#F5F4F0]">

@@ -209,7 +209,7 @@ function salaryTextUsd(candidate: PortalCandidate | PipelineCandidate) {
   if (!rawAmount && !candidate.expectedSalary && !candidate.salary) return "Not shared";
   const amount = rawCurrency === "COP" ? rawAmount / CLIENT_FX_RATE : rawAmount;
   if (!amount) return "USD pending";
-  return `USD ${new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(Math.round(amount))}/mo`;
+  return `$${new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(Math.round(amount))} USD/mo`;
 }
 
 function englishLevelText(candidate: PortalCandidate, fallback: string) {
@@ -220,8 +220,8 @@ function moneyText(amount?: number, currency = "USD") {
   const value = Number(amount || 0);
   if (!value) return "Not shared";
   return currency === "COP"
-    ? `COP ${new Intl.NumberFormat("es-CO").format(Math.round(value))}`
-    : `USD ${new Intl.NumberFormat("en-US").format(Math.round(value))}`;
+    ? `$${new Intl.NumberFormat("es-CO").format(Math.round(value))} COP`
+    : `$${new Intl.NumberFormat("en-US").format(Math.round(value))} USD`;
 }
 
 function clientPriceText(hire: PortalHire) {
@@ -2231,11 +2231,14 @@ function KickoffBriefPanel({ pipeline, user }: { pipeline: PortalPipeline; user:
           <div className="px-6 py-4">
             <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#888]">Compensation</p>
             <p className="text-sm font-medium text-[#111]">
-              {str("salaryMin") && str("salaryMax")
-                ? `${str("currency") || "USD"} ${Number(str("salaryMin")).toLocaleString()} – ${Number(str("salaryMax")).toLocaleString()} / ${str("payFrequency") || "month"}`
-                : str("salaryMin")
-                  ? `From ${str("currency") || "USD"} ${Number(str("salaryMin")).toLocaleString()}`
-                  : `Up to ${str("currency") || "USD"} ${Number(str("salaryMax")).toLocaleString()}`}
+              {(() => {
+                const code = (str("currency") || "USD").toUpperCase();
+                const locale = code === "COP" ? "es-CO" : "en-US";
+                const fmt = (n: number) => new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(n);
+                if (str("salaryMin") && str("salaryMax")) return `$${fmt(Number(str("salaryMin")))} – $${fmt(Number(str("salaryMax")))} ${code} / ${str("payFrequency") || "month"}`;
+                if (str("salaryMin")) return `From $${fmt(Number(str("salaryMin")))} ${code}`;
+                return `Up to $${fmt(Number(str("salaryMax")))} ${code}`;
+              })()}
             </p>
             {str("variablePay") && <p className="mt-1 text-xs text-[#555]">Variable pay: {str("variablePay")}</p>}
             {str("equity") && <p className="mt-0.5 text-xs text-[#555]">Equity: {str("equity")}</p>}
