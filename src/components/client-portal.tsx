@@ -120,9 +120,11 @@ const pipelineStages = [
 const emptyClientUsers: ClientUser[] = [];
 
 // Client-facing pipeline stages (admin stage → client stage mapping)
-// Screening = Background Check stage, Technical = Assessment stage,
-// Final Round = Presented stage, Offer = Hired stage
+// Applied = Applied stage, Screening = Background Check stage,
+// Technical = Interview + Assessment stages,
+// Final Round = Partner Review + Partner Interview stages, Offer = Hired stage
 const clientStages = [
+  { key: "applied",       label: "Applied"       },
   { key: "screening",     label: "Screening"     },
   { key: "technical",     label: "Technical"     },
   { key: "final-round",   label: "Final Round"   },
@@ -133,18 +135,21 @@ const clientStages = [
 function clientStageKey(stage?: string): string {
   const s = String(stage || "").toLowerCase().replace(/[-_ ]/g, "");
   // Map admin-side stage names to client-visible labels.
-  // Admin stages: applied, background-check, assessment, interview,
+  // Admin stages: applied, background-check, interview, assessment,
   //               partner-review, partner-interview, hired, not-selected
-  if (s.includes("background") || s.includes("bgcheck") || s.includes("screening") || s.includes("profile")) return "screening";
-  if (s.includes("assess") || s.includes("tech") || s.includes("test")) return "technical";
-  if (s.includes("present") || s.includes("partner") || s.includes("clientview") || s.includes("clientreview") || s.includes("final") || s.includes("interview")) return "final-round";
-  if (s.includes("hired") || s.includes("offer")) return "offer";
+  // "partner" must be checked before "interview" so partner-interview
+  // lands in final-round, not technical.
   if (s.includes("pass") || s.includes("reject") || s.includes("notselect") || s.includes("declined") || s.includes("disqualif")) return "not-selected";
-  // "applied" and other early stages default to Screening — clients see vetted candidates
-  return "screening";
+  if (s.includes("hired") || s.includes("offer")) return "offer";
+  if (s.includes("partner") || s.includes("present") || s.includes("clientview") || s.includes("clientreview") || s.includes("final")) return "final-round";
+  if (s.includes("interview") || s.includes("assess") || s.includes("tech") || s.includes("test")) return "technical";
+  if (s.includes("background") || s.includes("bgcheck") || s.includes("screening") || s.includes("profile")) return "screening";
+  // "applied" and any unrecognized early stage default to Applied
+  return "applied";
 }
 
 const clientStageTone: Record<string, string> = {
+  "applied":      "border-sky-200 bg-sky-50 text-sky-700",
   "screening":    "border-violet-200 bg-violet-50 text-violet-700",
   "technical":    "border-amber-200 bg-amber-50 text-amber-800",
   "final-round":  "border-teal-200 bg-teal-50 text-teal-700",
@@ -2030,7 +2035,7 @@ function KanbanBoard({
   if (!rows.length) return <Empty title="No candidates yet" text="When Nearwork adds candidates to your pipeline they will appear here." />;
   return (
     <div className="overflow-x-auto pb-2">
-      <div className="grid min-w-[1100px] grid-cols-5 gap-3">
+      <div className="grid min-w-[1320px] grid-cols-6 gap-3">
         {clientStages.map((stage) => {
           const stageRows = rows.filter(({ candidate }) => clientStageKey(candidate.stage) === stage.key);
           return (

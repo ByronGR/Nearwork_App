@@ -50,6 +50,7 @@ function candidateKey(c: PortalCandidate | PipelineCandidate) {
 
 // Client-side stage mapping (same logic as client-portal.tsx)
 const clientStages = [
+  { key: "applied",      label: "Applied"      },
   { key: "screening",    label: "Screening"    },
   { key: "technical",    label: "Technical"    },
   { key: "final-round",  label: "Final Round"  },
@@ -59,18 +60,20 @@ const clientStages = [
 
 function clientStageKey(stage?: string): string {
   const s = String(stage || "").toLowerCase().replace(/[-_ ]/g, "");
-  // Admin stages: applied, background-check, assessment, interview,
+  // Admin stages: applied, background-check, interview, assessment,
   //               partner-review, partner-interview, hired, not-selected
-  if (s === "applied") return "screening";
-  if (s.includes("background") || s.includes("screening") || s.includes("profile")) return "screening";
-  if (s.includes("assess") || s.includes("tech") || s.includes("test")) return "technical";
-  if (s.includes("present") || s.includes("partner") || s.includes("clientview") || s.includes("final") || s.includes("interview")) return "final-round";
+  // "partner" must be checked before "interview" so partner-interview
+  // lands in final-round, not technical.
+  if (s.includes("pass") || s.includes("reject") || s.includes("notselect") || s.includes("declined") || s.includes("disqualif")) return "not-selected";
   if (s.includes("hired") || s.includes("offer")) return "offer";
-  if (s.includes("pass") || s.includes("reject") || s.includes("notselect") || s.includes("declined")) return "not-selected";
-  return "screening";
+  if (s.includes("partner") || s.includes("present") || s.includes("clientview") || s.includes("clientreview") || s.includes("final")) return "final-round";
+  if (s.includes("interview") || s.includes("assess") || s.includes("tech") || s.includes("test")) return "technical";
+  if (s.includes("background") || s.includes("screening") || s.includes("profile")) return "screening";
+  return "applied";
 }
 
 const stageTone: Record<string, string> = {
+  "applied":      "border-sky-200 bg-sky-50 text-sky-700",
   "screening":    "border-violet-200 bg-violet-50 text-violet-700",
   "technical":    "border-amber-200 bg-amber-50 text-amber-800",
   "final-round":  "border-teal-200 bg-teal-50 text-teal-700",
@@ -444,7 +447,7 @@ export function PipelinePage({ code }: { code: string }) {
 
               {tab === "pipeline" ? (
                 <div className="overflow-x-auto pb-2">
-                  <div className="grid min-w-[900px] grid-cols-5 gap-3">
+                  <div className="grid min-w-[1080px] grid-cols-6 gap-3">
                     {clientStages.map((stage) => {
                       const stageItems = pipelineItems.filter(c => clientStageKey(c.stage) === stage.key);
                       return (
