@@ -127,9 +127,17 @@ function KanbanCard({ item, candidates, onClick }: {
       className="w-full rounded-lg border border-[#E5E4E0] bg-white p-3 text-left transition hover:border-[#12866E] hover:shadow-sm"
     >
       <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold text-[#111]">{name}</p>
-          {role ? <p className="mt-0.5 truncate text-xs text-[#555]">{role}</p> : null}
+        <div className="flex min-w-0 flex-1 items-center gap-2">
+          {full?.photoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={full.photoUrl} alt={name} className="size-7 shrink-0 rounded-full object-cover" />
+          ) : (
+            <div className="grid size-7 shrink-0 place-items-center rounded-full bg-[#EEF6F3] text-[10px] font-semibold text-[#12866E]">{initials(name)}</div>
+          )}
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold text-[#111]">{name}</p>
+            {role ? <p className="mt-0.5 truncate text-xs text-[#555]">{role}</p> : null}
+          </div>
         </div>
         {score ? <Score value={score} /> : null}
       </div>
@@ -163,9 +171,17 @@ function CandidateDrawer({ item, candidates, pipeline, onClose }: {
         onClick={(e) => e.stopPropagation()}
       >
         <header className="flex items-center justify-between border-b border-[#E5E4E0] px-5 py-4">
-          <div>
-            <h2 className="text-lg font-bold text-[#111]">{name}</h2>
-            <p className="text-sm text-[#555]">{full?.role || item.role || ""} · {full?.location || full?.city || "Colombia"}</p>
+          <div className="flex items-center gap-3">
+            {full?.photoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={full.photoUrl} alt={name} className="size-10 shrink-0 rounded-full object-cover" />
+            ) : (
+              <div className="grid size-10 shrink-0 place-items-center rounded-full bg-[#EEF6F3] text-sm font-semibold text-[#12866E]">{initials(name)}</div>
+            )}
+            <div>
+              <h2 className="text-lg font-bold text-[#111]">{name}</h2>
+              <p className="text-sm text-[#555]">{full?.role || item.role || ""} · {full?.location || full?.city || "Colombia"}</p>
+            </div>
           </div>
           <button onClick={onClose} className="text-[#888] hover:text-[#111]">✕</button>
         </header>

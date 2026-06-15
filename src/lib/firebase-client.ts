@@ -229,6 +229,7 @@ export type PortalCandidate = {
   location?: string;
   skills?: string[];
   cvUrl?: string;
+  photoUrl?: string;
   linkedin?: string;
   discProfile?: { label?: string; high?: string; low?: string; summary?: string };
   aiReview?: PortalAssessmentInsight;
