@@ -18,6 +18,7 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata = {
   title: "Nearwork Client Portal",
   description: "Nearwork hiring command center for client candidate decisions.",
+  manifest: "/site.webmanifest",
 };
 
 export default function RootLayout({
