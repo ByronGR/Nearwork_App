@@ -1,6 +1,7 @@
 "use client";
 
 import { initializeApp, getApps } from "firebase/app";
+import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
 import {
   GoogleAuthProvider,
   browserLocalPersistence,
@@ -47,6 +48,10 @@ const firebaseConfig = {
 };
 
 export const firebaseApp = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+initializeAppCheck(firebaseApp, {
+  provider: new ReCaptchaV3Provider('6LdijCltAAAAA07O_nBCe-h2keUYjCnjrVRCksqi'),
+  isTokenAutoRefreshEnabled: true,
+});
 export const auth = getAuth(firebaseApp);
 export const db = getFirestore(firebaseApp);
 export const storage = getStorage(firebaseApp);
