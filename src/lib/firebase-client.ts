@@ -49,10 +49,14 @@ const firebaseConfig = {
 
 export const firebaseApp = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 if (typeof window !== 'undefined') {
-  initializeAppCheck(firebaseApp, {
-    provider: new ReCaptchaV3Provider('6LdijCltAAAAA07O_nBCe-h2keUYjCnjrVRCksqi'),
-    isTokenAutoRefreshEnabled: true,
-  });
+  try {
+    initializeAppCheck(firebaseApp, {
+      provider: new ReCaptchaV3Provider('6LdijCltAAAAA07O_nBCe-h2keUYjCnjrVRCksqi'),
+      isTokenAutoRefreshEnabled: true,
+    });
+  } catch (e) {
+    console.warn('App Check init skipped:', (e as Error)?.message);
+  }
 }
 export const auth = getAuth(firebaseApp);
 export const db = getFirestore(firebaseApp);
