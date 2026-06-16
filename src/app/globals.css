@@ -40,3 +40,36 @@ button {
 button:disabled {
   cursor: not-allowed;
 }
+
+/* Login page split-panel layout */
+.nw-login-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  min-height: 100vh;
+}
+.nw-brand-panel {
+  position: relative;
+  overflow: hidden;
+}
+.nw-mobile-logo {
+  display: none;
+}
+@media (max-width: 920px) {
+  .nw-login-grid {
+    grid-template-columns: 1fr;
+  }
+  .nw-brand-panel {
+    min-height: 300px;
+  }
+  .nw-mobile-logo {
+    display: block;
+  }
+}
+@media (max-width: 560px) {
+  .nw-brand-panel {
+    display: none;
+  }
+  .nw-mobile-logo {
+    display: block;
+  }
+}

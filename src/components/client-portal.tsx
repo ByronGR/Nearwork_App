@@ -2,8 +2,10 @@
 
 import {
   ArrowLeft,
+  ArrowRight,
   Bell,
   Building2,
+  Check,
   CalendarCheck,
   CalendarDays,
   ChevronRight,
@@ -396,6 +398,68 @@ function friendlyAuthError(raw: string): string {
   return raw.replace(/^Firebase:\s*/i, "").replace(/\s*\(auth\/[^)]+\)\.?\s*$/i, "").trim() || "Something went wrong. Please try again.";
 }
 
+function PortalPreviewLogin() {
+  const rows = [
+    { initials: "MC", avatarBg: "#16A085", name: "Maria Castro", role: "Sr. Backend Engineer", stage: "Technical", score: 94 },
+    { initials: "ST", avatarBg: "#E74C7C", name: "Sofía Torres", role: "Product Designer", stage: "Offer", score: 92 },
+    { initials: "LH", avatarBg: "#3B82F6", name: "Luis Herrera", role: "DevOps Engineer", stage: "Final round", score: 89 },
+  ];
+  return (
+    <div style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 16, padding: 6, backdropFilter: "blur(6px)", boxShadow: "0 24px 60px rgba(0,0,0,0.28)" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px 12px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#7FE3CE", display: "inline-block" }} />
+          <span style={{ fontSize: 12, fontWeight: 600, color: "#F2F8F5", letterSpacing: "-0.01em" }}>Senior Backend · Pipeline</span>
+        </div>
+        <span style={{ fontFamily: "var(--font-jetbrains, monospace)", fontSize: 10.5, color: "rgba(242,248,245,0.66)" }}>6 active</span>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+        {rows.map((r, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: 11, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 11, padding: "10px 12px" }}>
+            <div style={{ width: 30, height: 30, borderRadius: "50%", background: r.avatarBg, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, flexShrink: 0, letterSpacing: "-0.01em" }}>{r.initials}</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 12.5, fontWeight: 600, color: "#F2F8F5", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.name}</div>
+              <div style={{ fontSize: 11, color: "rgba(242,248,245,0.66)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.role}</div>
+            </div>
+            <span style={{ fontSize: 10.5, fontWeight: 500, color: "rgba(242,248,245,0.66)", whiteSpace: "nowrap" }}>{r.stage}</span>
+            <span style={{ fontFamily: "var(--font-jetbrains, monospace)", fontSize: 11, fontWeight: 500, color: "#9DEAD8", background: "rgba(127,227,206,0.16)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 7, padding: "3px 7px", letterSpacing: "-0.02em" }}>{r.score}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function LoginField({
+  label, type = "text", placeholder, value, onChange, trailing, autoComplete, required,
+}: {
+  label: string; type?: string; placeholder?: string; value: string;
+  onChange: (v: string) => void; trailing?: React.ReactNode; autoComplete?: string; required?: boolean;
+}) {
+  const [focus, setFocus] = useState(false);
+  return (
+    <label style={{ display: "block" }}>
+      <span style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#383838", marginBottom: 8, letterSpacing: "-0.005em" }}>{label}</span>
+      <div style={{
+        display: "flex", alignItems: "center",
+        background: focus ? "#FFFFFF" : "#F5F4F0",
+        border: `1.5px solid ${focus ? "#16A085" : "#D9D9D9"}`,
+        borderRadius: 12, padding: "0 6px 0 14px",
+        boxShadow: focus ? "0 0 0 4px rgba(22,160,133,0.12)" : "none",
+        transition: "border-color 150ms, box-shadow 150ms, background 150ms",
+      }}>
+        <input
+          type={type} placeholder={placeholder} value={value} autoComplete={autoComplete} required={required}
+          onChange={(e) => onChange(e.target.value)}
+          onFocus={() => setFocus(true)} onBlur={() => setFocus(false)}
+          style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontFamily: "inherit", fontSize: 15, color: "#111", padding: "13px 0", letterSpacing: "-0.01em" }}
+        />
+        {trailing}
+      </div>
+    </label>
+  );
+}
+
 function LoginScreen({ message }: { message?: string }) {
   const inviteEmail = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("email") || "" : "";
   const inviteToken = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("token") || "" : "";
@@ -528,86 +592,148 @@ function LoginScreen({ message }: { message?: string }) {
   }
 
   return (
-    <main className="grid min-h-screen bg-[#F8F7F3] px-5 py-8 text-[#111] lg:grid-cols-[1fr_440px]">
-      <section className="flex min-h-[520px] flex-col justify-between rounded-lg border border-[#E5E4E0] bg-white p-8 shadow-sm lg:p-12">
-        <div>
-          <div className="text-2xl font-semibold">Near<span className="text-[#12866E]">work</span></div>
-          <p className="mt-16 max-w-2xl text-5xl font-semibold leading-[1.02] lg:text-7xl">
-            Company hiring command center.
-          </p>
-          <p className="mt-6 max-w-xl text-base leading-7 text-[#555]">
-            Review candidates, add private notes, track openings, and receive updates from Nearwork in one shared portal.
-          </p>
+    <div className="nw-login-grid">
+      {/* Brand panel (left) */}
+      <div className="nw-brand-panel" style={{ background: "#063A2E", color: "#F2F8F5" }}>
+        <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)", backgroundSize: "52px 52px", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(120% 95% at 85% 6%, rgba(94,196,176,0.30) 0%, rgba(94,196,176,0) 52%)", pointerEvents: "none" }} />
+        <div style={{ position: "relative", height: "100%", display: "flex", flexDirection: "column", padding: "clamp(36px, 5vw, 64px)" }}>
+          <div style={{ position: "relative", display: "inline-block", fontWeight: 700, fontSize: 24, color: "#F2F8F5", letterSpacing: "-0.03em", lineHeight: 1 }}>
+            Near<span style={{ color: "#7FE3CE" }}>work</span>
+            <div style={{ position: "absolute", bottom: -6, left: 0, width: "54%", height: 3, background: "#7FE3CE", borderRadius: 2 }} />
+          </div>
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", maxWidth: 540, paddingTop: 32, paddingBottom: 24 }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, alignSelf: "flex-start", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 999, padding: "6px 13px", marginBottom: 28 }}>
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#7FE3CE", display: "inline-block" }} />
+              <span style={{ fontFamily: "var(--font-jetbrains, monospace)", fontSize: 11, letterSpacing: "0.04em", color: "rgba(242,248,245,0.66)", whiteSpace: "nowrap" }}>Client portal</span>
+            </div>
+            <h1 style={{ fontWeight: 700, fontSize: "clamp(40px, 4.6vw, 60px)", lineHeight: 1.04, letterSpacing: "-0.035em", color: "#F2F8F5", margin: 0 }}>
+              Your hiring<br />command <span style={{ color: "#7FE3CE" }}>center.</span>
+            </h1>
+            <p style={{ fontSize: "clamp(15px, 1.2vw, 17px)", lineHeight: 1.6, color: "rgba(242,248,245,0.66)", margin: "22px 0 0", maxWidth: 440 }}>
+              Review candidates, add private notes, track openings, and receive updates from Nearwork — in one shared portal.
+            </p>
+            <div style={{ marginTop: 40 }}>
+              <PortalPreviewLogin />
+            </div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 12.5, color: "rgba(242,248,245,0.66)" }}>
+            <ShieldCheck size={15} color="#9DEAD8" strokeWidth={2} />
+            <span>Invitation-only access · SOC 2 Type II</span>
+          </div>
         </div>
-        <div className="grid gap-3 text-sm text-[#555] sm:grid-cols-3">
-          <div className="rounded-md border border-[#E5E4E0] bg-[#F5F4F0] p-4">Pipeline visibility</div>
-          <div className="rounded-md border border-[#E5E4E0] bg-[#F5F4F0] p-4">Private notes</div>
-          <div className="rounded-md border border-[#E5E4E0] bg-[#F5F4F0] p-4">Realtime updates</div>
-        </div>
-      </section>
-      <section className="flex items-center justify-center px-0 py-8 lg:px-10">
-        <form onSubmit={submit} className="w-full rounded-lg border border-[#E5E4E0] bg-white p-6 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#12866E]">app.nearwork.co</p>
-          <h1 className="mt-2 text-3xl font-semibold">{isInvite ? "Create your account" : "Company login"}</h1>
-          <p className="mt-2 text-sm leading-6 text-[#555]">{isInvite ? "Tell us a little about yourself and choose a password to enter your company workspace." : "Use the email invited by Nearwork for your company portal."}</p>
-          {localMessage ? <div className="mt-4 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">{localMessage}</div> : null}
-          {!localMessage && message ? <div className="mt-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">{message}</div> : null}
-          {isInvite ? (
-            <>
-              <div className="mt-5 grid grid-cols-2 gap-3">
-                <label className="block text-sm font-medium">
-                  First name
-                  <input value={firstName} onChange={(event) => setFirstName(event.target.value)} type="text" autoComplete="given-name" className="mt-2 h-11 w-full rounded-md border border-[#E5E4E0] px-3 outline-none focus:border-[#12866E]" required />
-                </label>
-                <label className="block text-sm font-medium">
-                  Last name
-                  <input value={lastName} onChange={(event) => setLastName(event.target.value)} type="text" autoComplete="family-name" className="mt-2 h-11 w-full rounded-md border border-[#E5E4E0] px-3 outline-none focus:border-[#12866E]" />
-                </label>
-              </div>
-              <label className="mt-4 block text-sm font-medium">
-                Your role
-                <input value={jobTitle} onChange={(event) => setJobTitle(event.target.value)} type="text" placeholder="e.g. CEO, Hiring Manager" autoComplete="organization-title" className="mt-2 h-11 w-full rounded-md border border-[#E5E4E0] px-3 outline-none focus:border-[#12866E]" required />
-              </label>
-            </>
-          ) : null}
-          <label className="mt-4 block text-sm font-medium">
-            Email
-            <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" autoComplete="email" className="mt-2 h-11 w-full rounded-md border border-[#E5E4E0] px-3 outline-none focus:border-[#12866E]" required />
-          </label>
-          <label className="mt-4 block text-sm font-medium">
-            {isInvite ? "Create password" : "Password"}
-            <div className="relative mt-2">
-              <input value={password} onChange={(event) => setPassword(event.target.value)} type={showPassword ? "text" : "password"} className="h-11 w-full rounded-md border border-[#E5E4E0] pl-3 pr-11 outline-none focus:border-[#12866E]" required />
-              <button type="button" onClick={() => setShowPassword((v) => !v)} aria-label={showPassword ? "Hide password" : "Show password"} className="absolute inset-y-0 right-0 grid w-11 place-items-center text-[#888] hover:text-[#111]">
-                {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+      </div>
+
+      {/* Login card (right) */}
+      <div style={{ background: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", padding: "clamp(28px, 4vw, 56px)" }}>
+        <div style={{ width: "100%", maxWidth: 392 }}>
+          <div className="nw-mobile-logo" style={{ marginBottom: 28 }}>
+            <div style={{ position: "relative", display: "inline-block", fontWeight: 700, fontSize: 24, color: "#111", letterSpacing: "-0.03em", lineHeight: 1 }}>
+              Near<span style={{ color: "#16A085" }}>work</span>
+              <div style={{ position: "absolute", bottom: -6, left: 0, width: "54%", height: 3, background: "#16A085", borderRadius: 2 }} />
+            </div>
+          </div>
+
+          <div style={{ fontFamily: "var(--font-jetbrains, monospace)", fontSize: 11.5, fontWeight: 500, letterSpacing: "0.12em", color: "#12866E", marginBottom: 12 }}>APP.NEARWORK.CO</div>
+          <h2 style={{ fontSize: 30, fontWeight: 700, letterSpacing: "-0.03em", color: "#111", margin: 0, lineHeight: 1.1 }}>
+            {isInvite ? "Create your account" : "Company login"}
+          </h2>
+          <p style={{ fontSize: 14.5, color: "#555", margin: "10px 0 0", lineHeight: 1.55 }}>
+            {isInvite ? "Tell us a little about yourself and choose a password to enter your company workspace." : "Use the email Nearwork invited for your company portal."}
+          </p>
+
+          {localMessage ? <div style={{ marginTop: 16, padding: "10px 14px", borderRadius: 10, background: "#EEF6F3", border: "1px solid #B2DFDB", fontSize: 13.5, color: "#12866E" }}>{localMessage}</div> : null}
+          {!localMessage && message ? <div style={{ marginTop: 16, padding: "10px 14px", borderRadius: 10, background: "#FFFBEB", border: "1px solid #FDE68A", fontSize: 13.5, color: "#92400E" }}>{message}</div> : null}
+
+          <form onSubmit={submit}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 18, marginTop: 30 }}>
+              {isInvite && (
+                <>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                    <LoginField label="First name" type="text" value={firstName} onChange={setFirstName} placeholder="First" autoComplete="given-name" required />
+                    <LoginField label="Last name" type="text" value={lastName} onChange={setLastName} placeholder="Last" autoComplete="family-name" />
+                  </div>
+                  <LoginField label="Your role" type="text" value={jobTitle} onChange={setJobTitle} placeholder="e.g. CEO, Hiring Manager" autoComplete="organization-title" required />
+                </>
+              )}
+
+              <LoginField label="Work email" type="email" value={email} onChange={setEmail} placeholder="you@company.com" autoComplete="email" required />
+
+              <LoginField
+                label={isInvite ? "Create password" : "Password"}
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={setPassword}
+                placeholder="Enter your password"
+                autoComplete={isInvite ? "new-password" : "current-password"}
+                required
+                trailing={
+                  <button type="button" onClick={() => setShowPassword((v) => !v)} aria-label={showPassword ? "Hide password" : "Show password"} style={{ background: "transparent", border: "none", cursor: "pointer", padding: 9, display: "inline-flex", alignItems: "center", borderRadius: 8 }}>
+                    {showPassword ? <EyeOff size={17} color="#9E9E9E" /> : <Eye size={17} color="#9E9E9E" />}
+                  </button>
+                }
+              />
+
+              {isInvite && (
+                <LoginField
+                  label="Confirm password"
+                  type={showPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={setConfirmPassword}
+                  placeholder="Repeat your password"
+                  autoComplete="new-password"
+                  required
+                  trailing={
+                    <button type="button" onClick={() => setShowPassword((v) => !v)} aria-label={showPassword ? "Hide password" : "Show password"} style={{ background: "transparent", border: "none", cursor: "pointer", padding: 9, display: "inline-flex", alignItems: "center", borderRadius: 8 }}>
+                      {showPassword ? <EyeOff size={17} color="#9E9E9E" /> : <Eye size={17} color="#9E9E9E" />}
+                    </button>
+                  }
+                />
+              )}
+
+              {!isInvite ? (
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                  <button type="button" onClick={() => setRememberMe((r) => !r)} style={{ display: "inline-flex", alignItems: "center", gap: 9, background: "transparent", border: "none", cursor: "pointer", padding: 0 }}>
+                    <span style={{ width: 19, height: 19, borderRadius: 6, flexShrink: 0, background: rememberMe ? "#16A085" : "#FFFFFF", border: `1.5px solid ${rememberMe ? "#16A085" : "#BDBDBD"}`, display: "inline-flex", alignItems: "center", justifyContent: "center", transition: "background 150ms, border-color 150ms" }}>
+                      {rememberMe && <Check size={13} color="#fff" strokeWidth={3} />}
+                    </span>
+                    <span style={{ fontSize: 13.5, color: "#383838", fontWeight: 500 }}>Keep me signed in</span>
+                  </button>
+                  <button type="button" onClick={resetPassword} disabled={busy} style={{ fontSize: 13.5, fontWeight: 600, color: "#12866E", background: "transparent", border: "none", cursor: busy ? "not-allowed" : "pointer", padding: 0, opacity: busy ? 0.6 : 1 }}>
+                    Reset password
+                  </button>
+                </div>
+              ) : (
+                <button type="button" onClick={() => setRememberMe((r) => !r)} style={{ display: "inline-flex", alignItems: "center", gap: 9, background: "transparent", border: "none", cursor: "pointer", padding: 0 }}>
+                  <span style={{ width: 19, height: 19, borderRadius: 6, flexShrink: 0, background: rememberMe ? "#16A085" : "#FFFFFF", border: `1.5px solid ${rememberMe ? "#16A085" : "#BDBDBD"}`, display: "inline-flex", alignItems: "center", justifyContent: "center", transition: "background 150ms, border-color 150ms" }}>
+                    {rememberMe && <Check size={13} color="#fff" strokeWidth={3} />}
+                  </span>
+                  <span style={{ fontSize: 13.5, color: "#383838", fontWeight: 500 }}>Keep me signed in</span>
+                </button>
+              )}
+
+              {error ? <div style={{ padding: "10px 14px", borderRadius: 10, background: "#FFF5F7", border: "1px solid #FECDD3", fontSize: 13.5, color: "#BE123C" }}>{error}</div> : null}
+
+              <button
+                type="submit"
+                disabled={busy}
+                style={{ marginTop: 4, width: "100%", height: 52, borderRadius: 12, background: "#16A085", color: "#fff", border: "none", fontSize: 15.5, fontWeight: 600, letterSpacing: "-0.01em", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 9, boxShadow: "0 8px 20px rgba(22,160,133,0.30)", opacity: busy ? 0.7 : 1, cursor: busy ? "not-allowed" : "pointer", transition: "background 150ms, transform 120ms" }}
+                onMouseEnter={(e) => { if (!busy) { (e.currentTarget as HTMLButtonElement).style.background = "#12866E"; (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-1px)"; } }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "#16A085"; (e.currentTarget as HTMLButtonElement).style.transform = "none"; }}
+              >
+                {busy ? "Working…" : isInvite ? "Create account" : "Log in"}
+                {!busy && <ArrowRight size={18} color="#fff" strokeWidth={2.25} />}
               </button>
             </div>
-          </label>
-          {isInvite ? (
-            <label className="mt-4 block text-sm font-medium">
-              Confirm password
-              <div className="relative mt-2">
-                <input value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} type={showPassword ? "text" : "password"} className="h-11 w-full rounded-md border border-[#E5E4E0] pl-3 pr-11 outline-none focus:border-[#12866E]" required />
-                <button type="button" onClick={() => setShowPassword((v) => !v)} aria-label={showPassword ? "Hide password" : "Show password"} className="absolute inset-y-0 right-0 grid w-11 place-items-center text-[#888] hover:text-[#111]">
-                  {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                </button>
-              </div>
-            </label>
-          ) : null}
-          <label className="mt-4 flex items-center gap-2 text-sm font-medium text-[#555]">
-            <input checked={rememberMe} onChange={(event) => setRememberMe(event.target.checked)} type="checkbox" className="h-4 w-4 accent-[#12866E]" />
-            Keep me signed in on this device
-          </label>
-          {error ? <div className="mt-4 rounded-md border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">{error}</div> : null}
-          <button disabled={busy} className="mt-5 h-11 w-full rounded-md bg-[#12866E] text-sm font-semibold text-white disabled:opacity-60">
-            {busy ? "Working..." : isInvite ? "Create account" : "Log in"}
-          </button>
-          <button type="button" onClick={resetPassword} disabled={busy} className="mt-3 h-11 w-full rounded-md border border-[#E5E4E0] bg-white text-sm font-semibold text-[#555] disabled:opacity-60">
-            Send password reset
-          </button>
-        </form>
-      </section>
-    </main>
+          </form>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 13, color: "#9E9E9E", marginTop: 28, paddingTop: 22, borderTop: "1px solid #EBEBEB" }}>
+            <ShieldCheck size={15} color="#BDBDBD" strokeWidth={1.75} />
+            <span style={{ color: "#757575" }}>No invite yet?{" "}<a href="mailto:support@nearwork.co" style={{ color: "#383838", fontWeight: 600, textDecoration: "none" }}>Contact your Nearwork partner</a></span>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
