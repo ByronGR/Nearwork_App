@@ -3417,10 +3417,10 @@ function CompanyUsers({ org, testMode }: { org: Organization; testMode: boolean 
 
   useEffect(() => {
     if (testMode) return;
-    const q = query(collection(db, "org_invites"), where("orgId", "==", org.orgId), where("status", "==", "pending"));
+    const q = query(collection(db, "org_invites"), where("orgId", "==", org.orgId));
     return onSnapshot(q, (snap) => {
-      setPendingInvites(snap.docs.map((d) => ({ id: d.id, ...d.data() } as typeof pendingInvites[number])));
-    });
+      setPendingInvites(snap.docs.filter((d) => d.data().status === "pending").map((d) => ({ id: d.id, ...d.data() } as typeof pendingInvites[number])));
+    }, () => {});
   }, [org.orgId, testMode]);
 
   const activeEmails = new Set(users.map((u) => u.email?.toLowerCase()));
