@@ -71,6 +71,7 @@ import {
   type PortalOpening,
   type PortalPipeline,
   type TimeOffRequest,
+  sendOrgInvite,
 } from "@/lib/firebase-client";
 import { PipelineChatPanel } from "@/components/pipeline-chat-panel";
 
@@ -1531,7 +1532,7 @@ export function ClientPortal() {
         </header>
 
         <div className="mx-auto max-w-7xl space-y-6 px-5 py-7 lg:px-10">
-          {showInvite ? <InviteUserModal orgName={org.name} onClose={() => setShowInvite(false)} /> : null}
+          {showInvite ? <InviteUserModal orgId={org.orgId} orgName={org.name} onClose={() => setShowInvite(false)} /> : null}
           {active === "overview" ? (
             <OverviewDashboard
               profile={profile}
@@ -3320,8 +3321,37 @@ function FinanceView({ org, hires, accountManager, profile }: { org: Organizatio
   );
 }
 
-function InviteUserModal({ orgName, onClose }: { orgName: string; onClose: () => void }) {
+function InviteUserModal({ orgId, orgName, onClose }: { orgId: string; orgName: string; onClose: () => void }) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [role, setRole] = useState("Hiring manager");
+  const [sending, setSending] = useState(false);
+  const [msg, setMsg] = useState("");
+  const [sent, setSent] = useState(false);
+
+  async function handleSend() {
+    if (!name.trim() || !email.trim()) { setMsg("Name and email are required."); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setMsg("Enter a valid email address."); return; }
+    setSending(true); setMsg("");
+    const result = await sendOrgInvite(email, orgId, orgName, { name, role });
+    setSending(false);
+    if (result.ok) { setSent(true); setMsg(""); }
+    else { setMsg(result.error || "Failed to send invite."); }
+  }
+
+  if (sent) {
+    return (
+      <div className="fixed inset-0 z-40 grid place-items-center bg-black/20 p-4">
+        <section className="w-full max-w-lg rounded-xl border border-[#E5E4E0] bg-white p-6 shadow-2xl text-center">
+          <div className="text-4xl mb-3">✉️</div>
+          <h2 className="text-xl font-semibold mb-2">Invite sent!</h2>
+          <p className="text-sm text-[#555] mb-4">We sent a setup link to <strong>{email}</strong>. They'll be able to create their account and join {orgName}.</p>
+          <button onClick={onClose} className="h-11 w-full rounded-md bg-[#12866E] text-sm font-semibold text-white">Done</button>
+        </section>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 z-40 grid place-items-center bg-black/20 p-4">
       <section className="w-full max-w-lg rounded-xl border border-[#E5E4E0] bg-white p-6 shadow-2xl">
@@ -3330,8 +3360,8 @@ function InviteUserModal({ orgName, onClose }: { orgName: string; onClose: () =>
           <button onClick={onClose} className="rounded-md border border-[#E5E4E0] px-3 py-1 text-sm font-semibold">Close</button>
         </div>
         <div className="mt-5 grid gap-4">
-          <label className="text-sm font-semibold">Name<input className="mt-2 h-11 w-full rounded-md border border-[#E5E4E0] px-3 font-normal outline-none focus:border-[#12866E]" placeholder="Full name" /></label>
-          <label className="text-sm font-semibold">Email<input type="email" className="mt-2 h-11 w-full rounded-md border border-[#E5E4E0] px-3 font-normal outline-none focus:border-[#12866E]" placeholder="jane@company.com" /></label>
+          <label className="text-sm font-semibold">Name<input value={name} onChange={(e) => setName(e.target.value)} className="mt-2 h-11 w-full rounded-md border border-[#E5E4E0] px-3 font-normal outline-none focus:border-[#12866E]" placeholder="Full name" /></label>
+          <label className="text-sm font-semibold">Email<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="mt-2 h-11 w-full rounded-md border border-[#E5E4E0] px-3 font-normal outline-none focus:border-[#12866E]" placeholder="jane@company.com" /></label>
           <label className="text-sm font-semibold">Role
             <select value={role} onChange={(event) => setRole(event.target.value)} className="mt-2 h-11 w-full rounded-md border border-[#E5E4E0] px-3 font-normal outline-none focus:border-[#12866E]">
               <option>Hiring manager</option>
@@ -3342,8 +3372,9 @@ function InviteUserModal({ orgName, onClose }: { orgName: string; onClose: () =>
             </select>
           </label>
         </div>
-        <button onClick={onClose} className="mt-5 h-11 w-full rounded-md bg-[#12866E] text-sm font-semibold text-white">Create invite</button>
-        <p className="mt-3 text-xs leading-5 text-[#888]">Invites are managed by Nearwork from the staff portal so every user is tied to the correct organization.</p>
+        {msg && <p className="mt-3 text-sm text-red-600">{msg}</p>}
+        <button onClick={handleSend} disabled={sending} className="mt-5 h-11 w-full rounded-md bg-[#12866E] text-sm font-semibold text-white disabled:opacity-60">{sending ? "Sending…" : "Send invite"}</button>
+        <p className="mt-3 text-xs leading-5 text-[#888]">They'll receive an email with a link to create their account and join your organization.</p>
       </section>
     </div>
   );

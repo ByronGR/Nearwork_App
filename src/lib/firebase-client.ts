@@ -433,6 +433,55 @@ export async function createClientAccount(email: string, password: string, invit
   return credential;
 }
 
+export async function sendOrgInvite(
+  email: string,
+  orgId: string,
+  orgName: string,
+  details: { name?: string; role?: string }
+): Promise<{ ok: boolean; error?: string }> {
+  const normalizedEmail = email.trim().toLowerCase();
+  if (!normalizedEmail) return { ok: false, error: "Email is required" };
+  const token = crypto.randomUUID();
+  const nameParts = (details.name || "").trim().split(/\s+/);
+  const firstName = nameParts[0] || "";
+  const lastName = nameParts.slice(1).join(" ");
+  const setupLink =
+    `https://app.nearwork.co/join?token=${token}&email=${encodeURIComponent(normalizedEmail)}&orgId=${encodeURIComponent(orgId)}&orgName=${encodeURIComponent(orgName)}` +
+    (firstName ? `&firstName=${encodeURIComponent(firstName)}` : "") +
+    (lastName ? `&lastName=${encodeURIComponent(lastName)}` : "") +
+    (details.role ? `&title=${encodeURIComponent(details.role)}` : "");
+  try {
+    await setDoc(doc(db, "org_invites", token), {
+      token,
+      email: normalizedEmail,
+      orgId,
+      orgName,
+      inviteeName: details.name || "",
+      businessRole: details.role || "",
+      status: "pending",
+      createdAt: serverTimestamp(),
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      setupLink,
+    });
+  } catch (e) {
+    console.error("[NW] invite store failed:", e);
+  }
+  try {
+    const res = await fetch("/api/send-invite", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: normalizedEmail, firstName: firstName || normalizedEmail.split("@")[0], orgName, setupLink }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      return { ok: false, error: (err as { error?: string }).error || "Failed to send invite email" };
+    }
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: (e as Error).message || "Network error" };
+  }
+}
+
 export async function sendClientPasswordReset(email: string) {
   const normalizedEmail = email.trim().toLowerCase();
   // Send the branded Nearwork reset email via the Admin API, which generates the
