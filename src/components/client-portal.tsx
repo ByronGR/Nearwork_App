@@ -3062,6 +3062,48 @@ function CandidateFullPage({
           {candidate.linkedin ? <a href={candidate.linkedin} target="_blank" className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#E5E4E0] bg-white px-4 text-sm font-medium text-[#555] hover:border-[#111]"><ExternalLink className="size-4" /> LinkedIn</a> : null}
         </div>
       </section>
+      {/* CV viewer */}
+      {candidate.cvUrl ? (
+        <Panel title="Resume" eyebrow="Candidate CV">
+          <iframe src={`${candidate.cvUrl}#toolbar=0&navpanes=0`} className="w-full rounded-lg border border-[#E5E4E0]" style={{ height: 600 }} title="Candidate CV" />
+        </Panel>
+      ) : null}
+
+      {/* Work experience */}
+      {candidate.workHistory?.length ? (
+        <Panel title="Work experience" eyebrow="Career history">
+          <div className="space-y-4">
+            {[...candidate.workHistory].sort((a, b) => (b.from || "").localeCompare(a.from || "")).map((job, i) => (
+              <div key={i} className="flex gap-4 rounded-lg border border-[#E5E4E0] bg-[#F5F4F0] p-4">
+                <div className="mt-0.5 grid size-10 shrink-0 place-items-center rounded-lg bg-white text-lg font-semibold text-[#12866E] border border-[#E5E4E0]">
+                  {(job.company || "?")[0].toUpperCase()}
+                </div>
+                <div>
+                  <p className="font-semibold text-[#111]">{job.title || "—"}</p>
+                  <p className="text-sm text-[#555]">{job.company || "—"}</p>
+                  <p className="mt-1 text-xs text-[#888]">{job.from || "?"} → {job.to === "present" ? "Present" : (job.to || "?")}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Panel>
+      ) : null}
+
+      {/* Certifications */}
+      {candidate.certifications?.length ? (
+        <Panel title="Certifications" eyebrow="Credentials">
+          <div className="grid gap-3 sm:grid-cols-2">
+            {candidate.certifications.map((cert, i) => (
+              <div key={i} className="rounded-lg border border-[#E5E4E0] bg-[#F5F4F0] p-4">
+                <p className="font-semibold text-[#111]">{cert.name || "—"}</p>
+                {cert.issuer ? <p className="text-sm text-[#555]">{cert.issuer}</p> : null}
+                {cert.date ? <p className="mt-1 text-xs text-[#888]">{cert.date}</p> : null}
+              </div>
+            ))}
+          </div>
+        </Panel>
+      ) : null}
+
       <section className="grid gap-6 lg:grid-cols-2">
         <Panel title="Assessment detail" eyebrow="Score explanation">
           <ClientAiInsight candidate={candidate} />
@@ -3069,17 +3111,26 @@ function CandidateFullPage({
         <DiscProfileCard candidate={candidate} />
       </section>
       <DiscCommunicationCard candidate={candidate} />
-      <Panel title="Notes" eyebrow="Pipeline history">
+      <Panel title="Notes & comments" eyebrow="Pipeline history">
         <div className="mb-4 space-y-3">
-          {notes.map((note) => (
-            <article key={note.id} className="rounded-lg border border-[#E5E4E0] bg-[#F5F4F0] p-4">
-              <div className="flex justify-between gap-3">
-                <p className="text-sm font-medium text-[#111]">{note.scope === "client_internal" ? `${companyName} internal` : "Shared with Nearwork"}</p>
-                <p className="text-xs text-[#888]">{dateTime(note.createdAt)}</p>
-              </div>
-              <p className="mt-2 text-sm leading-6 text-[#555]">{note.text}</p>
-            </article>
-          ))}
+          {notes.map((note) => {
+            const isRecruiter = note.scope === "nearwork" || note.scope === "recruiter" || (note.authorEmail || "").includes("@nearwork.co");
+            const isInternal = note.scope === "client_internal";
+            const scopeLabel = isRecruiter ? "Nearwork recruiter" : isInternal ? `${companyName} internal` : "Shared with Nearwork";
+            const scopeColor = isRecruiter ? "text-[#12866E]" : isInternal ? "text-amber-700" : "text-[#6D28D9]";
+            return (
+              <article key={note.id} className="rounded-lg border border-[#E5E4E0] bg-[#F5F4F0] p-4">
+                <div className="flex justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <p className={cx("text-sm font-medium", scopeColor)}>{scopeLabel}</p>
+                    {note.author ? <span className="text-xs text-[#888]">· {note.author}</span> : null}
+                  </div>
+                  <p className="text-xs text-[#888]">{dateTime(note.createdAt)}</p>
+                </div>
+                <p className="mt-2 text-sm leading-6 text-[#555]">{note.text}</p>
+              </article>
+            );
+          })}
           {!notes.length ? <Empty title="No notes yet" text="Notes for this candidate will show here." /> : null}
         </div>
         <select value={noteScope} onChange={(event) => setNoteScope(event.target.value as "client_visible" | "client_internal")} className="h-10 w-full rounded-lg border border-[#E5E4E0] bg-white px-3 text-sm text-[#111]">
