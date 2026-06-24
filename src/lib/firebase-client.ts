@@ -440,26 +440,19 @@ export async function sendOrgInvite(
     (lastName ? `&lastName=${encodeURIComponent(lastName)}` : "") +
     (details.role ? `&title=${encodeURIComponent(details.role)}` : "");
   try {
-    await setDoc(doc(db, "org_invites", token), {
-      token,
-      email: normalizedEmail,
-      orgId,
-      orgName,
-      inviteeName: details.name || "",
-      businessRole: details.role || "",
-      status: "pending",
-      createdAt: serverTimestamp(),
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-      setupLink,
-    });
-  } catch (e) {
-    console.error("[NW] invite store failed:", e);
-  }
-  try {
     const res = await fetch("/api/send-invite", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: normalizedEmail, firstName: firstName || normalizedEmail.split("@")[0], orgName, setupLink }),
+      body: JSON.stringify({
+        email: normalizedEmail,
+        firstName: firstName || normalizedEmail.split("@")[0],
+        orgName,
+        setupLink,
+        orgId,
+        token,
+        inviteeName: details.name || "",
+        businessRole: details.role || "",
+      }),
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));

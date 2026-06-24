@@ -1,58 +1,28 @@
 import { NextResponse } from 'next/server';
-import { buildInviteEmail } from './invite-email';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
-  let body: { email?: string; firstName?: string; orgName?: string; setupLink?: string };
+  let body: Record<string, string>;
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
-  const { email, firstName, orgName, setupLink } = body;
-  if (!email || !orgName || !setupLink) {
-    return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-  }
-
-  const key = process.env.RESEND_API_KEY;
-  if (!key) {
-    return NextResponse.json({ error: 'RESEND_API_KEY is not configured' }, { status: 500 });
-  }
-
-  const fromEmail = process.env.RESEND_FROM_EMAIL || 'noreply@nearwork.co';
-  const from = fromEmail.includes('<') ? fromEmail : `Nearwork <${fromEmail}>`;
-  const replyTo = process.env.RESEND_REPLY_TO_EMAIL;
-  const html = buildInviteEmail(firstName || 'there', orgName, setupLink);
-
   try {
-    const res = await fetch('https://api.resend.com/emails', {
+    const adminUrl = process.env.ADMIN_API_URL || 'https://admin.nearwork.co';
+    const res = await fetch(`${adminUrl}/api/send-invite`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${key}`,
-      },
-      body: JSON.stringify({
-        from,
-        to: [email],
-        ...(replyTo ? { reply_to: replyTo } : {}),
-        subject: `Set up your Nearwork account — ${orgName}`,
-        html,
-      }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
     });
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      console.error('[send-invite] Resend error:', err);
-      return NextResponse.json({ error: 'Failed to send invite email' }, { status: 502 });
-    }
-
     const data = await res.json().catch(() => ({}));
-    return NextResponse.json({ success: true, id: data?.id ?? null });
+    if (!res.ok) console.error('[send-invite] Admin returned', res.status, data);
+    return NextResponse.json(data, { status: res.status });
   } catch (e) {
-    console.error('[send-invite] fetch failed:', e);
-    return NextResponse.json({ error: 'Failed to reach Resend' }, { status: 502 });
+    console.error('[send-invite] proxy failed:', e);
+    return NextResponse.json({ error: 'Failed to reach invite service' }, { status: 502 });
   }
 }
