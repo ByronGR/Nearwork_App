@@ -2703,6 +2703,16 @@ function InsightBars({ bars }: { bars?: PortalAssessmentInsight["bars"] }) {
 
 function ClientAiInsight({ candidate, compact = false }: { candidate: PortalCandidate; compact?: boolean }) {
   const generated = Boolean(candidate.aiReview?.client);
+  if (!generated && !candidate.score) {
+    return (
+      <div className="mt-4">
+        <div className="rounded-lg border border-[#E5E4E0] bg-[#F5F4F0] p-6 text-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#888] mb-2">Assessment insights</p>
+          <p className="text-sm text-[#888]">Assessment has not been completed yet. Insights will appear here once the candidate is reviewed by Nearwork.</p>
+        </div>
+      </div>
+    );
+  }
   const insight = candidateInsight(candidate) || fallbackClientInsight(candidate);
   const fallbackInsight = fallbackClientInsight(candidate);
   const client = insight.client || fallbackInsight.client || {
@@ -3086,60 +3096,42 @@ function CandidateFullPage({
 }
 
 function DiscProfileCard({ candidate }: { candidate: PortalCandidate }) {
-  const label = candidate.discProfile?.label || "High C";
-  const isC = label.toLowerCase().includes("c");
-  const scores = isC
-    ? { dominance: 57, influence: 49, steadiness: 55, conscientiousness: 79 }
-    : { dominance: 42, influence: 76, steadiness: 72, conscientiousness: 54 };
+  const label = candidate.discProfile?.label;
+  if (!label) {
+    return (
+      <Panel title="DISC profile" eyebrow="Pending">
+        <div className="rounded-lg border border-[#E5E4E0] bg-[#F5F4F0] p-6 text-center">
+          <p className="text-sm text-[#888]">DISC assessment has not been completed yet.</p>
+          <p className="mt-1 text-xs text-[#aaa]">Results will appear here once the candidate completes their assessment.</p>
+        </div>
+      </Panel>
+    );
+  }
   return (
     <Panel title="DISC profile" eyebrow={label}>
-      <div className="grid gap-5 md:grid-cols-[1fr_220px]">
-        <div className="space-y-4">
-          {[
-            ["Dominance (D)", scores.dominance, "bg-rose-500"],
-            ["Influence (I)", scores.influence, "bg-amber-400"],
-            ["Steadiness (S)", scores.steadiness, "bg-emerald-500"],
-            ["Conscientiousness (C)", scores.conscientiousness, "bg-blue-500"],
-          ].map(([name, value, color]) => (
-            <div key={String(name)}>
-              <div className="flex justify-between text-sm font-semibold"><span>{name}</span><span>{value}%</span></div>
-              <div className="mt-2 h-3 rounded-full bg-[#edf1f5]"><div className={cx("h-3 rounded-full", color as string)} style={{ width: `${value}%` }} /></div>
-            </div>
-          ))}
-        </div>
-        <div className="grid place-items-center rounded-xl border border-[#E5E4E0] bg-[#F5F4F0] p-4">
-          <div className="relative grid size-40 place-items-center rounded-full border border-blue-100 bg-white">
-            <div className="grid size-28 place-items-center rounded-full border border-blue-100 bg-blue-50 text-center">
-              <p className="text-3xl font-semibold text-blue-600">{scores.conscientiousness}</p>
-              <p className="text-xs font-medium text-[#555]">Current profile</p>
-            </div>
-          </div>
-        </div>
+      <div className="rounded-lg border border-[#E5E4E0] bg-[#F5F4F0] p-6">
+        <p className="text-sm font-semibold text-[#111] mb-2">{label}</p>
+        <p className="text-sm text-[#555] leading-6">{candidate.discProfile?.summary || "DISC assessment completed. Nearwork will provide a detailed breakdown during the review."}</p>
       </div>
     </Panel>
   );
 }
 
 function DiscCommunicationCard({ candidate }: { candidate: PortalCandidate }) {
+  if (!candidate.discProfile?.label) return null;
   const disc = discInsight(candidate);
   return (
     <Panel title={`How to work with ${candidate.name.split(" ")[0] || "this person"}`} eyebrow="DISC communication">
-      <div className="grid gap-6 md:grid-cols-2">
-        <div>
-          <p className="mb-3 text-lg font-semibold text-[#12866E]">Best practices</p>
-          {["Use data-backed arguments", "Be direct and professional", "Provide written details"].map((item) => (
-            <div key={item} className="mb-3 rounded-lg border border-teal-200 bg-[#EEF6F3] p-3 text-sm font-medium">{item}</div>
-          ))}
+      <div className="space-y-4">
+        <div className="rounded-lg border border-teal-200 bg-[#EEF6F3] p-4 text-sm leading-6 text-[#555]">
+          <span className="font-semibold text-[#12866E]">Strengths:</span> {disc.benefit}
         </div>
-        <div>
-          <p className="mb-3 text-lg font-semibold text-amber-800">What to avoid</p>
-          {["Vague or abstract instructions", "Overly emotional appeals", "Dismissing their need for precision"].map((item) => (
-            <div key={item} className="mb-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm font-medium">{item}</div>
-          ))}
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-[#555]">
+          <span className="font-semibold text-amber-800">Watch for:</span> {disc.watchout}
         </div>
-      </div>
-      <div className="mt-4 rounded-lg border border-[#E5E4E0] bg-white p-4 text-sm leading-6 text-[#555]">
-        <span className="font-semibold text-[#111]">Role fit:</span> {disc.fit}
+        <div className="rounded-lg border border-[#E5E4E0] bg-white p-4 text-sm leading-6 text-[#555]">
+          <span className="font-semibold text-[#111]">Role fit:</span> {disc.fit}
+        </div>
       </div>
     </Panel>
   );
