@@ -32,6 +32,7 @@ import {
   X,
 } from "lucide-react";
 import { onAuthStateChanged, type User } from "firebase/auth";
+import { collection, onSnapshot, query, where } from "firebase/firestore";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   addClientNote,
@@ -72,6 +73,7 @@ import {
   type PortalPipeline,
   type TimeOffRequest,
   sendOrgInvite,
+  db,
 } from "@/lib/firebase-client";
 import { PipelineChatPanel } from "@/components/pipeline-chat-panel";
 
@@ -3403,6 +3405,7 @@ function searchTone(type: string) {
 
 function CompanyUsers({ org, testMode }: { org: Organization; testMode: boolean }) {
   const [users, setUsers] = useState<ClientUser[]>(testMode ? emptyClientUsers : []);
+  const [pendingInvites, setPendingInvites] = useState<Array<{ id: string; email: string; inviteeName?: string; businessRole?: string; createdAt?: { toDate?: () => Date } }>>([]);
 
   useEffect(() => {
     if (testMode) {
@@ -3412,6 +3415,17 @@ function CompanyUsers({ org, testMode }: { org: Organization; testMode: boolean 
     return subscribeOrgCollection<ClientUser>("users", org, setUsers);
   }, [org.id, org.orgId, testMode]);
 
+  useEffect(() => {
+    if (testMode) return;
+    const q = query(collection(db, "org_invites"), where("orgId", "==", org.orgId), where("status", "==", "pending"));
+    return onSnapshot(q, (snap) => {
+      setPendingInvites(snap.docs.map((d) => ({ id: d.id, ...d.data() } as typeof pendingInvites[number])));
+    });
+  }, [org.orgId, testMode]);
+
+  const activeEmails = new Set(users.map((u) => u.email?.toLowerCase()));
+  const visibleInvites = pendingInvites.filter((inv) => !activeEmails.has(inv.email?.toLowerCase()));
+
   return (
     <div className="overflow-x-auto rounded-lg border border-[#E5E4E0] bg-white">
       <table className="w-full min-w-[680px] text-left text-sm">
@@ -3420,7 +3434,8 @@ function CompanyUsers({ org, testMode }: { org: Organization; testMode: boolean 
         </thead>
         <tbody className="divide-y divide-[#d8dee4]">
           {users.map((item) => <tr key={item.id}><td className="px-4 py-3 font-medium">{item.name || [item.firstName, item.lastName].filter(Boolean).join(" ") || item.email}</td><td className="px-4 py-3 text-[#555]">{item.email}</td><td className="px-4 py-3"><Badge>{item.portalRole || item.role || "user"}</Badge></td><td className="px-4 py-3 text-[#12866E]">Active</td></tr>)}
-          {!users.length ? <tr><td colSpan={4} className="px-4 py-8 text-center text-[#888]">No company users found yet.</td></tr> : null}
+          {visibleInvites.map((inv) => <tr key={inv.id} className="bg-[#FAFAF8]"><td className="px-4 py-3 font-medium text-[#888]">{inv.inviteeName || "Invited user"}</td><td className="px-4 py-3 text-[#888]">{inv.email}</td><td className="px-4 py-3"><Badge>{inv.businessRole || "—"}</Badge></td><td className="px-4 py-3 text-amber-600 font-medium">Invite sent</td></tr>)}
+          {!users.length && !visibleInvites.length ? <tr><td colSpan={4} className="px-4 py-8 text-center text-[#888]">No company users found yet.</td></tr> : null}
         </tbody>
       </table>
     </div>
