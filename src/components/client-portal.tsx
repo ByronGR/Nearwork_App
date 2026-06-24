@@ -622,7 +622,7 @@ function LoginScreen({ message }: { message?: string }) {
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 12.5, color: "rgba(242,248,245,0.66)" }}>
             <ShieldCheck size={15} color="#9DEAD8" strokeWidth={2} />
-            <span>Invitation-only access · SOC 2 Type II</span>
+            <span>Invitation-only access · Enterprise-grade security</span>
           </div>
         </div>
       </div>
@@ -1621,19 +1621,9 @@ export function ClientPortal() {
                 <>
                   <KanbanBoard
                     rows={pipelineRows}
+                    favoriteCodes={favoriteCodes}
                     onSelect={(candidate, pipeline) => goToCandidate(candidate.code, pipeline.code)}
                   />
-                  {profile ? (
-                    <div className="h-[560px] overflow-hidden rounded-xl border border-[#E5E4E0] bg-white">
-                      <PipelineChatPanel
-                        pipeline={selectedPipeline}
-                        org={org}
-                        candidates={selectedPipeline.candidates || []}
-                        profile={profile}
-                        onOpenCandidate={(c) => goToCandidate(c.code || c.candidateCode || c.email || "", selectedPipeline.code)}
-                      />
-                    </div>
-                  ) : null}
                 </>
               ) : (
                 <KickoffBriefPanel pipeline={selectedPipeline} user={user} />
@@ -2168,9 +2158,11 @@ function PipelineRows({
 
 function KanbanBoard({
   rows,
+  favoriteCodes = [],
   onSelect,
 }: {
   rows: Array<{ candidate: PortalCandidate; pipeline: PortalPipeline }>;
+  favoriteCodes?: string[];
   onSelect: (candidate: PortalCandidate, pipeline: PortalPipeline) => void;
 }) {
   if (!rows.length) return <Empty title="No candidates yet" text="When Nearwork adds candidates to your pipeline they will appear here." />;
@@ -2194,7 +2186,7 @@ function KanbanBoard({
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-[#111]">{candidate.name}</p>
+                        <p className="truncate text-sm font-medium text-[#111]">{candidate.name}{favoriteCodes.includes(candidate.code) ? <Star className="ml-1 inline size-3.5 fill-amber-400 text-amber-400" /> : null}</p>
                         <p className="mt-0.5 truncate text-xs text-[#555]">{candidate.role}</p>
                       </div>
                       {candidate.score ? (
