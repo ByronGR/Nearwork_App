@@ -32,6 +32,7 @@ import {
   X,
 } from "lucide-react";
 import { onAuthStateChanged, type User } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   addClientNote,
@@ -1209,7 +1210,19 @@ export function ClientPortal() {
 
   const selectedPipeline = selectedPipelineCode ? pipelines.find((pipeline) => pipeline.code === selectedPipelineCode) || null : null;
   const pipelineRows = selectedPipeline ? filteredCandidates.filter(({ pipeline }) => pipeline.code === selectedPipeline.code) : filteredCandidates;
-  const selected = selectedCode ? pipelineRows.find(({ candidate }) => candidate.code === selectedCode) : undefined;
+  const selectedMatch = selectedCode ? pipelineRows.find(({ candidate }) => candidate.code === selectedCode) : undefined;
+  const [fullCandidate, setFullCandidate] = useState<PortalCandidate | null>(null);
+  useEffect(() => {
+    if (!selectedCode) { setFullCandidate(null); return; }
+    getDoc(doc(db, "candidates", selectedCode)).then((snap) => {
+      if (snap.exists()) setFullCandidate({ id: snap.id, code: snap.id, ...snap.data() } as PortalCandidate);
+      else setFullCandidate(null);
+    }).catch(() => setFullCandidate(null));
+  }, [selectedCode]);
+  const selected = selectedMatch ? {
+    candidate: { ...selectedMatch.candidate, ...(fullCandidate || {}), code: selectedMatch.candidate.code },
+    pipeline: selectedMatch.pipeline,
+  } : undefined;
   const selectedNotes = notes
     .filter((note) => note.candidateCode === selected?.candidate.code)
     .filter((note) => note.scope === "client_visible" || note.scope === "client_internal" || note.visibility === "public")
