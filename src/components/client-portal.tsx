@@ -2069,7 +2069,7 @@ function PipelineBoard({
                     <button onClick={() => onSelect(candidate.code)} className="w-full text-left">
                       <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <p className="truncate text-base font-semibold">{candidate.name}</p>
+                        <p className="truncate text-base font-semibold">{candidate.name}{favoriteCodes.includes(candidate.code) ? <Star className="ml-1.5 inline size-4 fill-amber-400 text-amber-400" /> : null}</p>
                         <p className="mt-1 truncate text-sm font-semibold text-[#555]">{candidate.role}</p>
                         <p className="mt-1 truncate text-[11px] text-[#888]">{pipeline.openingTitle || pipeline.code}</p>
                       </div>
