@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import { onAuthStateChanged, type User } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase-client";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   addClientNote,
