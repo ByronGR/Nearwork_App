@@ -32,7 +32,6 @@ import {
   X,
 } from "lucide-react";
 import { onAuthStateChanged, type User } from "firebase/auth";
-import { collection, onSnapshot, query, where } from "firebase/firestore";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   addClientNote,
@@ -73,7 +72,6 @@ import {
   type PortalPipeline,
   type TimeOffRequest,
   sendOrgInvite,
-  db,
 } from "@/lib/firebase-client";
 import { PipelineChatPanel } from "@/components/pipeline-chat-panel";
 
@@ -3417,10 +3415,16 @@ function CompanyUsers({ org, testMode }: { org: Organization; testMode: boolean 
 
   useEffect(() => {
     if (testMode) return;
-    const q = query(collection(db, "org_invites"), where("orgId", "==", org.orgId));
-    return onSnapshot(q, (snap) => {
-      setPendingInvites(snap.docs.filter((d) => d.data().status === "pending").map((d) => ({ id: d.id, ...d.data() } as typeof pendingInvites[number])));
-    }, () => {});
+    let alive = true;
+    function load() {
+      fetch(`/api/org-invites?orgId=${encodeURIComponent(org.orgId)}`)
+        .then((r) => r.json())
+        .then((data) => { if (alive && data.invites) setPendingInvites(data.invites); })
+        .catch(() => {});
+    }
+    load();
+    const interval = setInterval(load, 30000);
+    return () => { alive = false; clearInterval(interval); };
   }, [org.orgId, testMode]);
 
   const activeEmails = new Set(users.map((u) => u.email?.toLowerCase()));
