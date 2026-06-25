@@ -1231,7 +1231,51 @@ export function ClientPortal() {
   const unread = notifications.filter((item) => !item.read).length;
   const activeOpenings = openings.filter((opening) => !["closed", "cancelled", "archived"].includes(String(opening.status || "").toLowerCase()));
   const hiredCount = pipelineCandidates.filter(({ candidate }) => normalizedPipelineStage(candidate.stage) === "hired").length;
-  const visibleHires = hires.length ? hires : pipelineCandidates
+  const mockHires: PortalHire[] = [{
+    id: "mock-hire-valentina",
+    candidateCode: "CAND-MOCK01",
+    candidateName: "Valentina Morales",
+    name: "Valentina Morales",
+    email: "valentina.morales@example.com",
+    role: "Senior Customer Success Manager",
+    orgId: org?.orgId,
+    orgName: org?.name,
+    pipelineCode: "NW-2499",
+    openingCode: "NW-2499",
+    serviceType: "EOR",
+    engagementType: "EOR",
+    contractType: "EOR",
+    eorTier: "Growth",
+    startDate: "2026-06-01",
+    effectiveDate: "2026-05-28",
+    status: "Active",
+    salary: 4200000,
+    salaryCurrency: "COP",
+    copSalaryMonthly: 4200000,
+    salesPrice: 2800,
+    salesCurrency: "USD",
+    usdBilledMonthly: 2800,
+  }, {
+    id: "mock-hire-carlos",
+    candidateCode: "CAND-MOCK02",
+    candidateName: "Carlos Restrepo",
+    name: "Carlos Restrepo",
+    email: "carlos.restrepo@example.com",
+    role: "Full Stack Developer",
+    orgId: org?.orgId,
+    orgName: org?.name,
+    pipelineCode: "NW-2501",
+    openingCode: "NW-2501",
+    serviceType: "Managed Team",
+    engagementType: "Managed Team",
+    startDate: "2026-05-15",
+    effectiveDate: "2026-05-12",
+    status: "Active",
+    salesPrice: 3200,
+    salesCurrency: "USD",
+    usdBilledMonthly: 3200,
+  }];
+  const realHires = hires.length ? hires : pipelineCandidates
     .filter(({ candidate }) => normalizedPipelineStage(candidate.stage) === "hired")
     .map(({ candidate, pipeline }) => ({
       id: `${pipeline.code}-${candidate.code}`,
@@ -1249,6 +1293,7 @@ export function ClientPortal() {
       salary: candidate.expectedSalaryAmount,
       salaryCurrency: candidate.expectedSalaryCurrency || "USD",
     }));
+  const visibleHires = realHires.length ? realHires : mockHires;
   const selectedHire = selectedHireId ? visibleHires.find((hire) => hire.id === selectedHireId) : undefined;
   const ptoPending = timeOff.filter((request) => String(request.status || "").toLowerCase() === "pending").length;
   const upcomingPto = timeOff.filter((request) => ["pending", "approved"].includes(String(request.status || "").toLowerCase())).length;
