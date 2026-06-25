@@ -22,6 +22,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   ReceiptText,
+  ChevronDown,
   Search,
   Settings,
   ShieldCheck,
@@ -32,6 +33,8 @@ import {
   X,
 } from "lucide-react";
 import { onAuthStateChanged, type User } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase-client";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   addClientNote,
@@ -78,7 +81,7 @@ import { PipelineChatPanel } from "@/components/pipeline-chat-panel";
 const tabs = [
   { id: "overview",  label: "Overview",   icon: LayoutDashboard,   section: "Hiring" },
   { id: "pipeline",  label: "Pipeline",   icon: Kanban,            section: "Hiring" },
-  { id: "hires",     label: "Hires",      icon: Handshake,         section: "Team" },
+  { id: "hires",     label: "Team",       icon: Handshake,         section: "Team" },
   { id: "services",  label: "Services",   icon: ShieldCheck,       section: "Team" },
   { id: "timeoff",   label: "PTO",        icon: CalendarCheck,     section: "Team" },
   { id: "finance",   label: "Finance",    icon: ReceiptText,       section: "Account" },
@@ -620,7 +623,7 @@ function LoginScreen({ message }: { message?: string }) {
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 12.5, color: "rgba(242,248,245,0.66)" }}>
             <ShieldCheck size={15} color="#9DEAD8" strokeWidth={2} />
-            <span>Invitation-only access · SOC 2 Type II</span>
+            <span>Invitation-only access · Enterprise-grade security</span>
           </div>
         </div>
       </div>
@@ -917,6 +920,7 @@ export function ClientPortal() {
   const [selectedPipelineCode, setSelectedPipelineCode] = useState("");
   const [selectedHireId, setSelectedHireId] = useState("");
   const [pipelineTab, setPipelineTab] = useState<"candidates" | "brief">("candidates");
+  const [teamTab, setTeamTab] = useState<"hires" | "managed">("hires");
   const [compareCodes, setCompareCodes] = useState<string[]>([]);
   const [favoriteCodes, setFavoriteCodes] = useState<string[]>([]);
   const [interviewCodes, setInterviewCodes] = useState<string[]>([]);
@@ -1209,7 +1213,19 @@ export function ClientPortal() {
 
   const selectedPipeline = selectedPipelineCode ? pipelines.find((pipeline) => pipeline.code === selectedPipelineCode) || null : null;
   const pipelineRows = selectedPipeline ? filteredCandidates.filter(({ pipeline }) => pipeline.code === selectedPipeline.code) : filteredCandidates;
-  const selected = selectedCode ? pipelineRows.find(({ candidate }) => candidate.code === selectedCode) : undefined;
+  const selectedMatch = selectedCode ? pipelineRows.find(({ candidate }) => candidate.code === selectedCode) : undefined;
+  const [fullCandidate, setFullCandidate] = useState<PortalCandidate | null>(null);
+  useEffect(() => {
+    if (!selectedCode) { setFullCandidate(null); return; }
+    getDoc(doc(db, "candidates", selectedCode)).then((snap) => {
+      if (snap.exists()) setFullCandidate({ id: snap.id, code: snap.id, ...snap.data() } as PortalCandidate);
+      else setFullCandidate(null);
+    }).catch(() => setFullCandidate(null));
+  }, [selectedCode]);
+  const selected = selectedMatch ? {
+    candidate: { ...selectedMatch.candidate, ...(fullCandidate || {}), code: selectedMatch.candidate.code },
+    pipeline: selectedMatch.pipeline,
+  } : undefined;
   const selectedNotes = notes
     .filter((note) => note.candidateCode === selected?.candidate.code)
     .filter((note) => note.scope === "client_visible" || note.scope === "client_internal" || note.visibility === "public")
@@ -1217,7 +1233,51 @@ export function ClientPortal() {
   const unread = notifications.filter((item) => !item.read).length;
   const activeOpenings = openings.filter((opening) => !["closed", "cancelled", "archived"].includes(String(opening.status || "").toLowerCase()));
   const hiredCount = pipelineCandidates.filter(({ candidate }) => normalizedPipelineStage(candidate.stage) === "hired").length;
-  const visibleHires = hires.length ? hires : pipelineCandidates
+  const mockHires: PortalHire[] = [{
+    id: "mock-hire-valentina",
+    candidateCode: "CAND-MOCK01",
+    candidateName: "Valentina Morales",
+    name: "Valentina Morales",
+    email: "valentina.morales@example.com",
+    role: "Senior Customer Success Manager",
+    orgId: org?.orgId,
+    orgName: org?.name,
+    pipelineCode: "NW-2499",
+    openingCode: "NW-2499",
+    serviceType: "EOR",
+    engagementType: "EOR",
+    contractType: "EOR",
+    eorTier: "Growth",
+    startDate: "2026-06-01",
+    effectiveDate: "2026-05-28",
+    status: "Active",
+    salary: 4200000,
+    salaryCurrency: "COP",
+    copSalaryMonthly: 4200000,
+    salesPrice: 2800,
+    salesCurrency: "USD",
+    usdBilledMonthly: 2800,
+  }, {
+    id: "mock-hire-carlos",
+    candidateCode: "CAND-MOCK02",
+    candidateName: "Carlos Restrepo",
+    name: "Carlos Restrepo",
+    email: "carlos.restrepo@example.com",
+    role: "Full Stack Developer",
+    orgId: org?.orgId,
+    orgName: org?.name,
+    pipelineCode: "NW-2501",
+    openingCode: "NW-2501",
+    serviceType: "Managed Team",
+    engagementType: "Managed Team",
+    startDate: "2026-05-15",
+    effectiveDate: "2026-05-12",
+    status: "Active",
+    salesPrice: 3200,
+    salesCurrency: "USD",
+    usdBilledMonthly: 3200,
+  }];
+  const realHires = hires.length ? hires : pipelineCandidates
     .filter(({ candidate }) => normalizedPipelineStage(candidate.stage) === "hired")
     .map(({ candidate, pipeline }) => ({
       id: `${pipeline.code}-${candidate.code}`,
@@ -1235,6 +1295,7 @@ export function ClientPortal() {
       salary: candidate.expectedSalaryAmount,
       salaryCurrency: candidate.expectedSalaryCurrency || "USD",
     }));
+  const visibleHires = realHires.length ? realHires : mockHires;
   const selectedHire = selectedHireId ? visibleHires.find((hire) => hire.id === selectedHireId) : undefined;
   const ptoPending = timeOff.filter((request) => String(request.status || "").toLowerCase() === "pending").length;
   const upcomingPto = timeOff.filter((request) => ["pending", "approved"].includes(String(request.status || "").toLowerCase())).length;
@@ -1607,19 +1668,9 @@ export function ClientPortal() {
                 <>
                   <KanbanBoard
                     rows={pipelineRows}
+                    favoriteCodes={favoriteCodes}
                     onSelect={(candidate, pipeline) => goToCandidate(candidate.code, pipeline.code)}
                   />
-                  {profile ? (
-                    <div className="h-[560px] overflow-hidden rounded-xl border border-[#E5E4E0] bg-white">
-                      <PipelineChatPanel
-                        pipeline={selectedPipeline}
-                        org={org}
-                        candidates={selectedPipeline.candidates || []}
-                        profile={profile}
-                        onOpenCandidate={(c) => goToCandidate(c.code || c.candidateCode || c.email || "", selectedPipeline.code)}
-                      />
-                    </div>
-                  ) : null}
                 </>
               ) : (
                 <KickoffBriefPanel pipeline={selectedPipeline} user={user} />
@@ -1656,13 +1707,24 @@ export function ClientPortal() {
           ) : null}
 
           {active === "hires" ? (
-            <Panel title="Hired candidates" eyebrow="Client team">
-              <HiresTable hires={visibleHires} onOpen={(hire) => { setSelectedHireId(hire.id); setActive("hire"); }} />
-            </Panel>
+            <div className="space-y-6">
+              {/* Tabs */}
+              <div className="flex gap-2">
+                <button onClick={() => setTeamTab("hires")} className={cx("rounded-md px-4 py-2 text-sm font-medium transition", teamTab === "hires" ? "bg-[#12866E] text-white" : "border border-[#E5E4E0] bg-white text-[#555] hover:text-[#111]")}>All hires</button>
+                <button onClick={() => setTeamTab("managed")} className={cx("rounded-md px-4 py-2 text-sm font-medium transition", teamTab === "managed" ? "bg-[#12866E] text-white" : "border border-[#E5E4E0] bg-white text-[#555] hover:text-[#111]")}>Managed teams</button>
+              </div>
+              {teamTab === "hires" ? (
+                <Panel title="All hires" eyebrow="Your team">
+                  <HiresTable hires={visibleHires} onOpen={(hire) => { setSelectedHireId(hire.id); setActive("hire"); }} />
+                </Panel>
+              ) : (
+                <ManagedTeamsView />
+              )}
+            </div>
           ) : null}
 
           {active === "hire" && selectedHire ? (
-            <HireFullPage hire={selectedHire} timeOff={timeOff} accountManager={accountManager} onBack={() => setActive("hires")} />
+            <HireFullPage hire={selectedHire} timeOff={timeOff} accountManager={accountManager} onBack={() => setActive("hires")} onOpenPipeline={(code) => { setSelectedPipelineCode(code); setActive("pipeline"); }} />
           ) : null}
 
           {active === "services" ? (
@@ -2055,7 +2117,7 @@ function PipelineBoard({
                     <button onClick={() => onSelect(candidate.code)} className="w-full text-left">
                       <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <p className="truncate text-base font-semibold">{candidate.name}</p>
+                        <p className="truncate text-base font-semibold">{candidate.name}{favoriteCodes.includes(candidate.code) ? <Star className="ml-1.5 inline size-4 fill-amber-400 text-amber-400" /> : null}</p>
                         <p className="mt-1 truncate text-sm font-semibold text-[#555]">{candidate.role}</p>
                         <p className="mt-1 truncate text-[11px] text-[#888]">{pipeline.openingTitle || pipeline.code}</p>
                       </div>
@@ -2154,9 +2216,11 @@ function PipelineRows({
 
 function KanbanBoard({
   rows,
+  favoriteCodes = [],
   onSelect,
 }: {
   rows: Array<{ candidate: PortalCandidate; pipeline: PortalPipeline }>;
+  favoriteCodes?: string[];
   onSelect: (candidate: PortalCandidate, pipeline: PortalPipeline) => void;
 }) {
   if (!rows.length) return <Empty title="No candidates yet" text="When Nearwork adds candidates to your pipeline they will appear here." />;
@@ -2180,7 +2244,7 @@ function KanbanBoard({
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-[#111]">{candidate.name}</p>
+                        <p className="truncate text-sm font-medium text-[#111]">{candidate.name}{favoriteCodes.includes(candidate.code) ? <Star className="ml-1 inline size-3.5 fill-amber-400 text-amber-400" /> : null}</p>
                         <p className="mt-0.5 truncate text-xs text-[#555]">{candidate.role}</p>
                       </div>
                       {candidate.score ? (
@@ -2575,6 +2639,105 @@ function OpeningsView({
   );
 }
 
+function ManagedTeamsView() {
+  const [expandedTeam, setExpandedTeam] = useState<string | null>(null);
+  const mockTeams = [
+    {
+      id: "sales-team",
+      name: "Sales Team",
+      lead: "Maria Castro",
+      accountManager: "Byron Giraldo",
+      headcount: 5,
+      monthlyCost: 14000,
+      members: [
+        { name: "Maria Castro", role: "SDR Team Lead", startDate: "2026-03-01", status: "Active" },
+        { name: "Andres Lopez", role: "SDR", startDate: "2026-03-15", status: "Active" },
+        { name: "Laura Gomez", role: "SDR", startDate: "2026-04-01", status: "Active" },
+        { name: "Felipe Ruiz", role: "Account Executive", startDate: "2026-04-15", status: "Active" },
+        { name: "Camila Torres", role: "Sales Ops", startDate: "2026-05-01", status: "Active" },
+      ],
+    },
+    {
+      id: "cs-team",
+      name: "Customer Success",
+      lead: "Valentina Morales",
+      accountManager: "Byron Giraldo",
+      headcount: 3,
+      monthlyCost: 8400,
+      members: [
+        { name: "Valentina Morales", role: "CS Manager", startDate: "2026-06-01", status: "Active" },
+        { name: "Santiago Herrera", role: "CS Associate", startDate: "2026-06-15", status: "Active" },
+        { name: "Isabella Reyes", role: "Onboarding Specialist", startDate: "2026-07-01", status: "Onboarding" },
+      ],
+    },
+  ];
+
+  return (
+    <div className="space-y-4">
+      <Panel title="Managed teams" eyebrow="Team structure">
+        <div className="space-y-3">
+          {mockTeams.map((team) => (
+            <article key={team.id} className="overflow-hidden rounded-lg border border-[#E5E4E0] bg-white">
+              <button onClick={() => setExpandedTeam(expandedTeam === team.id ? null : team.id)} className="flex w-full items-center justify-between gap-4 p-5 text-left transition hover:bg-[#F5F4F0]">
+                <div className="flex items-center gap-4">
+                  <div className="grid size-12 place-items-center rounded-xl bg-[#EEF6F3] text-lg font-semibold text-[#12866E]">{team.headcount}</div>
+                  <div>
+                    <p className="text-lg font-semibold text-[#111]">{team.name}</p>
+                    <p className="text-sm text-[#555]">{team.headcount} members · Led by {team.lead}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="text-right">
+                    <p className="text-lg font-semibold text-[#111]">${team.monthlyCost.toLocaleString("en-US")}</p>
+                    <p className="text-xs text-[#888]">USD/mo</p>
+                  </div>
+                  <ChevronDown className={cx("size-5 text-[#888] transition", expandedTeam === team.id && "rotate-180")} />
+                </div>
+              </button>
+              {expandedTeam === team.id ? (
+                <div className="border-t border-[#E5E4E0] bg-[#F5F4F0] p-5">
+                  <div className="mb-4 grid gap-3 sm:grid-cols-3">
+                    <div className="rounded-lg border border-[#E5E4E0] bg-white p-3">
+                      <p className="text-xs font-medium uppercase tracking-wider text-[#888]">Team lead</p>
+                      <p className="mt-1 text-sm font-semibold">{team.lead}</p>
+                    </div>
+                    <div className="rounded-lg border border-[#E5E4E0] bg-white p-3">
+                      <p className="text-xs font-medium uppercase tracking-wider text-[#888]">Account manager</p>
+                      <p className="mt-1 text-sm font-semibold">{team.accountManager}</p>
+                    </div>
+                    <div className="rounded-lg border border-[#E5E4E0] bg-white p-3">
+                      <p className="text-xs font-medium uppercase tracking-wider text-[#888]">Monthly cost</p>
+                      <p className="mt-1 text-sm font-semibold">${team.monthlyCost.toLocaleString("en-US")} USD</p>
+                    </div>
+                  </div>
+                  <div className="overflow-x-auto rounded-lg border border-[#E5E4E0] bg-white">
+                    <table className="w-full text-left text-sm">
+                      <thead className="bg-[#F5F4F0] text-xs font-medium uppercase tracking-wider text-[#888]">
+                        <tr><th className="px-4 py-2.5">Member</th><th className="px-4 py-2.5">Role</th><th className="px-4 py-2.5">Start date</th><th className="px-4 py-2.5">Status</th></tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#E5E4E0]">
+                        {team.members.map((m, i) => (
+                          <tr key={i}>
+                            <td className="px-4 py-3 font-medium">{m.name}</td>
+                            <td className="px-4 py-3 text-[#555]">{m.role}</td>
+                            <td className="px-4 py-3 text-[#555]">{m.startDate}</td>
+                            <td className="px-4 py-3"><Badge tone={m.status === "Active" ? "border-teal-200 bg-teal-50 text-teal-700" : "border-violet-200 bg-violet-50 text-violet-700"}>{m.status}</Badge></td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ) : null}
+            </article>
+          ))}
+        </div>
+        <p className="mt-4 text-center text-xs text-[#888]">This is a preview. Managed teams will be configured by Nearwork and appear here automatically.</p>
+      </Panel>
+    </div>
+  );
+}
+
 function HiresTable({ hires, onOpen }: { hires: PortalHire[]; onOpen: (hire: PortalHire) => void }) {
   if (!hires.length) return <Empty title="No hired candidates yet" text="When Nearwork marks a candidate as hired, their employment/service details will appear here." />;
   return (
@@ -2703,6 +2866,16 @@ function InsightBars({ bars }: { bars?: PortalAssessmentInsight["bars"] }) {
 
 function ClientAiInsight({ candidate, compact = false }: { candidate: PortalCandidate; compact?: boolean }) {
   const generated = Boolean(candidate.aiReview?.client);
+  if (!generated && !candidate.score) {
+    return (
+      <div className="mt-4">
+        <div className="rounded-lg border border-[#E5E4E0] bg-[#F5F4F0] p-6 text-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#888] mb-2">Assessment insights</p>
+          <p className="text-sm text-[#888]">Assessment has not been completed yet. Insights will appear here once the candidate is reviewed by Nearwork.</p>
+        </div>
+      </div>
+    );
+  }
   const insight = candidateInsight(candidate) || fallbackClientInsight(candidate);
   const fallbackInsight = fallbackClientInsight(candidate);
   const client = insight.client || fallbackInsight.client || {
@@ -3052,6 +3225,48 @@ function CandidateFullPage({
           {candidate.linkedin ? <a href={candidate.linkedin} target="_blank" className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#E5E4E0] bg-white px-4 text-sm font-medium text-[#555] hover:border-[#111]"><ExternalLink className="size-4" /> LinkedIn</a> : null}
         </div>
       </section>
+      {/* CV viewer */}
+      {candidate.cvUrl ? (
+        <Panel title="Resume" eyebrow="Candidate CV">
+          <iframe src={`${candidate.cvUrl}#toolbar=0&navpanes=0`} className="w-full rounded-lg border border-[#E5E4E0]" style={{ height: 600 }} title="Candidate CV" />
+        </Panel>
+      ) : null}
+
+      {/* Work experience */}
+      {candidate.workHistory?.length ? (
+        <Panel title="Work experience" eyebrow="Career history">
+          <div className="space-y-4">
+            {[...candidate.workHistory].sort((a, b) => (b.from || "").localeCompare(a.from || "")).map((job, i) => (
+              <div key={i} className="flex gap-4 rounded-lg border border-[#E5E4E0] bg-[#F5F4F0] p-4">
+                <div className="mt-0.5 grid size-10 shrink-0 place-items-center rounded-lg bg-white text-lg font-semibold text-[#12866E] border border-[#E5E4E0]">
+                  {(job.company || "?")[0].toUpperCase()}
+                </div>
+                <div>
+                  <p className="font-semibold text-[#111]">{job.title || "—"}</p>
+                  <p className="text-sm text-[#555]">{job.company || "—"}</p>
+                  <p className="mt-1 text-xs text-[#888]">{job.from || "?"} → {job.to === "present" ? "Present" : (job.to || "?")}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Panel>
+      ) : null}
+
+      {/* Certifications */}
+      {candidate.certifications?.length ? (
+        <Panel title="Certifications" eyebrow="Credentials">
+          <div className="grid gap-3 sm:grid-cols-2">
+            {candidate.certifications.map((cert, i) => (
+              <div key={i} className="rounded-lg border border-[#E5E4E0] bg-[#F5F4F0] p-4">
+                <p className="font-semibold text-[#111]">{cert.name || "—"}</p>
+                {cert.issuer ? <p className="text-sm text-[#555]">{cert.issuer}</p> : null}
+                {cert.date ? <p className="mt-1 text-xs text-[#888]">{cert.date}</p> : null}
+              </div>
+            ))}
+          </div>
+        </Panel>
+      ) : null}
+
       <section className="grid gap-6 lg:grid-cols-2">
         <Panel title="Assessment detail" eyebrow="Score explanation">
           <ClientAiInsight candidate={candidate} />
@@ -3059,17 +3274,26 @@ function CandidateFullPage({
         <DiscProfileCard candidate={candidate} />
       </section>
       <DiscCommunicationCard candidate={candidate} />
-      <Panel title="Notes" eyebrow="Pipeline history">
+      <Panel title="Notes & comments" eyebrow="Pipeline history">
         <div className="mb-4 space-y-3">
-          {notes.map((note) => (
-            <article key={note.id} className="rounded-lg border border-[#E5E4E0] bg-[#F5F4F0] p-4">
-              <div className="flex justify-between gap-3">
-                <p className="text-sm font-medium text-[#111]">{note.scope === "client_internal" ? `${companyName} internal` : "Shared with Nearwork"}</p>
-                <p className="text-xs text-[#888]">{dateTime(note.createdAt)}</p>
-              </div>
-              <p className="mt-2 text-sm leading-6 text-[#555]">{note.text}</p>
-            </article>
-          ))}
+          {notes.map((note) => {
+            const isRecruiter = note.scope === "nearwork" || note.scope === "recruiter" || (note.authorEmail || "").includes("@nearwork.co");
+            const isInternal = note.scope === "client_internal";
+            const scopeLabel = isRecruiter ? "Nearwork recruiter" : isInternal ? `${companyName} internal` : "Shared with Nearwork";
+            const scopeColor = isRecruiter ? "text-[#12866E]" : isInternal ? "text-amber-700" : "text-[#6D28D9]";
+            return (
+              <article key={note.id} className="rounded-lg border border-[#E5E4E0] bg-[#F5F4F0] p-4">
+                <div className="flex justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <p className={cx("text-sm font-medium", scopeColor)}>{scopeLabel}</p>
+                    {note.author ? <span className="text-xs text-[#888]">· {note.author}</span> : null}
+                  </div>
+                  <p className="text-xs text-[#888]">{dateTime(note.createdAt)}</p>
+                </div>
+                <p className="mt-2 text-sm leading-6 text-[#555]">{note.text}</p>
+              </article>
+            );
+          })}
           {!notes.length ? <Empty title="No notes yet" text="Notes for this candidate will show here." /> : null}
         </div>
         <select value={noteScope} onChange={(event) => setNoteScope(event.target.value as "client_visible" | "client_internal")} className="h-10 w-full rounded-lg border border-[#E5E4E0] bg-white px-3 text-sm text-[#111]">
@@ -3086,60 +3310,42 @@ function CandidateFullPage({
 }
 
 function DiscProfileCard({ candidate }: { candidate: PortalCandidate }) {
-  const label = candidate.discProfile?.label || "High C";
-  const isC = label.toLowerCase().includes("c");
-  const scores = isC
-    ? { dominance: 57, influence: 49, steadiness: 55, conscientiousness: 79 }
-    : { dominance: 42, influence: 76, steadiness: 72, conscientiousness: 54 };
+  const label = candidate.discProfile?.label;
+  if (!label) {
+    return (
+      <Panel title="DISC profile" eyebrow="Pending">
+        <div className="rounded-lg border border-[#E5E4E0] bg-[#F5F4F0] p-6 text-center">
+          <p className="text-sm text-[#888]">DISC assessment has not been completed yet.</p>
+          <p className="mt-1 text-xs text-[#aaa]">Results will appear here once the candidate completes their assessment.</p>
+        </div>
+      </Panel>
+    );
+  }
   return (
     <Panel title="DISC profile" eyebrow={label}>
-      <div className="grid gap-5 md:grid-cols-[1fr_220px]">
-        <div className="space-y-4">
-          {[
-            ["Dominance (D)", scores.dominance, "bg-rose-500"],
-            ["Influence (I)", scores.influence, "bg-amber-400"],
-            ["Steadiness (S)", scores.steadiness, "bg-emerald-500"],
-            ["Conscientiousness (C)", scores.conscientiousness, "bg-blue-500"],
-          ].map(([name, value, color]) => (
-            <div key={String(name)}>
-              <div className="flex justify-between text-sm font-semibold"><span>{name}</span><span>{value}%</span></div>
-              <div className="mt-2 h-3 rounded-full bg-[#edf1f5]"><div className={cx("h-3 rounded-full", color as string)} style={{ width: `${value}%` }} /></div>
-            </div>
-          ))}
-        </div>
-        <div className="grid place-items-center rounded-xl border border-[#E5E4E0] bg-[#F5F4F0] p-4">
-          <div className="relative grid size-40 place-items-center rounded-full border border-blue-100 bg-white">
-            <div className="grid size-28 place-items-center rounded-full border border-blue-100 bg-blue-50 text-center">
-              <p className="text-3xl font-semibold text-blue-600">{scores.conscientiousness}</p>
-              <p className="text-xs font-medium text-[#555]">Current profile</p>
-            </div>
-          </div>
-        </div>
+      <div className="rounded-lg border border-[#E5E4E0] bg-[#F5F4F0] p-6">
+        <p className="text-sm font-semibold text-[#111] mb-2">{label}</p>
+        <p className="text-sm text-[#555] leading-6">{candidate.discProfile?.summary || "DISC assessment completed. Nearwork will provide a detailed breakdown during the review."}</p>
       </div>
     </Panel>
   );
 }
 
 function DiscCommunicationCard({ candidate }: { candidate: PortalCandidate }) {
+  if (!candidate.discProfile?.label) return null;
   const disc = discInsight(candidate);
   return (
     <Panel title={`How to work with ${candidate.name.split(" ")[0] || "this person"}`} eyebrow="DISC communication">
-      <div className="grid gap-6 md:grid-cols-2">
-        <div>
-          <p className="mb-3 text-lg font-semibold text-[#12866E]">Best practices</p>
-          {["Use data-backed arguments", "Be direct and professional", "Provide written details"].map((item) => (
-            <div key={item} className="mb-3 rounded-lg border border-teal-200 bg-[#EEF6F3] p-3 text-sm font-medium">{item}</div>
-          ))}
+      <div className="space-y-4">
+        <div className="rounded-lg border border-teal-200 bg-[#EEF6F3] p-4 text-sm leading-6 text-[#555]">
+          <span className="font-semibold text-[#12866E]">Strengths:</span> {disc.benefit}
         </div>
-        <div>
-          <p className="mb-3 text-lg font-semibold text-amber-800">What to avoid</p>
-          {["Vague or abstract instructions", "Overly emotional appeals", "Dismissing their need for precision"].map((item) => (
-            <div key={item} className="mb-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm font-medium">{item}</div>
-          ))}
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-[#555]">
+          <span className="font-semibold text-amber-800">Watch for:</span> {disc.watchout}
         </div>
-      </div>
-      <div className="mt-4 rounded-lg border border-[#E5E4E0] bg-white p-4 text-sm leading-6 text-[#555]">
-        <span className="font-semibold text-[#111]">Role fit:</span> {disc.fit}
+        <div className="rounded-lg border border-[#E5E4E0] bg-white p-4 text-sm leading-6 text-[#555]">
+          <span className="font-semibold text-[#111]">Role fit:</span> {disc.fit}
+        </div>
       </div>
     </Panel>
   );
@@ -3150,56 +3356,162 @@ function HireFullPage({
   timeOff,
   accountManager,
   onBack,
+  onOpenPipeline,
 }: {
   hire: PortalHire;
   timeOff: TimeOffRequest[];
   accountManager: { name: string; email: string; phone: string };
   onBack: () => void;
+  onOpenPipeline?: (code: string) => void;
 }) {
   const name = hire.candidateName || hire.name || "Employee";
   const employeePto = timeOff.filter((request) => request.candidateCode === hire.candidateCode || request.personName === name);
+  const serviceType = hire.serviceType || hire.engagementType || hire.contractType || "Direct Recruiting";
+  const isEor = serviceType.toLowerCase().includes("eor");
+  const isManagedTeam = serviceType.toLowerCase().includes("managed");
+
+  const [hireCandidate, setHireCandidate] = useState<PortalCandidate | null>(null);
+  useEffect(() => {
+    if (!hire.candidateCode) return;
+    getDoc(doc(db, "candidates", hire.candidateCode)).then((snap) => {
+      if (snap.exists()) setHireCandidate({ id: snap.id, code: snap.id, ...snap.data() } as PortalCandidate);
+    }).catch(() => {});
+  }, [hire.candidateCode]);
+
   return (
     <div className="space-y-6">
       <button onClick={onBack} className="inline-flex items-center gap-2 text-sm font-semibold text-[#12866E]"><ArrowLeft className="size-4" /> Back to hires</button>
+
+      {/* Hero */}
       <section className="overflow-hidden rounded-xl border border-[#E5E4E0] bg-white shadow-sm">
-        <div className="bg-blue-500 px-6 py-8 text-white">
+        <div className="bg-[#12866E] px-6 py-8 text-white">
           <div className="flex flex-wrap items-center gap-5">
-            <div className="grid size-20 place-items-center rounded-full border-4 border-white bg-[#EEF6F3] text-2xl font-semibold text-[#12866E]">{initials(name)}</div>
+            <div className="grid size-20 place-items-center rounded-full border-4 border-white/30 bg-white text-2xl font-semibold text-[#12866E]">{initials(name)}</div>
             <div>
               <h1 className="text-3xl font-semibold">{name}</h1>
-              <p className="mt-1 text-lg">{hire.role || "Role pending"} · {hire.engagementType || hire.serviceType || "Service"}</p>
+              <p className="mt-1 text-lg">{hire.role || "Role pending"}</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-semibold">{serviceType}</span>
+                {isManagedTeam ? <span className="rounded-full bg-amber-400/30 px-3 py-1 text-xs font-semibold">Managed Team</span> : null}
+                {isEor ? <span className="rounded-full bg-blue-400/30 px-3 py-1 text-xs font-semibold">EOR</span> : null}
+              </div>
             </div>
           </div>
         </div>
         <div className="grid divide-y divide-[#d8dee4] lg:grid-cols-2 lg:divide-x lg:divide-y-0">
           <div className="grid gap-4 p-6 sm:grid-cols-2">
+            <Detail label="Hire date" value={hire.effectiveDate || hire.startDate || "Pending"} />
             <Detail label="Start date" value={hire.startDate || "Pending"} />
-            <Detail label="Effective date" value={hire.effectiveDate || "Pending"} />
-            <Detail label="Monthly price" value={clientPriceText(hire)} />
+            <Detail label="Monthly rate" value={clientPriceText(hire)} />
             <Detail label="Status" value={hire.status || "Active"} />
           </div>
           <div className="grid gap-4 p-6 sm:grid-cols-2">
             <Detail label="Account manager" value={accountManager.name} />
             <Detail label="Nearwork contact" value={accountManager.email} />
-            <Detail label="Pipeline" value={hire.pipelineCode || "Not linked"} />
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wider text-[#888]">Pipeline</p>
+              {hire.pipelineCode && onOpenPipeline ? (
+                <button onClick={() => onOpenPipeline(hire.pipelineCode!)} className="mt-1 text-sm font-semibold text-[#12866E] hover:underline">{hire.pipelineCode} →</button>
+              ) : <p className="mt-1 text-sm font-medium">{hire.pipelineCode || "Not linked"}</p>}
+            </div>
             <Detail label="Opening" value={hire.openingCode || "Not linked"} />
           </div>
         </div>
       </section>
-      <section className="grid gap-6 lg:grid-cols-2">
-        <Panel title="Performance" eyebrow="Quarterly and yearly">
-          <div className="grid gap-3 sm:grid-cols-4">
-            <Metric label="English" value={4} sub="Q score" />
-            <Metric label="Engagement" value={4} sub="Q score" />
-            <Metric label="Tech skills" value={4} sub="Q score" />
-            <Metric label="Soft skills" value={4} sub="Q score" />
+
+      {/* EOR details */}
+      {isEor ? (
+        <Panel title="EOR details" eyebrow="Employer of Record">
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div className="rounded-lg border border-[#E5E4E0] bg-[#F5F4F0] p-4">
+              <p className="text-xs font-medium uppercase tracking-wider text-[#888]">EOR tier</p>
+              <p className="mt-1 text-lg font-semibold text-[#111]">{hire.eorTier || "Standard"}</p>
+            </div>
+            <div className="rounded-lg border border-[#E5E4E0] bg-[#F5F4F0] p-4">
+              <p className="text-xs font-medium uppercase tracking-wider text-[#888]">Local salary (COP)</p>
+              <p className="mt-1 text-lg font-semibold text-[#111]">{hire.copSalaryMonthly ? `$${hire.copSalaryMonthly.toLocaleString("es-CO")} COP/mo` : "—"}</p>
+            </div>
+            <div className="rounded-lg border border-[#E5E4E0] bg-[#F5F4F0] p-4">
+              <p className="text-xs font-medium uppercase tracking-wider text-[#888]">Billed (USD)</p>
+              <p className="mt-1 text-lg font-semibold text-[#111]">{hire.usdBilledMonthly ? `$${hire.usdBilledMonthly.toLocaleString("en-US")} USD/mo` : clientPriceText(hire)}</p>
+            </div>
           </div>
-          <p className="mt-4 text-sm leading-6 text-[#555]">Quarterly and yearly review history can sync here from the staff portal once reviews are created.</p>
+          <p className="mt-4 text-sm leading-6 text-[#555]">Nearwork handles payroll, benefits, and compliance as the Employer of Record. Your monthly invoice includes the employee cost plus the EOR service fee.</p>
         </Panel>
-        <Panel title="PTO history" eyebrow="Requests">
+      ) : null}
+
+      {/* Candidate profile */}
+      {hireCandidate ? (
+        <>
+          {hireCandidate.cvUrl ? (
+            <Panel title="Resume" eyebrow="Candidate CV">
+              <iframe src={`${hireCandidate.cvUrl}#toolbar=0&navpanes=0`} className="w-full rounded-lg border border-[#E5E4E0]" style={{ height: 500 }} title="CV" />
+            </Panel>
+          ) : null}
+          {hireCandidate.workHistory?.length ? (
+            <Panel title="Work experience" eyebrow="Career history">
+              <div className="space-y-3">
+                {[...hireCandidate.workHistory].sort((a, b) => (b.from || "").localeCompare(a.from || "")).map((job, i) => (
+                  <div key={i} className="flex gap-4 rounded-lg border border-[#E5E4E0] bg-[#F5F4F0] p-4">
+                    <div className="mt-0.5 grid size-10 shrink-0 place-items-center rounded-lg bg-white text-lg font-semibold text-[#12866E] border border-[#E5E4E0]">{(job.company || "?")[0].toUpperCase()}</div>
+                    <div>
+                      <p className="font-semibold text-[#111]">{job.title || "—"}</p>
+                      <p className="text-sm text-[#555]">{job.company || "—"}</p>
+                      <p className="mt-1 text-xs text-[#888]">{job.from || "?"} → {job.to === "present" ? "Present" : (job.to || "?")}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Panel>
+          ) : null}
+          {hireCandidate.certifications?.length ? (
+            <Panel title="Certifications" eyebrow="Credentials">
+              <div className="grid gap-3 sm:grid-cols-2">
+                {hireCandidate.certifications.map((cert, i) => (
+                  <div key={i} className="rounded-lg border border-[#E5E4E0] bg-[#F5F4F0] p-4">
+                    <p className="font-semibold text-[#111]">{cert.name || "—"}</p>
+                    {cert.issuer ? <p className="text-sm text-[#555]">{cert.issuer}</p> : null}
+                    {cert.date ? <p className="mt-1 text-xs text-[#888]">{cert.date}</p> : null}
+                  </div>
+                ))}
+              </div>
+            </Panel>
+          ) : null}
+        </>
+      ) : null}
+
+      <section className="grid gap-6 lg:grid-cols-2">
+        {/* Performance reviews */}
+        <Panel title="Performance reviews" eyebrow="Quarterly & yearly">
+          <div className="space-y-3">
+            {/* Example review — hardcoded to show layout */}
+            <article className="rounded-lg border border-[#E5E4E0] bg-white p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-[#111]">Q2 2026 — Quarterly Review</p>
+                  <p className="mt-0.5 text-xs text-[#888]">Reviewed by Nearwork · Jun 15, 2026</p>
+                </div>
+                <Badge tone="border-teal-200 bg-teal-50 text-teal-700">Completed</Badge>
+              </div>
+              <div className="mt-4 grid grid-cols-4 gap-3">
+                {[["English", 4.2], ["Engagement", 4.5], ["Technical", 3.8], ["Soft skills", 4.0]].map(([label, score]) => (
+                  <div key={String(label)} className="rounded-lg bg-[#F5F4F0] p-3 text-center">
+                    <p className="text-lg font-semibold text-[#12866E]">{score}</p>
+                    <p className="text-[10px] font-medium text-[#888]">{label}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-3 text-sm leading-6 text-[#555]">Strong quarter overall. English fluency continues to improve. Technical delivery is consistent — consider advancing to senior-level responsibilities next quarter.</p>
+            </article>
+            <p className="text-xs text-center text-[#888]">This is a preview. Performance reviews will be created by Nearwork and appear here automatically.</p>
+          </div>
+        </Panel>
+
+        {/* PTO */}
+        <Panel title="Upcoming & PTO history" eyebrow="Requests">
           <div className="space-y-3">
             {employeePto.map((request) => <div key={request.id} className="rounded-lg border border-[#E5E4E0] bg-[#F5F4F0] p-3 text-sm"><p className="font-semibold">{request.type || "PTO"} · {request.status || "Pending"}</p><p className="text-[#555]">{request.from || request.startDate} to {request.to || request.endDate}</p></div>)}
-            {!employeePto.length ? <Empty title="No PTO yet" text="Approved and pending PTO requests will appear here." /> : null}
+            {!employeePto.length ? <Empty title="No PTO requests yet" text="Time-off requests will appear here once submitted." /> : null}
           </div>
         </Panel>
       </section>
