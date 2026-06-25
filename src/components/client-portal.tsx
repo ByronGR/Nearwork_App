@@ -22,6 +22,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   ReceiptText,
+  ChevronDown,
   Search,
   Settings,
   ShieldCheck,
@@ -80,7 +81,7 @@ import { PipelineChatPanel } from "@/components/pipeline-chat-panel";
 const tabs = [
   { id: "overview",  label: "Overview",   icon: LayoutDashboard,   section: "Hiring" },
   { id: "pipeline",  label: "Pipeline",   icon: Kanban,            section: "Hiring" },
-  { id: "hires",     label: "Hires",      icon: Handshake,         section: "Team" },
+  { id: "hires",     label: "Team",       icon: Handshake,         section: "Team" },
   { id: "services",  label: "Services",   icon: ShieldCheck,       section: "Team" },
   { id: "timeoff",   label: "PTO",        icon: CalendarCheck,     section: "Team" },
   { id: "finance",   label: "Finance",    icon: ReceiptText,       section: "Account" },
@@ -919,6 +920,7 @@ export function ClientPortal() {
   const [selectedPipelineCode, setSelectedPipelineCode] = useState("");
   const [selectedHireId, setSelectedHireId] = useState("");
   const [pipelineTab, setPipelineTab] = useState<"candidates" | "brief">("candidates");
+  const [teamTab, setTeamTab] = useState<"hires" | "managed">("hires");
   const [compareCodes, setCompareCodes] = useState<string[]>([]);
   const [favoriteCodes, setFavoriteCodes] = useState<string[]>([]);
   const [interviewCodes, setInterviewCodes] = useState<string[]>([]);
@@ -1705,9 +1707,20 @@ export function ClientPortal() {
           ) : null}
 
           {active === "hires" ? (
-            <Panel title="Hired candidates" eyebrow="Client team">
-              <HiresTable hires={visibleHires} onOpen={(hire) => { setSelectedHireId(hire.id); setActive("hire"); }} />
-            </Panel>
+            <div className="space-y-6">
+              {/* Tabs */}
+              <div className="flex gap-2">
+                <button onClick={() => setTeamTab("hires")} className={cx("rounded-md px-4 py-2 text-sm font-medium transition", teamTab === "hires" ? "bg-[#12866E] text-white" : "border border-[#E5E4E0] bg-white text-[#555] hover:text-[#111]")}>All hires</button>
+                <button onClick={() => setTeamTab("managed")} className={cx("rounded-md px-4 py-2 text-sm font-medium transition", teamTab === "managed" ? "bg-[#12866E] text-white" : "border border-[#E5E4E0] bg-white text-[#555] hover:text-[#111]")}>Managed teams</button>
+              </div>
+              {teamTab === "hires" ? (
+                <Panel title="All hires" eyebrow="Your team">
+                  <HiresTable hires={visibleHires} onOpen={(hire) => { setSelectedHireId(hire.id); setActive("hire"); }} />
+                </Panel>
+              ) : (
+                <ManagedTeamsView />
+              )}
+            </div>
           ) : null}
 
           {active === "hire" && selectedHire ? (
@@ -2623,6 +2636,105 @@ function OpeningsView({
         ))}
       </div>
     </Panel>
+  );
+}
+
+function ManagedTeamsView() {
+  const [expandedTeam, setExpandedTeam] = useState<string | null>(null);
+  const mockTeams = [
+    {
+      id: "sales-team",
+      name: "Sales Team",
+      lead: "Maria Castro",
+      accountManager: "Byron Giraldo",
+      headcount: 5,
+      monthlyCost: 14000,
+      members: [
+        { name: "Maria Castro", role: "SDR Team Lead", startDate: "2026-03-01", status: "Active" },
+        { name: "Andres Lopez", role: "SDR", startDate: "2026-03-15", status: "Active" },
+        { name: "Laura Gomez", role: "SDR", startDate: "2026-04-01", status: "Active" },
+        { name: "Felipe Ruiz", role: "Account Executive", startDate: "2026-04-15", status: "Active" },
+        { name: "Camila Torres", role: "Sales Ops", startDate: "2026-05-01", status: "Active" },
+      ],
+    },
+    {
+      id: "cs-team",
+      name: "Customer Success",
+      lead: "Valentina Morales",
+      accountManager: "Byron Giraldo",
+      headcount: 3,
+      monthlyCost: 8400,
+      members: [
+        { name: "Valentina Morales", role: "CS Manager", startDate: "2026-06-01", status: "Active" },
+        { name: "Santiago Herrera", role: "CS Associate", startDate: "2026-06-15", status: "Active" },
+        { name: "Isabella Reyes", role: "Onboarding Specialist", startDate: "2026-07-01", status: "Onboarding" },
+      ],
+    },
+  ];
+
+  return (
+    <div className="space-y-4">
+      <Panel title="Managed teams" eyebrow="Team structure">
+        <div className="space-y-3">
+          {mockTeams.map((team) => (
+            <article key={team.id} className="overflow-hidden rounded-lg border border-[#E5E4E0] bg-white">
+              <button onClick={() => setExpandedTeam(expandedTeam === team.id ? null : team.id)} className="flex w-full items-center justify-between gap-4 p-5 text-left transition hover:bg-[#F5F4F0]">
+                <div className="flex items-center gap-4">
+                  <div className="grid size-12 place-items-center rounded-xl bg-[#EEF6F3] text-lg font-semibold text-[#12866E]">{team.headcount}</div>
+                  <div>
+                    <p className="text-lg font-semibold text-[#111]">{team.name}</p>
+                    <p className="text-sm text-[#555]">{team.headcount} members · Led by {team.lead}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="text-right">
+                    <p className="text-lg font-semibold text-[#111]">${team.monthlyCost.toLocaleString("en-US")}</p>
+                    <p className="text-xs text-[#888]">USD/mo</p>
+                  </div>
+                  <ChevronDown className={cx("size-5 text-[#888] transition", expandedTeam === team.id && "rotate-180")} />
+                </div>
+              </button>
+              {expandedTeam === team.id ? (
+                <div className="border-t border-[#E5E4E0] bg-[#F5F4F0] p-5">
+                  <div className="mb-4 grid gap-3 sm:grid-cols-3">
+                    <div className="rounded-lg border border-[#E5E4E0] bg-white p-3">
+                      <p className="text-xs font-medium uppercase tracking-wider text-[#888]">Team lead</p>
+                      <p className="mt-1 text-sm font-semibold">{team.lead}</p>
+                    </div>
+                    <div className="rounded-lg border border-[#E5E4E0] bg-white p-3">
+                      <p className="text-xs font-medium uppercase tracking-wider text-[#888]">Account manager</p>
+                      <p className="mt-1 text-sm font-semibold">{team.accountManager}</p>
+                    </div>
+                    <div className="rounded-lg border border-[#E5E4E0] bg-white p-3">
+                      <p className="text-xs font-medium uppercase tracking-wider text-[#888]">Monthly cost</p>
+                      <p className="mt-1 text-sm font-semibold">${team.monthlyCost.toLocaleString("en-US")} USD</p>
+                    </div>
+                  </div>
+                  <div className="overflow-x-auto rounded-lg border border-[#E5E4E0] bg-white">
+                    <table className="w-full text-left text-sm">
+                      <thead className="bg-[#F5F4F0] text-xs font-medium uppercase tracking-wider text-[#888]">
+                        <tr><th className="px-4 py-2.5">Member</th><th className="px-4 py-2.5">Role</th><th className="px-4 py-2.5">Start date</th><th className="px-4 py-2.5">Status</th></tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#E5E4E0]">
+                        {team.members.map((m, i) => (
+                          <tr key={i}>
+                            <td className="px-4 py-3 font-medium">{m.name}</td>
+                            <td className="px-4 py-3 text-[#555]">{m.role}</td>
+                            <td className="px-4 py-3 text-[#555]">{m.startDate}</td>
+                            <td className="px-4 py-3"><Badge tone={m.status === "Active" ? "border-teal-200 bg-teal-50 text-teal-700" : "border-violet-200 bg-violet-50 text-violet-700"}>{m.status}</Badge></td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ) : null}
+            </article>
+          ))}
+        </div>
+        <p className="mt-4 text-center text-xs text-[#888]">This is a preview. Managed teams will be configured by Nearwork and appear here automatically.</p>
+      </Panel>
+    </div>
   );
 }
 
