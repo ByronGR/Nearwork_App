@@ -1666,7 +1666,7 @@ export function ClientPortal() {
           ) : null}
 
           {active === "hire" && selectedHire ? (
-            <HireFullPage hire={selectedHire} timeOff={timeOff} accountManager={accountManager} onBack={() => setActive("hires")} />
+            <HireFullPage hire={selectedHire} timeOff={timeOff} accountManager={accountManager} onBack={() => setActive("hires")} onOpenPipeline={(code) => { setSelectedPipelineCode(code); setActive("pipeline"); }} />
           ) : null}
 
           {active === "services" ? (
@@ -3199,56 +3199,162 @@ function HireFullPage({
   timeOff,
   accountManager,
   onBack,
+  onOpenPipeline,
 }: {
   hire: PortalHire;
   timeOff: TimeOffRequest[];
   accountManager: { name: string; email: string; phone: string };
   onBack: () => void;
+  onOpenPipeline?: (code: string) => void;
 }) {
   const name = hire.candidateName || hire.name || "Employee";
   const employeePto = timeOff.filter((request) => request.candidateCode === hire.candidateCode || request.personName === name);
+  const serviceType = hire.serviceType || hire.engagementType || hire.contractType || "Direct Recruiting";
+  const isEor = serviceType.toLowerCase().includes("eor");
+  const isManagedTeam = serviceType.toLowerCase().includes("managed");
+
+  const [hireCandidate, setHireCandidate] = useState<PortalCandidate | null>(null);
+  useEffect(() => {
+    if (!hire.candidateCode) return;
+    getDoc(doc(db, "candidates", hire.candidateCode)).then((snap) => {
+      if (snap.exists()) setHireCandidate({ id: snap.id, code: snap.id, ...snap.data() } as PortalCandidate);
+    }).catch(() => {});
+  }, [hire.candidateCode]);
+
   return (
     <div className="space-y-6">
       <button onClick={onBack} className="inline-flex items-center gap-2 text-sm font-semibold text-[#12866E]"><ArrowLeft className="size-4" /> Back to hires</button>
+
+      {/* Hero */}
       <section className="overflow-hidden rounded-xl border border-[#E5E4E0] bg-white shadow-sm">
-        <div className="bg-blue-500 px-6 py-8 text-white">
+        <div className="bg-[#12866E] px-6 py-8 text-white">
           <div className="flex flex-wrap items-center gap-5">
-            <div className="grid size-20 place-items-center rounded-full border-4 border-white bg-[#EEF6F3] text-2xl font-semibold text-[#12866E]">{initials(name)}</div>
+            <div className="grid size-20 place-items-center rounded-full border-4 border-white/30 bg-white text-2xl font-semibold text-[#12866E]">{initials(name)}</div>
             <div>
               <h1 className="text-3xl font-semibold">{name}</h1>
-              <p className="mt-1 text-lg">{hire.role || "Role pending"} · {hire.engagementType || hire.serviceType || "Service"}</p>
+              <p className="mt-1 text-lg">{hire.role || "Role pending"}</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-semibold">{serviceType}</span>
+                {isManagedTeam ? <span className="rounded-full bg-amber-400/30 px-3 py-1 text-xs font-semibold">Managed Team</span> : null}
+                {isEor ? <span className="rounded-full bg-blue-400/30 px-3 py-1 text-xs font-semibold">EOR</span> : null}
+              </div>
             </div>
           </div>
         </div>
         <div className="grid divide-y divide-[#d8dee4] lg:grid-cols-2 lg:divide-x lg:divide-y-0">
           <div className="grid gap-4 p-6 sm:grid-cols-2">
+            <Detail label="Hire date" value={hire.effectiveDate || hire.startDate || "Pending"} />
             <Detail label="Start date" value={hire.startDate || "Pending"} />
-            <Detail label="Effective date" value={hire.effectiveDate || "Pending"} />
-            <Detail label="Monthly price" value={clientPriceText(hire)} />
+            <Detail label="Monthly rate" value={clientPriceText(hire)} />
             <Detail label="Status" value={hire.status || "Active"} />
           </div>
           <div className="grid gap-4 p-6 sm:grid-cols-2">
             <Detail label="Account manager" value={accountManager.name} />
             <Detail label="Nearwork contact" value={accountManager.email} />
-            <Detail label="Pipeline" value={hire.pipelineCode || "Not linked"} />
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wider text-[#888]">Pipeline</p>
+              {hire.pipelineCode && onOpenPipeline ? (
+                <button onClick={() => onOpenPipeline(hire.pipelineCode!)} className="mt-1 text-sm font-semibold text-[#12866E] hover:underline">{hire.pipelineCode} →</button>
+              ) : <p className="mt-1 text-sm font-medium">{hire.pipelineCode || "Not linked"}</p>}
+            </div>
             <Detail label="Opening" value={hire.openingCode || "Not linked"} />
           </div>
         </div>
       </section>
-      <section className="grid gap-6 lg:grid-cols-2">
-        <Panel title="Performance" eyebrow="Quarterly and yearly">
-          <div className="grid gap-3 sm:grid-cols-4">
-            <Metric label="English" value={4} sub="Q score" />
-            <Metric label="Engagement" value={4} sub="Q score" />
-            <Metric label="Tech skills" value={4} sub="Q score" />
-            <Metric label="Soft skills" value={4} sub="Q score" />
+
+      {/* EOR details */}
+      {isEor ? (
+        <Panel title="EOR details" eyebrow="Employer of Record">
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div className="rounded-lg border border-[#E5E4E0] bg-[#F5F4F0] p-4">
+              <p className="text-xs font-medium uppercase tracking-wider text-[#888]">EOR tier</p>
+              <p className="mt-1 text-lg font-semibold text-[#111]">{hire.eorTier || "Standard"}</p>
+            </div>
+            <div className="rounded-lg border border-[#E5E4E0] bg-[#F5F4F0] p-4">
+              <p className="text-xs font-medium uppercase tracking-wider text-[#888]">Local salary (COP)</p>
+              <p className="mt-1 text-lg font-semibold text-[#111]">{hire.copSalaryMonthly ? `$${hire.copSalaryMonthly.toLocaleString("es-CO")} COP/mo` : "—"}</p>
+            </div>
+            <div className="rounded-lg border border-[#E5E4E0] bg-[#F5F4F0] p-4">
+              <p className="text-xs font-medium uppercase tracking-wider text-[#888]">Billed (USD)</p>
+              <p className="mt-1 text-lg font-semibold text-[#111]">{hire.usdBilledMonthly ? `$${hire.usdBilledMonthly.toLocaleString("en-US")} USD/mo` : clientPriceText(hire)}</p>
+            </div>
           </div>
-          <p className="mt-4 text-sm leading-6 text-[#555]">Quarterly and yearly review history can sync here from the staff portal once reviews are created.</p>
+          <p className="mt-4 text-sm leading-6 text-[#555]">Nearwork handles payroll, benefits, and compliance as the Employer of Record. Your monthly invoice includes the employee cost plus the EOR service fee.</p>
         </Panel>
-        <Panel title="PTO history" eyebrow="Requests">
+      ) : null}
+
+      {/* Candidate profile */}
+      {hireCandidate ? (
+        <>
+          {hireCandidate.cvUrl ? (
+            <Panel title="Resume" eyebrow="Candidate CV">
+              <iframe src={`${hireCandidate.cvUrl}#toolbar=0&navpanes=0`} className="w-full rounded-lg border border-[#E5E4E0]" style={{ height: 500 }} title="CV" />
+            </Panel>
+          ) : null}
+          {hireCandidate.workHistory?.length ? (
+            <Panel title="Work experience" eyebrow="Career history">
+              <div className="space-y-3">
+                {[...hireCandidate.workHistory].sort((a, b) => (b.from || "").localeCompare(a.from || "")).map((job, i) => (
+                  <div key={i} className="flex gap-4 rounded-lg border border-[#E5E4E0] bg-[#F5F4F0] p-4">
+                    <div className="mt-0.5 grid size-10 shrink-0 place-items-center rounded-lg bg-white text-lg font-semibold text-[#12866E] border border-[#E5E4E0]">{(job.company || "?")[0].toUpperCase()}</div>
+                    <div>
+                      <p className="font-semibold text-[#111]">{job.title || "—"}</p>
+                      <p className="text-sm text-[#555]">{job.company || "—"}</p>
+                      <p className="mt-1 text-xs text-[#888]">{job.from || "?"} → {job.to === "present" ? "Present" : (job.to || "?")}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Panel>
+          ) : null}
+          {hireCandidate.certifications?.length ? (
+            <Panel title="Certifications" eyebrow="Credentials">
+              <div className="grid gap-3 sm:grid-cols-2">
+                {hireCandidate.certifications.map((cert, i) => (
+                  <div key={i} className="rounded-lg border border-[#E5E4E0] bg-[#F5F4F0] p-4">
+                    <p className="font-semibold text-[#111]">{cert.name || "—"}</p>
+                    {cert.issuer ? <p className="text-sm text-[#555]">{cert.issuer}</p> : null}
+                    {cert.date ? <p className="mt-1 text-xs text-[#888]">{cert.date}</p> : null}
+                  </div>
+                ))}
+              </div>
+            </Panel>
+          ) : null}
+        </>
+      ) : null}
+
+      <section className="grid gap-6 lg:grid-cols-2">
+        {/* Performance reviews */}
+        <Panel title="Performance reviews" eyebrow="Quarterly & yearly">
+          <div className="space-y-3">
+            {/* Example review — hardcoded to show layout */}
+            <article className="rounded-lg border border-[#E5E4E0] bg-white p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-[#111]">Q2 2026 — Quarterly Review</p>
+                  <p className="mt-0.5 text-xs text-[#888]">Reviewed by Nearwork · Jun 15, 2026</p>
+                </div>
+                <Badge tone="border-teal-200 bg-teal-50 text-teal-700">Completed</Badge>
+              </div>
+              <div className="mt-4 grid grid-cols-4 gap-3">
+                {[["English", 4.2], ["Engagement", 4.5], ["Technical", 3.8], ["Soft skills", 4.0]].map(([label, score]) => (
+                  <div key={String(label)} className="rounded-lg bg-[#F5F4F0] p-3 text-center">
+                    <p className="text-lg font-semibold text-[#12866E]">{score}</p>
+                    <p className="text-[10px] font-medium text-[#888]">{label}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-3 text-sm leading-6 text-[#555]">Strong quarter overall. English fluency continues to improve. Technical delivery is consistent — consider advancing to senior-level responsibilities next quarter.</p>
+            </article>
+            <p className="text-xs text-center text-[#888]">This is a preview. Performance reviews will be created by Nearwork and appear here automatically.</p>
+          </div>
+        </Panel>
+
+        {/* PTO */}
+        <Panel title="Upcoming & PTO history" eyebrow="Requests">
           <div className="space-y-3">
             {employeePto.map((request) => <div key={request.id} className="rounded-lg border border-[#E5E4E0] bg-[#F5F4F0] p-3 text-sm"><p className="font-semibold">{request.type || "PTO"} · {request.status || "Pending"}</p><p className="text-[#555]">{request.from || request.startDate} to {request.to || request.endDate}</p></div>)}
-            {!employeePto.length ? <Empty title="No PTO yet" text="Approved and pending PTO requests will appear here." /> : null}
+            {!employeePto.length ? <Empty title="No PTO requests yet" text="Time-off requests will appear here once submitted." /> : null}
           </div>
         </Panel>
       </section>
