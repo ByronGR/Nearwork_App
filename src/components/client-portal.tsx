@@ -1,5 +1,6 @@
 "use client";
 
+import posthog from "posthog-js";
 import {
   ArrowLeft,
   ArrowRight,
@@ -526,6 +527,11 @@ function LoginScreen({ message }: { message?: string }) {
         }
         await createClientAccount(email, password, invitePayload);
         if (typeof window !== "undefined") sessionStorage.removeItem("nw_creating_account");
+        posthog.capture("account_created", {
+          org_id: inviteOrgId,
+          org_name: inviteOrgName,
+          role: inviteRole,
+        });
         await logoutClient();
         if (typeof window !== "undefined") {
           sessionStorage.setItem("nw_invite_done", "1");
@@ -534,6 +540,8 @@ function LoginScreen({ message }: { message?: string }) {
         return;
       } else {
         await loginWithEmail(email, password);
+        posthog.identify(email.trim().toLowerCase(), { email: email.trim().toLowerCase() });
+        posthog.capture("user_signed_in", { method: "email" });
       }
     } catch (err) {
       if (typeof window !== "undefined") sessionStorage.removeItem("nw_creating_account");
@@ -586,6 +594,7 @@ function LoginScreen({ message }: { message?: string }) {
     setError("");
     try {
       await sendClientPasswordReset(email);
+      posthog.capture("password_reset_requested");
       setLocalMessage("Password reset sent. Use the link in your email to set your app.nearwork.co password.");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Could not send the password reset.";
@@ -934,8 +943,25 @@ export function ClientPortal() {
   // Internal navigation uses pushState (integrates with the Next router) so the
   // shell never remounts (no re-auth / re-subscribe on each navigation).
   function goToPipelines() { setSelectedPipelineCode(""); setSelectedCode(""); setActive("pipeline"); }
-  function goToPipeline(code: string) { setSelectedPipelineCode(code); setSelectedCode(""); setActive("pipeline"); }
-  function goToCandidate(code: string, pipelineCode: string) { setSelectedPipelineCode(pipelineCode); setSelectedCode(code); setActive("candidate"); }
+  function goToPipeline(code: string) {
+    posthog.capture("pipeline_opened", { pipeline_code: code });
+    setSelectedPipelineCode(code);
+    setSelectedCode("");
+    setActive("pipeline");
+  }
+  function goToCandidate(code: string, pipelineCode: string) {
+    const pipeline = pipelines.find((p) => p.code === pipelineCode);
+    const candidateMatch = pipelineCandidates.find(({ candidate }) => candidate.code === code);
+    posthog.capture("candidate_viewed", {
+      candidate_code: code,
+      pipeline_code: pipelineCode,
+      candidate_stage: candidateMatch?.candidate.stage,
+      opening_title: pipeline?.openingTitle,
+    });
+    setSelectedPipelineCode(pipelineCode);
+    setSelectedCode(code);
+    setActive("candidate");
+  }
 
   function buildPath(): string {
     switch (active) {
@@ -1091,6 +1117,13 @@ export function ClientPortal() {
         await logoutClient();
         return;
       }
+      posthog.identify(nextUser.uid, {
+        email: nextProfile.email,
+        name: nextProfile.name || nextProfile.firstName,
+        org_id: nextOrg.orgId,
+        org_name: nextOrg.name,
+        role: nextProfile.portalRole || nextProfile.role,
+      });
       setProfile(nextProfile);
       setOrg(nextOrg);
     } catch (err) {
@@ -1103,6 +1136,8 @@ export function ClientPortal() {
 
   async function leavePortal() {
     setLoggingOut(true);
+    posthog.capture("user_signed_out");
+    posthog.reset();
     await logoutClient().catch(() => null);
     setLoggingOut(false);
   }
@@ -1338,6 +1373,11 @@ export function ClientPortal() {
       text: noteText.trim(),
       scope: noteScope,
     });
+    posthog.capture("candidate_note_added", {
+      candidate_code: selected.candidate.code,
+      pipeline_code: selected.pipeline.code,
+      scope: noteScope,
+    });
     setNoteText("");
   }
 
@@ -1365,11 +1405,19 @@ export function ClientPortal() {
   }
 
   function toggleFavorite(code: string) {
-    setFavoriteCodes((items) => items.includes(code) ? items.filter((item) => item !== code) : [...items, code]);
+    setFavoriteCodes((items) => {
+      const adding = !items.includes(code);
+      if (adding) posthog.capture("candidate_favorited", { candidate_code: code });
+      return adding ? [...items, code] : items.filter((item) => item !== code);
+    });
   }
 
   function toggleInterview(code: string) {
-    setInterviewCodes((items) => items.includes(code) ? items.filter((item) => item !== code) : [...items, code]);
+    setInterviewCodes((items) => {
+      const adding = !items.includes(code);
+      if (adding) posthog.capture("candidate_interview_flagged", { candidate_code: code });
+      return adding ? [...items, code] : items.filter((item) => item !== code);
+    });
   }
 
   const globalResults = useMemo(() => {
@@ -2000,6 +2048,7 @@ function ProfileSettingsPanel({ profile, userId, onSave }: { profile: ClientUser
       const lastName = parts.slice(1).join(" ");
       await updateClientProfile(userId, { name: name.trim(), firstName, lastName, displayRole: displayRole.trim() });
       onSave({ name: name.trim(), firstName, lastName, displayRole: displayRole.trim() });
+      posthog.capture("profile_updated");
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     } finally {
@@ -3647,8 +3696,13 @@ function InviteUserModal({ orgId, orgName, onClose }: { orgId: string; orgName: 
     setSending(true); setMsg("");
     const result = await sendOrgInvite(email, orgId, orgName, { name, role });
     setSending(false);
-    if (result.ok) { setSent(true); setMsg(""); }
-    else { setMsg(result.error || "Failed to send invite."); }
+    if (result.ok) {
+      posthog.capture("user_invite_sent", { org_id: orgId, org_name: orgName, invitee_role: role });
+      setSent(true);
+      setMsg("");
+    } else {
+      setMsg(result.error || "Failed to send invite.");
+    }
   }
 
   if (sent) {

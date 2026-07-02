@@ -1,5 +1,6 @@
 "use client";
 
+import posthog from "posthog-js";
 import React, { useEffect, useState, useCallback } from "react";
 import { onAuthStateChanged, type User } from "firebase/auth";
 import { ArrowLeft, ClipboardList, CheckCircle2, AlertTriangle, Clock, RefreshCw } from "lucide-react";
@@ -268,6 +269,7 @@ export function KickoffBriefPage({ code }: { code: string }) {
       });
       const data = await res.json();
       if (!data.ok) throw new Error(data.error);
+      posthog.capture("kickoff_brief_approved", { opening_code: code });
       setShowApprove(false);
       setApproveText("");
       showToast("Brief approved. Thank you!");
@@ -291,6 +293,7 @@ export function KickoffBriefPage({ code }: { code: string }) {
       });
       const data = await res.json();
       if (!data.ok) throw new Error(data.error);
+      posthog.capture("kickoff_brief_changes_requested", { opening_code: code });
       setShowChanges(false);
       setChangesNote("");
       showToast("Change request sent to Nearwork.");
