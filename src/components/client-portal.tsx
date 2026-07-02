@@ -77,6 +77,7 @@ import {
   sendOrgInvite,
 } from "@/lib/firebase-client";
 import { PipelineChatPanel } from "@/components/pipeline-chat-panel";
+import { clientStages, clientStageKey, clientStageTone } from "@/lib/client-stages";
 
 const tabs = [
   { id: "overview",  label: "Overview",   icon: LayoutDashboard,   section: "Hiring" },
@@ -125,43 +126,8 @@ const pipelineStages = [
 
 const emptyClientUsers: ClientUser[] = [];
 
-// Client-facing pipeline stages (admin stage → client stage mapping)
-// Applied = Applied stage, Screening = Background Check stage,
-// Technical = Interview + Assessment stages,
-// Final Round = Partner Review + Partner Interview stages, Offer = Hired stage
-const clientStages = [
-  { key: "applied",       label: "Applied"       },
-  { key: "screening",     label: "Screening"     },
-  { key: "technical",     label: "Technical"     },
-  { key: "final-round",   label: "Final Round"   },
-  { key: "offer",         label: "Offer"         },
-  { key: "not-selected",  label: "Not Selected"  },
-];
-
-function clientStageKey(stage?: string): string {
-  const s = String(stage || "").toLowerCase().replace(/[-_ ]/g, "");
-  // Map admin-side stage names to client-visible labels.
-  // Admin stages: applied, background-check, interview, assessment,
-  //               partner-review, partner-interview, hired, not-selected
-  // "partner" must be checked before "interview" so partner-interview
-  // lands in final-round, not technical.
-  if (s.includes("pass") || s.includes("reject") || s.includes("notselect") || s.includes("declined") || s.includes("disqualif")) return "not-selected";
-  if (s.includes("hired") || s.includes("offer")) return "offer";
-  if (s.includes("partner") || s.includes("present") || s.includes("clientview") || s.includes("clientreview") || s.includes("final")) return "final-round";
-  if (s.includes("interview") || s.includes("assess") || s.includes("tech") || s.includes("test")) return "technical";
-  if (s.includes("background") || s.includes("bgcheck") || s.includes("screening") || s.includes("profile")) return "screening";
-  // "applied" and any unrecognized early stage default to Applied
-  return "applied";
-}
-
-const clientStageTone: Record<string, string> = {
-  "applied":      "border-sky-200 bg-sky-50 text-sky-700",
-  "screening":    "border-violet-200 bg-violet-50 text-violet-700",
-  "technical":    "border-amber-200 bg-amber-50 text-amber-800",
-  "final-round":  "border-teal-200 bg-teal-50 text-teal-700",
-  "offer":        "border-emerald-200 bg-emerald-50 text-emerald-700",
-  "not-selected": "border-red-200 bg-red-50 text-red-700",
-};
+// Client-facing 6-stage mapping now lives in @/lib/client-stages (shared with
+// pipeline-page.tsx so the 8→6 translation can never drift between views).
 
 const defaultAccountManager = {
   name: "",

@@ -25,6 +25,7 @@ import {
   readableRole,
 } from "@/lib/firebase-client";
 import { PipelineChatPanel } from "@/components/pipeline-chat-panel";
+import { clientStages, clientStageKey, clientStageTone as stageTone } from "@/lib/client-stages";
 
 // ─── helpers ───────────────────────────────────────────────────────────────
 
@@ -48,38 +49,8 @@ function candidateKey(c: PortalCandidate | PipelineCandidate) {
   return (c as PortalCandidate).code || (c as PipelineCandidate).candidateCode || c.email || c.name || "";
 }
 
-// Client-side stage mapping (same logic as client-portal.tsx)
-const clientStages = [
-  { key: "applied",      label: "Applied"      },
-  { key: "screening",    label: "Screening"    },
-  { key: "technical",    label: "Technical"    },
-  { key: "final-round",  label: "Final Round"  },
-  { key: "offer",        label: "Offer"        },
-  { key: "not-selected", label: "Not Selected" },
-];
-
-function clientStageKey(stage?: string): string {
-  const s = String(stage || "").toLowerCase().replace(/[-_ ]/g, "");
-  // Admin stages: applied, background-check, interview, assessment,
-  //               partner-review, partner-interview, hired, not-selected
-  // "partner" must be checked before "interview" so partner-interview
-  // lands in final-round, not technical.
-  if (s.includes("pass") || s.includes("reject") || s.includes("notselect") || s.includes("declined") || s.includes("disqualif")) return "not-selected";
-  if (s.includes("hired") || s.includes("offer")) return "offer";
-  if (s.includes("partner") || s.includes("present") || s.includes("clientview") || s.includes("clientreview") || s.includes("final")) return "final-round";
-  if (s.includes("interview") || s.includes("assess") || s.includes("tech") || s.includes("test")) return "technical";
-  if (s.includes("background") || s.includes("screening") || s.includes("profile")) return "screening";
-  return "applied";
-}
-
-const stageTone: Record<string, string> = {
-  "applied":      "border-sky-200 bg-sky-50 text-sky-700",
-  "screening":    "border-violet-200 bg-violet-50 text-violet-700",
-  "technical":    "border-amber-200 bg-amber-50 text-amber-800",
-  "final-round":  "border-teal-200 bg-teal-50 text-teal-700",
-  "offer":        "border-emerald-200 bg-emerald-50 text-emerald-700",
-  "not-selected": "border-red-200 bg-red-50 text-red-700",
-};
+// Stage mapping lives in @/lib/client-stages — shared with client-portal.tsx
+// so the 8→6 stage translation can never drift between views.
 
 function salaryText(candidate: PipelineCandidate | PortalCandidate) {
   const amount = Number((candidate as PortalCandidate).expectedSalaryAmount || 0);
