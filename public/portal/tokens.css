@@ -1,0 +1,431 @@
+/* ============================================================
+   NEARWORK DESIGN SYSTEM — Colors & Typography
+   Version 1.0 | May 2026
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* Poppins loaded via Google Fonts in HTML */
+
+/* ============================================================
+   COLOR TOKENS — Base Palette
+   ============================================================ */
+:root {
+  /* --- Neutrals --- */
+  --nw-white:        #FFFFFF;
+  --nw-off-white:    #F8F7F3;
+  --nw-gray-50:      #F5F4F0;
+  --nw-gray-100:     #EBEBEB;
+  --nw-gray-200:     #D9D9D9;
+  --nw-gray-300:     #BDBDBD;
+  --nw-gray-400:     #9E9E9E;
+  --nw-gray-500:     #757575;
+  --nw-gray-600:     #555555;
+  --nw-gray-700:     #383838;
+  --nw-gray-800:     #232323;
+  --nw-gray-900:     #161616;
+  --nw-black:        #111111;
+
+  /* --- Teal Accent (primary brand color) --- */
+  --nw-teal-50:      #E8F8F5;
+  --nw-teal-100:     #C8EDE6;
+  --nw-teal-200:     #96D9CC;
+  --nw-teal-300:     #5EC4B0;
+  --nw-teal-400:     #1ABC9C;
+  --nw-teal-500:     #16A085;  /* primary */
+  --nw-teal-600:     #12866E;
+  --nw-teal-700:     #0E6B58;
+  --nw-teal-800:     #095040;
+  --nw-teal-900:     #05352A;
+
+  /* --- Rose Secondary --- */
+  --nw-rose-50:      #FEF0F5;
+  --nw-rose-100:     #FCDCE9;
+  --nw-rose-200:     #F8AECB;
+  --nw-rose-300:     #F280AD;
+  --nw-rose-400:     #EC5290;
+  --nw-rose-500:     #E74C7C;  /* secondary */
+  --nw-rose-600:     #CC3666;
+  --nw-rose-700:     #A8284F;
+  --nw-rose-800:     #821C3B;
+  --nw-rose-900:     #5C1028;
+
+  /* --- Violet Tertiary --- */
+  --nw-violet-50:    #F7F2FC;
+  --nw-violet-100:   #EDE3F8;
+  --nw-violet-200:   #D9C7F0;
+  --nw-violet-300:   #C3A8E8;
+  --nw-violet-400:   #BE93DE;
+  --nw-violet-500:   #AF7AC5;  /* tertiary */
+  --nw-violet-600:   #9460B0;
+  --nw-violet-700:   #784899;
+  --nw-violet-800:   #5C3280;
+  --nw-violet-900:   #3E1F60;
+
+  /* --- Semantic: Success (green) --- */
+  --nw-green-50:     #F0FDF4;
+  --nw-green-100:    #DCFCE7;
+  --nw-green-500:    #22C55E;
+  --nw-green-600:    #16A34A;
+  --nw-green-700:    #15803D;
+
+  /* --- Semantic: Warning (yellow) --- */
+  --nw-yellow-50:    #FEFCE8;
+  --nw-yellow-100:   #FEF9C3;
+  --nw-yellow-500:   #EAB308;
+  --nw-yellow-600:   #CA8A04;
+
+  /* --- Semantic: Error (red) --- */
+  --nw-red-50:       #FFF1F2;
+  --nw-red-100:      #FFE4E6;
+  --nw-red-500:      #EF4444;
+  --nw-red-600:      #DC2626;
+  --nw-red-700:      #B91C1C;
+
+  /* --- Semantic: Info (blue) --- */
+  --nw-blue-50:      #EFF6FF;
+  --nw-blue-100:     #DBEAFE;
+  --nw-blue-500:     #3B82F6;
+  --nw-blue-600:     #2563EB;
+  --nw-blue-700:     #1D4ED8;
+
+  /* ============================================================
+     SEMANTIC COLOR TOKENS — Light Mode
+     ============================================================ */
+
+  /* Backgrounds */
+  --bg-base:         var(--nw-white);
+  --bg-subtle:       var(--nw-gray-50);
+  --bg-muted:        var(--nw-gray-100);
+  --bg-inverse:      var(--nw-black);
+
+  /* Foregrounds */
+  --fg-primary:      var(--nw-black);
+  --fg-secondary:    var(--nw-gray-600);
+  --fg-tertiary:     var(--nw-gray-400);
+  --fg-disabled:     var(--nw-gray-300);
+  --fg-inverse:      var(--nw-white);
+  --fg-on-teal:      var(--nw-white);
+
+  /* Accent — Primary (Teal) */
+  --accent:          var(--nw-teal-500);
+  --accent-hover:    var(--nw-teal-600);
+  --accent-subtle:   var(--nw-teal-50);
+  --accent-border:   var(--nw-teal-300);
+
+  /* Secondary (Rose) */
+  --secondary:       var(--nw-rose-500);
+  --secondary-hover: var(--nw-rose-600);
+  --secondary-subtle:var(--nw-rose-50);
+
+  /* Tertiary (Violet) */
+  --tertiary:        var(--nw-violet-500);
+  --tertiary-hover:  var(--nw-violet-600);
+  --tertiary-subtle: var(--nw-violet-50);
+
+  /* Borders */
+  --border-default:  var(--nw-gray-100);
+  --border-strong:   var(--nw-gray-200);
+  --border-focus:    var(--nw-teal-500);
+
+  /* Status */
+  --status-active:   var(--nw-green-500);
+  --status-pending:  var(--nw-yellow-500);
+  --status-declined: var(--nw-red-500);
+  --status-hired:    var(--nw-green-600);
+  --status-new:      var(--nw-blue-500);
+
+  /* Surfaces */
+  --surface-card:      var(--nw-white);
+  --surface-elevated:  var(--nw-white);
+  --surface-overlay:   rgba(17,17,17,0.48);
+
+  /* Shadows */
+  --shadow-sm:       0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md:       0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  --shadow-lg:       0 12px 32px rgba(0,0,0,0.10), 0 4px 8px rgba(0,0,0,0.06);
+  --shadow-xl:       0 24px 64px rgba(0,0,0,0.12), 0 8px 16px rgba(0,0,0,0.08);
+
+  /* ============================================================
+     BORDER RADIUS TOKENS
+     ============================================================ */
+  --radius-xs:       2px;
+  --radius-sm:       4px;
+  --radius-md:       6px;
+  --radius-lg:       10px;
+  --radius-xl:       16px;
+  --radius-2xl:      24px;
+  --radius-pill:     999px;
+
+  /* ============================================================
+     SPACING TOKENS
+     ============================================================ */
+  --space-1:         4px;
+  --space-2:         8px;
+  --space-3:         12px;
+  --space-4:         16px;
+  --space-5:         20px;
+  --space-6:         24px;
+  --space-8:         32px;
+  --space-10:        40px;
+  --space-12:        48px;
+  --space-16:        64px;
+  --space-24:        96px;
+  --space-32:        128px;
+
+  /* ============================================================
+     TYPOGRAPHY TOKENS
+     ============================================================ */
+
+  /* Font families */
+  --font-display:    'Poppins', 'DM Sans', sans-serif;
+  --font-body:       'Poppins', 'DM Sans', sans-serif;
+  --font-mono:       'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Font weights */
+  --fw-light:        300;
+  --fw-regular:      400;
+  --fw-medium:       500;
+  --fw-semibold:     600;
+  --fw-bold:         700;
+  --fw-extrabold:    800;
+
+  /* Type scale */
+  --text-xs:         12px;
+  --text-sm:         14px;
+  --text-base:       16px;
+  --text-lg:         18px;
+  --text-xl:         24px;
+  --text-2xl:        32px;
+  --text-3xl:        48px;
+  --text-4xl:        64px;
+  --text-5xl:        80px;
+
+  /* Line heights */
+  --lh-tight:        1.15;
+  --lh-snug:         1.3;
+  --lh-normal:       1.5;
+  --lh-relaxed:      1.65;
+  --lh-loose:        1.8;
+
+  /* Letter spacing */
+  --ls-tight:        -0.03em;
+  --ls-snug:         -0.02em;
+  --ls-normal:       0;
+  --ls-wide:         0.04em;
+  --ls-wider:        0.08em;
+  --ls-widest:       0.16em;
+
+  /* ============================================================
+     ANIMATION TOKENS
+     ============================================================ */
+  --ease-out:        cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out:     cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring:     cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --duration-fast:   120ms;
+  --duration-base:   200ms;
+  --duration-slow:   350ms;
+  --duration-slower: 500ms;
+
+  /* ============================================================
+     LAYOUT TOKENS
+     ============================================================ */
+  --max-width:       1200px;
+  --max-width-prose: 680px;
+  --nav-height:      72px;
+  --sidebar-width:   256px;
+}
+
+/* ============================================================
+   DARK MODE OVERRIDES (Portal surfaces)
+   Apply .dark or data-theme="dark" to a container
+   ============================================================ */
+.dark, [data-theme="dark"] {
+  --bg-base:         #0F0F0F;
+  --bg-subtle:       #161616;
+  --bg-muted:        #1E1E1E;
+  --bg-inverse:      var(--nw-white);
+
+  --fg-primary:      #F2F2F2;
+  --fg-secondary:    #A0A0A0;
+  --fg-tertiary:     #606060;
+  --fg-disabled:     #3A3A3A;
+  --fg-inverse:      var(--nw-black);
+  --fg-on-amber:     var(--nw-black);
+
+  --border-default:  #262626;
+  --border-strong:   #333333;
+
+  --surface-card:    #1A1A1A;
+  --surface-elevated:#202020;
+  --surface-overlay: rgba(0,0,0,0.64);
+
+  --shadow-sm:       0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+  --shadow-md:       0 4px 12px rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.2);
+  --shadow-lg:       0 12px 32px rgba(0,0,0,0.5), 0 4px 8px rgba(0,0,0,0.3);
+  --shadow-xl:       0 24px 64px rgba(0,0,0,0.6), 0 8px 16px rgba(0,0,0,0.4);
+}
+
+/* ============================================================
+   SEMANTIC ELEMENT STYLES
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family:  var(--font-body);
+  font-size:    var(--text-base);
+  font-weight:  var(--fw-regular);
+  line-height:  var(--lh-normal);
+  color:        var(--fg-primary);
+  background:   var(--bg-base);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1 {
+  font-family:   var(--font-display);
+  font-size:     var(--text-4xl);
+  font-weight:   var(--fw-bold);
+  line-height:   var(--lh-tight);
+  letter-spacing: var(--ls-tight);
+  color:         var(--fg-primary);
+}
+
+h2 {
+  font-family:   var(--font-display);
+  font-size:     var(--text-3xl);
+  font-weight:   var(--fw-bold);
+  line-height:   var(--lh-snug);
+  letter-spacing: var(--ls-snug);
+  color:         var(--fg-primary);
+}
+
+h3 {
+  font-family:   var(--font-display);
+  font-size:     var(--text-2xl);
+  font-weight:   var(--fw-semibold);
+  line-height:   var(--lh-snug);
+  letter-spacing: var(--ls-snug);
+  color:         var(--fg-primary);
+}
+
+h4 {
+  font-family:   var(--font-display);
+  font-size:     var(--text-xl);
+  font-weight:   var(--fw-semibold);
+  line-height:   var(--lh-normal);
+  color:         var(--fg-primary);
+}
+
+h5 {
+  font-family:   var(--font-display);
+  font-size:     var(--text-lg);
+  font-weight:   var(--fw-medium);
+  line-height:   var(--lh-normal);
+  color:         var(--fg-primary);
+}
+
+h6 {
+  font-family:   var(--font-display);
+  font-size:     var(--text-base);
+  font-weight:   var(--fw-semibold);
+  line-height:   var(--lh-normal);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color:         var(--fg-secondary);
+}
+
+p {
+  font-size:    var(--text-base);
+  line-height:  var(--lh-relaxed);
+  color:        var(--fg-secondary);
+  max-width:    var(--max-width-prose);
+}
+
+a {
+  color:            var(--fg-primary);
+  text-decoration:  none;
+  transition:       color var(--duration-fast) var(--ease-out);
+}
+
+a:hover { color: var(--accent); }
+
+code, pre {
+  font-family:  var(--font-mono);
+  font-size:    var(--text-sm);
+}
+
+code {
+  background:    var(--bg-subtle);
+  border:        1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding:       2px 6px;
+}
+
+pre {
+  background:    var(--bg-subtle);
+  border:        1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding:       var(--space-6);
+  overflow-x:    auto;
+}
+
+label {
+  font-size:    var(--text-sm);
+  font-weight:  var(--fw-medium);
+  color:        var(--fg-primary);
+}
+
+/* ============================================================
+   UTILITY CLASSES
+   ============================================================ */
+
+/* Text sizes */
+.text-xs    { font-size: var(--text-xs); }
+.text-sm    { font-size: var(--text-sm); }
+.text-base  { font-size: var(--text-base); }
+.text-lg    { font-size: var(--text-lg); }
+.text-xl    { font-size: var(--text-xl); }
+.text-2xl   { font-size: var(--text-2xl); }
+.text-3xl   { font-size: var(--text-3xl); }
+.text-4xl   { font-size: var(--text-4xl); }
+
+/* Font weights */
+.fw-light    { font-weight: var(--fw-light); }
+.fw-regular  { font-weight: var(--fw-regular); }
+.fw-medium   { font-weight: var(--fw-medium); }
+.fw-semibold { font-weight: var(--fw-semibold); }
+.fw-bold     { font-weight: var(--fw-bold); }
+
+/* Colors */
+.text-primary   { color: var(--fg-primary); }
+.text-secondary { color: var(--fg-secondary); }
+.text-tertiary  { color: var(--fg-tertiary); }
+.text-accent    { color: var(--accent); }
+.text-success   { color: var(--status-active); }
+.text-warning   { color: var(--status-pending); }
+.text-error     { color: var(--status-declined); }
+
+/* Backgrounds */
+.bg-base    { background: var(--bg-base); }
+.bg-subtle  { background: var(--bg-subtle); }
+.bg-muted   { background: var(--bg-muted); }
+.bg-accent  { background: var(--accent); }
+.bg-inverse { background: var(--bg-inverse); }
+
+/* Borders */
+.border         { border: 1px solid var(--border-default); }
+.border-strong  { border: 1px solid var(--border-strong); }
+.border-accent  { border: 1px solid var(--accent); }
+.rounded-sm     { border-radius: var(--radius-sm); }
+.rounded-md     { border-radius: var(--radius-md); }
+.rounded-lg     { border-radius: var(--radius-lg); }
+.rounded-xl     { border-radius: var(--radius-xl); }
+.rounded-pill   { border-radius: var(--radius-pill); }
+
+/* Shadows */
+.shadow-sm  { box-shadow: var(--shadow-sm); }
+.shadow-md  { box-shadow: var(--shadow-md); }
+.shadow-lg  { box-shadow: var(--shadow-lg); }
+.shadow-xl  { box-shadow: var(--shadow-xl); }
