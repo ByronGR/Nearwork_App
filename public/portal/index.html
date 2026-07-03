@@ -112,28 +112,9 @@ function App() {
   }
 
   return (
-    <>
-      <div style={{ width: '100vw', height: '100vh', overflow: 'hidden' }}>
-        {screen}
-      </div>
-
-      <TweaksPanel title="Tweaks">
-        <TweakSection label="Data state" />
-        <TweakRadio label="State" value={t.populated ? 'populated' : 'empty'}
-          options={['empty', 'populated']}
-          onChange={(v) => setTweak('populated', v === 'populated')} />
-
-        <TweakSection label="Layout" />
-        <TweakRadio label="Density" value={t.density}
-          options={['compact', 'regular']}
-          onChange={(v) => setTweak('density', v)} />
-
-        <TweakSection label="SPP structure" />
-        <TweakRadio label="Organization" value={t.sppOrg}
-          options={[{ value: 'switcher', label: 'A · Switcher' }, { value: 'section', label: 'B · Clients nav' }]}
-          onChange={(v) => setTweak('sppOrg', v)} />
-      </TweaksPanel>
-    </>
+    <div style={{ width: '100vw', height: '100vh', overflow: 'hidden' }}>
+      {screen}
+    </div>
   );
 }
 
