@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nearwork — Client Portal</title>
+<link rel="stylesheet" href="tokens.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="image-slot.js"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  html, body, #root { height: 100%; margin: 0; }
+  body {
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #F8F7F3; color: #111;
+    -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+    overflow: hidden;
+  }
+  p { max-width: none; }
+  input:focus, textarea:focus { border-color: #16A085 !important; box-shadow: 0 0 0 3px rgba(22,160,133,0.12); }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #E0DED7; border-radius: 5px; }
+  ::-webkit-scrollbar-thumb:hover { background: #CFCCC3; }
+  button { font-family: inherit; }
+  @keyframes nwFade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes nwSlideIn { from { transform: translateX(24px); opacity: 0.6; } to { transform: translateX(0); opacity: 1; } }
+  @keyframes nwPop { from { transform: scale(0.96) translateY(8px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="portal-data.js"></script>
+<script src="portal-candidate-data.js"></script>
+<script type="text/babel" src="primitives.jsx"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="portal-shared.jsx"></script>
+<script type="text/babel" src="portal-v3-spp-org.jsx"></script>
+<script type="text/babel" src="portal-v3-mixed.jsx"></script>
+<script type="text/babel" src="portal-v3-roles.jsx"></script>
+<script type="text/babel" src="portal-v3-kickoff.jsx"></script>
+<script type="text/babel" src="portal-v3-team.jsx"></script>
+<script type="text/babel" src="portal-v3-billing.jsx"></script>
+<script type="text/babel" src="portal-v3-spp.jsx"></script>
+<script type="text/babel" src="portal-v3-users.jsx"></script>
+<script type="text/babel" src="portal-v3-settings.jsx"></script>
+<script type="text/babel" src="portal-v3-review.jsx"></script>
+<script type="text/babel" src="portal-v3-hire.jsx"></script>
+<script type="text/babel" src="portal-v3-pipeline.jsx"></script>
+<script type="text/babel" src="portal-v3-candidate.jsx"></script>
+<script type="text/babel" src="portal-v3-compare.jsx"></script>
+
+<script type="text/babel">
+const { useState, useEffect } = React;
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "populated": true,
+  "density": "regular",
+  "sppOrg": "switcher"
+}/*EDITMODE-END*/;
+
+const NAV_KEY = 'nw_portal_nav_v1';
+
+function App() {
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const [nav, setNav] = useState(() => {
+    try { const s = JSON.parse(localStorage.getItem(NAV_KEY)); if (s && s.route) return s; } catch (e) {}
+    return { route: 'overview', openingId: null };
+  });
+
+  useEffect(() => { try { localStorage.setItem(NAV_KEY, JSON.stringify(nav)); } catch (e) {} }, [nav]);
+  useEffect(() => { if (window.lucide) window.lucide.createIcons(); });
+
+  const go = (route, openingId = null, extra = null) => setNav({ route, openingId, extra });
+  const shared = { populated: t.populated, density: t.density, onNav: go };
+  window.NW_SPP_ORG = t.sppOrg;
+  window.NW_WS = { route: nav.route, clientId: nav.openingId };
+
+  let screen;
+  switch (nav.route) {
+    case 'pipeline':
+      screen = <OpenRolesScreen {...shared} />; break;
+    case 'kanban':
+      screen = <PipelineScreen {...shared} openingId={nav.openingId} />; break;
+    case 'candidate':
+      screen = <CandidateDetailScreen candidateId={nav.openingId} density={t.density} onNav={go} />; break;
+    case 'kickoff':
+      screen = <KickoffReviewScreen kickoffId={nav.openingId} density={t.density} onNav={go} />; break;
+    case 'hire':
+      screen = <HireDetailScreen key={nav.openingId} hireId={nav.openingId} density={t.density} onNav={go} />; break;
+    case 'team':
+      screen = <TeamScreen {...shared} focus={nav.extra} />; break;
+    case 'team-detail':
+      screen = <TeamDetailScreen teamId={nav.openingId} density={t.density} onNav={go} />; break;
+    case 'spp':
+      screen = <SppScreen density={t.density} onNav={go} />; break;
+    case 'spp-client':
+      screen = <SppClientDetailScreen clientId={nav.openingId} density={t.density} onNav={go} />; break;
+    case 'billing':
+      screen = <BillingScreen density={t.density} onNav={go} />; break;
+    case 'users':
+      screen = <UsersScreen density={t.density} onNav={go} />; break;
+    case 'settings':
+      screen = <SettingsScreen density={t.density} onNav={go} />; break;
+    case 'overview':
+    default:
+      screen = <DashboardMixed {...shared} />; break;
+  }
+
+  return (
+    <>
+      <div style={{ width: '100vw', height: '100vh', overflow: 'hidden' }}>
+        {screen}
+      </div>
+
+      <TweaksPanel title="Tweaks">
+        <TweakSection label="Data state" />
+        <TweakRadio label="State" value={t.populated ? 'populated' : 'empty'}
+          options={['empty', 'populated']}
+          onChange={(v) => setTweak('populated', v === 'populated')} />
+
+        <TweakSection label="Layout" />
+        <TweakRadio label="Density" value={t.density}
+          options={['compact', 'regular']}
+          onChange={(v) => setTweak('density', v)} />
+
+        <TweakSection label="SPP structure" />
+        <TweakRadio label="Organization" value={t.sppOrg}
+          options={[{ value: 'switcher', label: 'A · Switcher' }, { value: 'section', label: 'B · Clients nav' }]}
+          onChange={(v) => setTweak('sppOrg', v)} />
+      </TweaksPanel>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
