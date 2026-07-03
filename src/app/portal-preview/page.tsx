@@ -1,24 +1,14 @@
 "use client";
 
-// Temporary preview of the new-portal shell rendering as real native components.
-// Removed once the real screens are mounted at the root.
-import { PortalComingSoon } from "@/portal/shell";
-
-const CLIENT = {
-  company: "Lumen Health",
-  user: { name: "Sarah Mitchell", initials: "SM", role: "Head of Engineering" },
-};
+// Temporary preview of the new-portal native screens (placeholder data).
+// Removed once the real screens are mounted at the root + wired to Firebase.
+import { OverviewScreen } from "@/portal/screens/overview";
+import { MOCK_CLIENT, MOCK_OVERVIEW } from "@/portal/mock-data";
 
 export default function PortalPreviewPage() {
   return (
     <div style={{ position: "fixed", inset: 0 }}>
-      <PortalComingSoon
-        active="overview"
-        title="The frame is up"
-        desc="Sidebar + top bar are now real native components — screens plug in next."
-        icon="layout-dashboard"
-        client={CLIENT}
-      />
+      <OverviewScreen client={MOCK_CLIENT} data={MOCK_OVERVIEW} onNav={() => {}} />
     </div>
   );
 }
