@@ -10,8 +10,10 @@ import React from "react";
 import { NW } from "./primitives";
 import { PortalComingSoon } from "./shell";
 import { OverviewScreen } from "./screens/overview";
+import { OpenRolesScreen } from "./screens/roles";
 import { usePortalData } from "./use-portal-data";
 import { toPortalClient, toOverviewData } from "./map-overview";
+import { toRolesData } from "./map-roles";
 import { LoginScreen, StaffOrgPicker } from "@/components/client-portal";
 import { isNearworkEmail } from "@/lib/firebase-client";
 import { useState } from "react";
@@ -19,7 +21,6 @@ import { useState } from "react";
 // Screens not yet ported from the design source. They render inside the real
 // shell with a short "porting now" note — temporary, replaced as each lands.
 const PENDING: Record<string, { title: string; desc: string; icon: string }> = {
-  pipeline: { title: "Pipeline", desc: "Porting this screen from your design now.", icon: "kanban-square" },
   team: { title: "Team", desc: "Porting this screen from your design now.", icon: "handshake" },
   spp: { title: "SPP", desc: "Porting this screen from your design now.", icon: "git-merge" },
   billing: { title: "Billing", desc: "Porting this screen from your design now.", icon: "wallet" },
@@ -70,6 +71,14 @@ export function PortalApp() {
     return (
       <div style={{ position: "fixed", inset: 0 }}>
         <OverviewScreen client={client} data={toOverviewData(pipelines, openings, profile)} onNav={go} />
+      </div>
+    );
+  }
+
+  if (route === "pipeline") {
+    return (
+      <div style={{ position: "fixed", inset: 0 }}>
+        <OpenRolesScreen client={client} data={toRolesData(openings, pipelines)} onNav={go} />
       </div>
     );
   }

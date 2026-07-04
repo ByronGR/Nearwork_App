@@ -13,46 +13,7 @@ import {
 } from "@/lib/firebase-client";
 import type { PortalClient } from "./shell";
 import type { OverviewData, OverviewCandidate } from "./screens/overview";
-
-// Client-facing stages, in order. `stageIdx` is 1-based over this list.
-const CLIENT_STAGES = ["applied", "screening", "technical", "final-round", "offer"] as const;
-const STAGE_LABELS: Record<string, string> = {
-  applied: "Applied",
-  screening: "Screening",
-  technical: "Technical",
-  "final-round": "Final round",
-  offer: "Offer",
-};
-
-// Admin stage name → client-facing stage key. Kept in sync with client-portal.tsx.
-function clientStageKey(stage?: string): string {
-  const s = String(stage || "").toLowerCase().replace(/[-_ ]/g, "");
-  if (s.includes("pass") || s.includes("reject") || s.includes("notselect") || s.includes("declined") || s.includes("disqualif")) return "not-selected";
-  if (s.includes("hired") || s.includes("offer")) return "offer";
-  if (s.includes("partner") || s.includes("present") || s.includes("clientview") || s.includes("clientreview") || s.includes("final")) return "final-round";
-  if (s.includes("interview") || s.includes("assess") || s.includes("tech") || s.includes("test")) return "technical";
-  if (s.includes("background") || s.includes("bgcheck") || s.includes("screening") || s.includes("profile")) return "screening";
-  return "applied";
-}
-
-const AVATAR_BGS = ["#16A085", "#E74C7C", "#AF7AC5", "#12866E", "#EAB308", "#3B82F6", "#F97316", "#8B5CF6"];
-
-function hashCode(str: string): number {
-  let h = 0;
-  for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) | 0;
-  return Math.abs(h);
-}
-
-function avatarColor(seed: string): string {
-  return AVATAR_BGS[hashCode(seed) % AVATAR_BGS.length];
-}
-
-function initialsOf(name?: string): string {
-  const parts = String(name || "").trim().split(/\s+/).filter(Boolean);
-  if (!parts.length) return "?";
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
+import { clientStageKey, stageIdxOf, STAGE_LABELS, avatarColor, initialsOf } from "./stage-map";
 
 function fullName(profile: ClientUser | null): string {
   if (!profile) return "there";
@@ -106,8 +67,7 @@ export function toOverviewData(
     for (const c of p.candidates || []) {
       const key = clientStageKey(c.stage);
       if (key === "not-selected") continue; // hidden from the client's active view
-      const idx = CLIENT_STAGES.indexOf(key as (typeof CLIENT_STAGES)[number]);
-      const stageIdx = idx >= 0 ? idx + 1 : 1;
+      const stageIdx = stageIdxOf(key);
       const name = c.name || "Candidate";
       const seed = c.candidateCode || c.code || `${name}-${seq}`;
       // "Awaiting review" candidates (final round / presented) are the ones the
