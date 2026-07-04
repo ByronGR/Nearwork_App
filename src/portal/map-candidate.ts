@@ -1,8 +1,7 @@
 // ── Real data → Candidate detail props (Stage 3 wiring) ───────────────────────
-// Builds the header from the real pipeline-candidate entry (+ assessment score
-// where one exists). The rich report (English / Assessment / DISC / radar) isn't
-// stored in the DB yet — it comes from the Nearwork Score / assessment PDFs — so
-// it's left off and the screen shows its clean "pending" report state.
+// Header from the pipeline entry; the rich report (English / Assessment / DISC /
+// radar) from the parsed assessments doc once Admin has uploaded the PDFs. If the
+// rich data isn't there yet, the screen shows its clean "pending" state.
 
 import type { PortalOpening, PortalPipeline, PortalAssessment } from "@/lib/firebase-client";
 import type { CandidateData, CandidateHeader, CandidateDiscDim } from "./screens/candidate";
@@ -15,7 +14,13 @@ const DISC_DIMS: Record<string, CandidateDiscDim> = {
   S: { key: "S", name: "Steadiness", color: "#16A085" },
   C: { key: "C", name: "Conscientiousness", color: "#3B82F6" },
 };
+const DISC_LABEL: Record<string, string> = { D: "Dominance", I: "Influence", S: "Steadiness", C: "Conscientiousness" };
 const STAGE_ORDER = ["Applied", "Screening", "Technical", "Final round", "Offer", "Not selected"];
+
+type Rec = Record<string, unknown>;
+const asRec = (v: unknown): Rec => (v && typeof v === "object" ? (v as Rec) : {});
+const numOr = (v: unknown, d = 0) => (typeof v === "number" ? v : d);
+const strOr = (v: unknown, d = "") => (typeof v === "string" ? v : d);
 
 export function toCandidateData(
   pipelines: PortalPipeline[],
@@ -25,28 +30,32 @@ export function toCandidateData(
 ): CandidateData | null {
   if (!candidateId) return null;
 
-  let found: Record<string, unknown> | undefined;
+  let found: Rec | undefined;
   let pipe: PortalPipeline | undefined;
   for (const p of pipelines || []) {
     const c = (p.candidates || []).find((x) => {
-      const rec = x as Record<string, unknown>;
+      const rec = x as Rec;
       return (rec.candidateCode || rec.code || "") === candidateId || rec.candidateId === candidateId;
     });
-    if (c) { found = c as Record<string, unknown>; pipe = p; break; }
+    if (c) { found = c as Rec; pipe = p; break; }
   }
   if (!found || !pipe) return null;
   const c = found;
 
   const key = clientStageKey(c.stage as string | undefined);
   const realId = (c.candidateId as string) || (c.candidateCode as string) || (c.code as string);
-  const assess = (assessments || []).find((a) => {
-    const rec = a as Record<string, unknown>;
-    return rec.candidateId === realId
-      || (rec.candidateCode && rec.candidateCode === (c.candidateCode || c.code))
-      || (rec.candidateEmail && c.email && rec.candidateEmail === c.email);
-  });
-  const assessScore = (assess as Record<string, unknown> | undefined)?.nearworkScore;
-  const score = typeof assessScore === "number" ? assessScore : (typeof c.score === "number" ? (c.score as number) : 0);
+  const A = asRec(
+    (assessments || []).find((a) => {
+      const rec = a as Rec;
+      return rec.candidateId === realId
+        || (rec.candidateCode && rec.candidateCode === (c.candidateCode || c.code))
+        || (rec.candidateEmail && c.email && rec.candidateEmail === c.email);
+    }),
+  );
+
+  const score = typeof A.nearworkScore === "number"
+    ? A.nearworkScore
+    : (typeof A.overallScore === "number" ? A.overallScore : numOr(c.score, 0));
   const opening = (openings || []).find((o) => o.code === pipe!.code);
 
   const name = (c.name as string) || "Candidate";
@@ -67,13 +76,12 @@ export function toCandidateData(
 
   const salaryExp = (c.expectedSalary as string)
     || (typeof c.expectedSalaryAmount === "number" ? `$${(c.expectedSalaryAmount as number).toLocaleString()}` : undefined);
-
   const openingSkills = opening?.skills;
   const fitForRole = Array.isArray(openingSkills) && openingSkills.length
     ? { mustHave: openingSkills }
     : (typeof openingSkills === "string" && openingSkills ? { mustHave: [openingSkills] } : undefined);
 
-  return {
+  const base: CandidateData = {
     candidate: header,
     openingId: pipe.code,
     discColors: DISC_COLORS,
@@ -81,8 +89,85 @@ export function toCandidateData(
     stageOrder: STAGE_ORDER,
     snapshot: salaryExp ? { salaryExp } : undefined,
     fitForRole,
-    // Rich report not stored yet → clean pending state until the Nearwork Score /
-    // assessment data is built.
     completed: false,
   };
+
+  // ── Rich report (once the assessment PDF has been parsed) ──────────────────
+  const rawQuestions = Array.isArray(A.questions) ? (A.questions as Rec[]) : [];
+  const hasAssessment = rawQuestions.length > 0 || typeof A.overallScore === "number";
+  if (!hasAssessment) return base;
+
+  const questions = rawQuestions.map((q) => ({
+    n: numOr(q.n),
+    prompt: strOr(q.prompt),
+    competency: `Question ${numOr(q.n)}`,
+    score: numOr(q.score),
+    max: 5,
+    answer: strOr(q.answer),
+    feedback: strOr(q.feedback),
+    followUp: q.followUp && typeof q.followUp === "object"
+      ? { q: strOr((q.followUp as Rec).q), a: strOr((q.followUp as Rec).a) }
+      : undefined,
+  }));
+
+  const integ = asRec(A.integrity);
+  base.completed = A.status === "completed" || typeof A.overallScore === "number";
+  base.submittedMeta = { submitted: strOr(A.submitted), gradedBy: strOr(A.gradedBy, "Nearwork talent team") };
+  base.assessment = {
+    overall: numOr(A.overallScore),
+    passing: numOr(A.passingScore, 70),
+    status: A.result === "PASSED" ? "passed" : "failed",
+    integrity: {
+      risk: numOr(integ.risk),
+      tabSwitches: numOr(integ.tabSwitches),
+      copyPaste: numOr(integ.copyPaste),
+      focusLosses: numOr(integ.focusLosses),
+    },
+    summary: strOr(A.summary),
+    questions,
+  };
+
+  const eng = asRec(A.english);
+  if (eng.level || typeof eng.score === "number") {
+    base.english = {
+      level: strOr(eng.level, "B2") as "A1" | "A2" | "B1" | "B2" | "C1" | "C2",
+      score: numOr(eng.score),
+      summary: strOr(eng.summary),
+    };
+  }
+
+  const disc = asRec(A.disc);
+  if (disc.type || disc.profiles) {
+    const prof = asRec(disc.profiles);
+    const dp = (v: unknown) => {
+      const r = asRec(v);
+      return { D: numOr(r.D), I: numOr(r.I), S: numOr(r.S), C: numOr(r.C) };
+    };
+    const t = strOr(disc.type, "D");
+    base.disc = {
+      type: (t as "D" | "I" | "S" | "C"),
+      label: DISC_LABEL[t] || t,
+      classification: strOr(disc.classification),
+      headline: strOr(disc.headline),
+      narrative: strOr(disc.narrative),
+      profiles: { natural: dp(prof.natural), adapted: dp(prof.adapted), pressure: dp(prof.pressure) },
+    };
+  }
+
+  if (questions.length) {
+    base.radar = {
+      axes: questions.map((q) => `Q${q.n}`),
+      candidate: questions.map((q) => Math.round((q.score / 5) * 100)),
+      average: questions.map(() => 70),
+      cohortSize: 0,
+    };
+    const strong = questions.filter((q) => q.score >= 3.5);
+    const weak = questions.filter((q) => q.score > 0 && q.score <= 2.5);
+    base.highlights = {
+      strengths: strong.map((q) => ({ label: q.competency, detail: q.feedback.slice(0, 160) })),
+      watchOuts: weak.map((q) => ({ label: q.competency, detail: q.feedback.slice(0, 160) })),
+    };
+  }
+
+  return base;
 }
