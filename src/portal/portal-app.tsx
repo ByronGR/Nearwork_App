@@ -11,9 +11,11 @@ import { NW } from "./primitives";
 import { PortalComingSoon } from "./shell";
 import { OverviewScreen } from "./screens/overview";
 import { OpenRolesScreen } from "./screens/roles";
+import { PipelineScreen } from "./screens/pipeline";
 import { usePortalData } from "./use-portal-data";
 import { toPortalClient, toOverviewData } from "./map-overview";
 import { toRolesData } from "./map-roles";
+import { toPipelineData } from "./map-pipeline";
 import { LoginScreen, StaffOrgPicker } from "@/components/client-portal";
 import { isNearworkEmail } from "@/lib/firebase-client";
 import { useState } from "react";
@@ -39,7 +41,8 @@ function Centered({ children }: { children: React.ReactNode }) {
 export function PortalApp() {
   const { status, user, profile, org, pipelines, openings } = usePortalData();
   const [route, setRoute] = useState("overview");
-  const go = (id: string) => setRoute(id);
+  const [navArg, setNavArg] = useState<string | number | undefined>(undefined);
+  const go = (id: string, arg?: string | number) => { setRoute(id); setNavArg(arg); };
 
   // Staff = any @nearwork.co account. Use the login email (always present) so a
   // staff user-doc that happens not to store an email still resolves as staff.
@@ -79,6 +82,15 @@ export function PortalApp() {
     return (
       <div style={{ position: "fixed", inset: 0 }}>
         <OpenRolesScreen client={client} data={toRolesData(openings, pipelines)} onNav={go} />
+      </div>
+    );
+  }
+
+  // The kanban board for one role — reached by clicking a role in Open roles.
+  if (route === "kanban") {
+    return (
+      <div style={{ position: "fixed", inset: 0 }}>
+        <PipelineScreen client={client} data={toPipelineData(pipelines, openings, navArg != null ? String(navArg) : null)} onNav={go} />
       </div>
     );
   }
