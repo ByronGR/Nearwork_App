@@ -13,11 +13,13 @@ import { OverviewScreen } from "./screens/overview";
 import { OpenRolesScreen } from "./screens/roles";
 import { PipelineScreen } from "./screens/pipeline";
 import { CandidateDetailScreen } from "./screens/candidate";
+import { TeamScreen } from "./screens/team";
 import { usePortalData } from "./use-portal-data";
 import { toPortalClient, toOverviewData } from "./map-overview";
 import { toRolesData } from "./map-roles";
 import { toPipelineData } from "./map-pipeline";
 import { toCandidateData } from "./map-candidate";
+import { toTeamData } from "./map-team";
 import { LoginScreen, StaffOrgPicker } from "@/components/client-portal";
 import { isNearworkEmail } from "@/lib/firebase-client";
 import { useState } from "react";
@@ -25,7 +27,6 @@ import { useState } from "react";
 // Screens not yet ported from the design source. They render inside the real
 // shell with a short "porting now" note — temporary, replaced as each lands.
 const PENDING: Record<string, { title: string; desc: string; icon: string }> = {
-  team: { title: "Team", desc: "Porting this screen from your design now.", icon: "handshake" },
   spp: { title: "SPP", desc: "Porting this screen from your design now.", icon: "git-merge" },
   billing: { title: "Billing", desc: "Porting this screen from your design now.", icon: "wallet" },
   users: { title: "Users", desc: "Porting this screen from your design now.", icon: "users" },
@@ -41,7 +42,7 @@ function Centered({ children }: { children: React.ReactNode }) {
 }
 
 export function PortalApp() {
-  const { status, user, profile, org, pipelines, openings, assessments } = usePortalData();
+  const { status, user, profile, org, pipelines, openings, assessments, hires } = usePortalData();
   const [route, setRoute] = useState("overview");
   const [navArg, setNavArg] = useState<string | number | undefined>(undefined);
   // Remember which role's board we came from, so the candidate detail shows that
@@ -91,6 +92,14 @@ export function PortalApp() {
     return (
       <div style={{ position: "fixed", inset: 0 }}>
         <OpenRolesScreen client={client} data={toRolesData(openings, pipelines)} onNav={go} />
+      </div>
+    );
+  }
+
+  if (route === "team") {
+    return (
+      <div style={{ position: "fixed", inset: 0 }}>
+        <TeamScreen client={client} data={toTeamData(hires)} onNav={go} />
       </div>
     );
   }

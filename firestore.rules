@@ -281,6 +281,13 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
+    // Hires/placements (Admin writes these; the client portal Team screen reads
+    // its own org's). Same shape as hiredPlacements — org-scoped client read.
+    match /placements/{placementId} {
+      allow read: if isStaff() || sameOrg(resource.data);
+      allow create, update, delete: if isAdmin();
+    }
+
     match /payrollRuns/{runId} {
       allow read: if isStaff();
       allow create, update, delete: if isAdmin();

@@ -100,7 +100,7 @@ export function usePortalData(): PortalData {
     const unsubscribers = [
       subscribeOrgCollection<PortalOpening>("openings", org, setOpenings),
       subscribeOrgCollection<PortalPipeline>("pipelines", org, setPipelines),
-      subscribeOrgCollection<PortalHire>("clientAccountPeople", org, setHires),
+      subscribeOrgCollection<PortalHire>("placements", org, setHires),
       subscribeOrgCollection<PortalAssessment>("assessments", org, setAssessments),
     ];
     return () => unsubscribers.forEach((unsub) => unsub());
