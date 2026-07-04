@@ -12,10 +12,12 @@ import { PortalComingSoon } from "./shell";
 import { OverviewScreen } from "./screens/overview";
 import { OpenRolesScreen } from "./screens/roles";
 import { PipelineScreen } from "./screens/pipeline";
+import { CandidateDetailScreen } from "./screens/candidate";
 import { usePortalData } from "./use-portal-data";
 import { toPortalClient, toOverviewData } from "./map-overview";
 import { toRolesData } from "./map-roles";
 import { toPipelineData } from "./map-pipeline";
+import { toCandidateData } from "./map-candidate";
 import { LoginScreen, StaffOrgPicker } from "@/components/client-portal";
 import { isNearworkEmail } from "@/lib/firebase-client";
 import { useState } from "react";
@@ -39,7 +41,7 @@ function Centered({ children }: { children: React.ReactNode }) {
 }
 
 export function PortalApp() {
-  const { status, user, profile, org, pipelines, openings } = usePortalData();
+  const { status, user, profile, org, pipelines, openings, assessments } = usePortalData();
   const [route, setRoute] = useState("overview");
   const [navArg, setNavArg] = useState<string | number | undefined>(undefined);
   const go = (id: string, arg?: string | number) => { setRoute(id); setNavArg(arg); };
@@ -91,6 +93,23 @@ export function PortalApp() {
     return (
       <div style={{ position: "fixed", inset: 0 }}>
         <PipelineScreen client={client} data={toPipelineData(pipelines, openings, navArg != null ? String(navArg) : null)} onNav={go} />
+      </div>
+    );
+  }
+
+  // Candidate detail — reached by clicking a candidate on the board.
+  if (route === "candidate") {
+    const cdata = toCandidateData(pipelines, openings, assessments, navArg != null ? String(navArg) : null);
+    if (cdata) {
+      return (
+        <div style={{ position: "fixed", inset: 0 }}>
+          <CandidateDetailScreen client={client} data={cdata} onNav={go} />
+        </div>
+      );
+    }
+    return (
+      <div style={{ position: "fixed", inset: 0 }}>
+        <PortalComingSoon active="pipeline" title="Candidate not found" desc="This candidate is no longer in the pipeline. Head back to your roles." icon="user-x" onNav={go} client={client} />
       </div>
     );
   }

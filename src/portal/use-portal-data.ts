@@ -20,6 +20,7 @@ import {
   type PortalOpening,
   type PortalPipeline,
   type PortalHire,
+  type PortalAssessment,
 } from "@/lib/firebase-client";
 
 export type PortalDataStatus = "loading" | "signed-out" | "no-org" | "ready";
@@ -32,6 +33,7 @@ export type PortalData = {
   openings: PortalOpening[];
   pipelines: PortalPipeline[];
   hires: PortalHire[];
+  assessments: PortalAssessment[];
 };
 
 export function usePortalData(): PortalData {
@@ -41,6 +43,7 @@ export function usePortalData(): PortalData {
   const [openings, setOpenings] = useState<PortalOpening[]>([]);
   const [pipelines, setPipelines] = useState<PortalPipeline[]>([]);
   const [hires, setHires] = useState<PortalHire[]>([]);
+  const [assessments, setAssessments] = useState<PortalAssessment[]>([]);
   const [status, setStatus] = useState<PortalDataStatus>("loading");
 
   // Auth → profile → org.
@@ -54,6 +57,7 @@ export function usePortalData(): PortalData {
           setOpenings([]);
           setPipelines([]);
           setHires([]);
+          setAssessments([]);
           setStatus("signed-out");
           return;
         }
@@ -97,9 +101,10 @@ export function usePortalData(): PortalData {
       subscribeOrgCollection<PortalOpening>("openings", org, setOpenings),
       subscribeOrgCollection<PortalPipeline>("pipelines", org, setPipelines),
       subscribeOrgCollection<PortalHire>("clientAccountPeople", org, setHires),
+      subscribeOrgCollection<PortalAssessment>("assessments", org, setAssessments),
     ];
     return () => unsubscribers.forEach((unsub) => unsub());
   }, [org]);
 
-  return { status, user, profile, org, openings, pipelines, hires };
+  return { status, user, profile, org, openings, pipelines, hires, assessments };
 }
