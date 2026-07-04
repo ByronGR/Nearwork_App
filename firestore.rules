@@ -185,6 +185,17 @@ service cloud.firestore {
         );
     }
 
+    // Staff team invites (Admin "Team" page). A super admin mints an invite here;
+    // the Admin "Team" page lists them (staff read). Acceptance — reading the invite
+    // by token, creating the account, and marking it accepted — happens server-side
+    // via the Admin SDK (which bypasses these rules), so no public/unauthenticated
+    // access to this collection is needed or granted.
+    match /staffInvites/{inviteId} {
+      allow read: if isStaff();
+      allow create, delete: if isAuth()
+        && (isHardcodedSuperAdminEmail() || role() == 'super_admin');
+    }
+
     match /users/{userId} {
       allow read: if isStaff()
         || (isAuth() && request.auth.uid == userId)
