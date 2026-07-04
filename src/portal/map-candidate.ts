@@ -169,10 +169,20 @@ export function toCandidateData(
   }
 
   if (questions.length) {
+    // Six universal competency axes — the same on every role. English + Assessment
+    // come straight from their scores; the four soft skills are derived from the
+    // question scores (default fixed-order mapping until a per-question competency
+    // mapping is provided).
+    const engScore = base.english?.score ?? 0;
+    const assessScore = base.assessment?.overall ?? 0;
+    const qpct = questions.map((q) => Math.round((q.score / 5) * 100));
+    const avgQ = qpct.length ? Math.round(qpct.reduce((a, b) => a + b, 0) / qpct.length) : assessScore;
+    const at = (i: number) => (qpct[i] != null ? qpct[i] : avgQ);
+    const communication = qpct.length > 4 ? Math.round((at(0) + at(4)) / 2) : at(0);
     base.radar = {
-      axes: questions.map((q) => q.competency.split(/\s+/).slice(0, 2).join(" ")),
-      candidate: questions.map((q) => Math.round((q.score / 5) * 100)),
-      average: questions.map(() => 70),
+      axes: ["Communication", "Problem solving", "Adaptability", "Leadership", "English", "Assessment"],
+      candidate: [communication, at(1), at(2), at(3), engScore, assessScore],
+      average: [70, 70, 70, 70, 70, 70],
       cohortSize: 0,
     };
     const strong = questions.filter((q) => q.score >= 3.5);
