@@ -144,37 +144,11 @@ function KanbanCard({ c, dense, compareMode, selected, onToggleSelect, onOpen }:
         <CandidateAvatar c={c} size={32} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 13, fontWeight: 600, color: NW.black, letterSpacing: '-0.01em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</div>
-          <div style={{ fontSize: 10.5, color: NW.gray500, marginTop: 1 }}>{c.location}</div>
         </div>
-      </div>
-      <div style={{ fontSize: 11.5, color: NW.gray700, lineHeight: 1.35 }}>{c.role}</div>
-      {/* Score bar */}
-      <div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-          <span style={{ fontSize: 10, color: NW.gray500, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600 }}>Match</span>
-          <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: NW.black, fontWeight: 500 }}>{c.score}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+          {urgent && <span title="Awaiting your review" style={{ width: 6, height: 6, borderRadius: '50%', background: NW.rose500 }} />}
+          <span style={{ fontFamily: 'Poppins, sans-serif', fontVariantNumeric: 'tabular-nums', fontSize: 15, fontWeight: 700, color: NW.black, letterSpacing: '-0.02em' }}>{c.score}</span>
         </div>
-        <div style={{ height: 3, background: NW.gray100, borderRadius: 2, overflow: 'hidden' }}>
-          <div style={{ width: `${c.score}%`, height: '100%', background: c.score >= 90 ? NW.teal600 : c.score >= 80 ? NW.teal500 : NW.yellow500 }} />
-        </div>
-      </div>
-      {/* Footer: tags + waiting */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-        {c.match.slice(0, 2).map(t => (
-          <span key={t} style={{ fontSize: 10, padding: '2px 7px', borderRadius: 4, background: NW.gray50, color: NW.gray600, border: `1px solid ${NW.gray100}` }}>{t}</span>
-        ))}
-        {c.match.length > 2 && <span style={{ fontSize: 10, color: NW.gray400 }}>+{c.match.length - 2}</span>}
-        <span style={{ flex: 1 }} />
-        {urgent && (
-          <span style={{
-            display: 'inline-flex', alignItems: 'center', gap: 3,
-            fontSize: 10, fontWeight: 600, padding: '2px 6px', borderRadius: 999,
-            background: NW.rose50, color: NW.rose600,
-          }}>
-            <span style={{ width: 4, height: 4, background: NW.rose500, borderRadius: '50%' }} />
-            {c.awaitingDays}d
-          </span>
-        )}
       </div>
     </div>
   );
@@ -206,16 +180,12 @@ function KanbanColumn({ stage, candidates, dense, compareMode, selectedIds, onTo
         borderBottom: `1px solid ${NW.gray100}`,
       }}>
         <span style={{ width: 8, height: 8, borderRadius: 2, background: stage.color, flexShrink: 0 }} />
-        <span style={{ fontSize: 12, fontWeight: 600, color: NW.black, letterSpacing: '-0.01em' }}>{stage.key}</span>
+        <span style={{ fontSize: 12, fontWeight: 600, color: NW.black, letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>{stage.key}</span>
         <span style={{
           background: NW.white, border: `1px solid ${NW.gray100}`,
-          color: NW.gray600, fontFamily: "'JetBrains Mono', monospace",
-          fontSize: 10.5, fontWeight: 500, padding: '1px 7px', borderRadius: 999,
+          color: NW.gray600, fontFamily: 'Poppins, sans-serif', fontVariantNumeric: 'tabular-nums',
+          fontSize: 10.5, fontWeight: 600, padding: '1px 7px', borderRadius: 999,
         }}>{candidates.length}</span>
-        <span style={{ flex: 1 }} />
-        <button style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: NW.gray400, padding: 4, display: 'flex' }}>
-          <Icon name="more-horizontal" size={14} color={NW.gray400} />
-        </button>
       </div>
       {/* Cards */}
       <div style={{
@@ -284,7 +254,7 @@ function PipelineListRow({ c, stage, dense, last, compareMode, selected, onToggl
         <div style={{ flex: 1, height: 5, background: NW.gray100, borderRadius: 3, overflow: 'hidden' }}>
           <div style={{ width: `${c.score}%`, height: '100%', background: c.score >= 90 ? NW.teal600 : c.score >= 80 ? NW.teal500 : NW.yellow500 }} />
         </div>
-        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12, color: NW.black, minWidth: 22, textAlign: 'right' }}>{c.score}</span>
+        <span style={{ fontFamily: 'Poppins, sans-serif', fontVariantNumeric: 'tabular-nums', fontSize: 12, color: NW.black, minWidth: 22, textAlign: 'right' }}>{c.score}</span>
       </div>
       <div style={{ textAlign: 'right' }}>
         {c.awaitingDays === 0
@@ -466,7 +436,7 @@ function CompareModal({ candidates, onClose }: { candidates: PipelineCand[]; onC
                 <div style={{ flex: 1, height: 5, background: NW.gray100, borderRadius: 3, overflow: 'hidden' }}>
                   <div style={{ width: `${o.x.english.score}%`, height: '100%', background: NW.teal500 }} />
                 </div>
-                <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: NW.gray600 }}>{o.x.english.score}</span>
+                <span style={{ fontFamily: 'Poppins, sans-serif', fontVariantNumeric: 'tabular-nums', fontSize: 11, color: NW.gray600 }}>{o.x.english.score}</span>
               </div>
             </div>
           )} />
