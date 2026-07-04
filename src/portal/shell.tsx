@@ -45,12 +45,13 @@ const NAV_SECTIONS: { label: string; items: { id: string; label: string; icon: s
 
 const DEFAULT_AM: AccountManager = { name: "Jesus Buitrago", email: "jesus.buitrago@nearwork.co", initials: "JB" };
 
-function NavItem({ it, active, tight, onClick, clickable }: {
+function NavItem({ it, active, tight, onClick, clickable, collapsed }: {
   it: { id: string; label: string; icon: string };
   active: boolean;
   tight: boolean;
   onClick: () => void;
   clickable: boolean;
+  collapsed?: boolean;
 }) {
   const [hover, setHover] = useState(false);
   return (
@@ -58,9 +59,10 @@ function NavItem({ it, active, tight, onClick, clickable }: {
       onClick={onClick}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
+      title={collapsed ? it.label : undefined}
       style={{
-        display: "flex", alignItems: "center", gap: 10,
-        padding: tight ? "7px 10px" : "9px 10px",
+        display: "flex", alignItems: "center", justifyContent: collapsed ? "center" : "flex-start", gap: 10,
+        padding: collapsed ? "9px 0" : tight ? "7px 10px" : "9px 10px",
         borderRadius: 8, fontSize: 13, fontWeight: active ? 600 : 500,
         color: active ? NW.black : NW.gray600,
         background: active ? NW.gray50 : hover ? NW.offWhite : "transparent",
@@ -68,12 +70,14 @@ function NavItem({ it, active, tight, onClick, clickable }: {
         transition: "background 120ms, color 120ms",
       }}
     >
-      {active && <span style={{ position: "absolute", left: -18, top: 8, bottom: 8, width: 3, background: NW.teal500, borderRadius: 2 }} />}
+      {active && !collapsed && <span style={{ position: "absolute", left: -18, top: 8, bottom: 8, width: 3, background: NW.teal500, borderRadius: 2 }} />}
       <Icon name={it.icon} size={16} color={active ? NW.teal600 : hover ? NW.gray700 : NW.gray500} strokeWidth={1.75} />
-      <span>{it.label}</span>
+      {!collapsed && <span>{it.label}</span>}
     </div>
   );
 }
+
+const NAV_COLLAPSE_KEY = "nw_portal_nav_collapsed";
 
 export function PortalSidebar({ active = "overview", density = "regular", onNav, client }: {
   active?: string;
@@ -84,58 +88,112 @@ export function PortalSidebar({ active = "overview", density = "regular", onNav,
   const tight = density === "compact";
   const go = (id: string) => onNav && onNav(id);
   const am = client.accountManager ?? DEFAULT_AM;
-  return (
-    <aside style={{ width: 240, minWidth: 240, background: NW.white, borderRight: `1px solid ${NW.gray100}`, display: "flex", flexDirection: "column", height: "100%", padding: tight ? "20px 14px" : "24px 18px" }}>
-      {/* Logo / workspace */}
-      <div onClick={() => go("overview")} style={{ display: "flex", alignItems: "center", gap: 12, padding: "4px 8px 20px", cursor: onNav ? "pointer" : "default" }}>
-        <div style={{ width: 36, height: 36, borderRadius: 10, background: NW.black, color: NW.white, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 16, letterSpacing: "-0.04em", position: "relative", flexShrink: 0 }}>
-          N
-          <div style={{ position: "absolute", bottom: 6, left: 7, right: 14, height: 2, background: NW.teal500, borderRadius: 1 }} />
-        </div>
-        <div style={{ minWidth: 0 }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: NW.black, letterSpacing: "-0.01em", lineHeight: 1.2 }}>{client.company}</div>
-          <div style={{ fontSize: 11, color: NW.gray500, lineHeight: 1.2, marginTop: 1 }}>Client portal</div>
-        </div>
-      </div>
 
-      {/* Nav */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: tight ? 10 : 14, marginTop: 4 }}>
-        {NAV_SECTIONS.map((sec) => (
-          <div key={sec.label}>
-            <div style={{ fontSize: 10, fontWeight: 600, color: NW.gray400, letterSpacing: "0.12em", textTransform: "uppercase", padding: "0 10px", marginBottom: 6 }}>{sec.label}</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
-              {sec.items.map((it) => (
-                <NavItem key={it.id} it={it} active={it.id === active} tight={tight} onClick={() => go(it.id)} clickable={!!onNav} />
-              ))}
+  // Collapse is a per-user preference (persisted). When collapsed, the sidebar
+  // shrinks to an icon rail so the main content (e.g. the pipeline) gets more
+  // room; hovering the rail temporarily expands it as an overlay so it can be
+  // read/clicked without giving up the space.
+  const [collapsed, setCollapsed] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    try { return localStorage.getItem(NAV_COLLAPSE_KEY) === "1"; } catch { return false; }
+  });
+  const [hover, setHover] = useState(false);
+  const expanded = !collapsed || hover;
+
+  function toggle() {
+    setCollapsed((c) => {
+      const next = !c;
+      try { localStorage.setItem(NAV_COLLAPSE_KEY, next ? "1" : "0"); } catch { /* ignore */ }
+      return next;
+    });
+    setHover(false);
+  }
+
+  const RAIL = 68;
+  const FULL = 240;
+
+  return (
+    <div style={{ width: collapsed ? RAIL : FULL, minWidth: collapsed ? RAIL : FULL, height: "100%", position: "relative", flexShrink: 0, transition: "width 160ms ease" }}>
+      <aside
+        onMouseEnter={() => { if (collapsed) setHover(true); }}
+        onMouseLeave={() => setHover(false)}
+        style={{
+          position: collapsed ? "absolute" : "relative",
+          top: 0, left: 0, bottom: 0,
+          width: expanded ? FULL : RAIL,
+          zIndex: collapsed ? 40 : undefined,
+          background: NW.white, borderRight: `1px solid ${NW.gray100}`,
+          display: "flex", flexDirection: "column", height: "100%",
+          padding: expanded ? (tight ? "20px 14px" : "24px 18px") : "24px 12px",
+          boxShadow: collapsed && hover ? "10px 0 30px rgba(0,0,0,0.10)" : "none",
+          transition: "width 160ms ease, box-shadow 160ms ease, padding 160ms ease",
+          overflow: "hidden",
+        }}
+      >
+        {/* Logo / workspace + collapse toggle */}
+        <div style={{ display: "flex", alignItems: "center", gap: 12, padding: expanded ? "4px 8px 20px" : "4px 0 20px", justifyContent: expanded ? "flex-start" : "center" }}>
+          <div onClick={() => go("overview")} style={{ width: 36, height: 36, borderRadius: 10, background: NW.black, color: NW.white, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 16, letterSpacing: "-0.04em", position: "relative", flexShrink: 0, cursor: onNav ? "pointer" : "default" }}>
+            N
+            <div style={{ position: "absolute", bottom: 6, left: 7, right: 14, height: 2, background: NW.teal500, borderRadius: 1 }} />
+          </div>
+          {expanded && (
+            <div onClick={() => go("overview")} style={{ minWidth: 0, flex: 1, cursor: onNav ? "pointer" : "default" }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: NW.black, letterSpacing: "-0.01em", lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{client.company}</div>
+              <div style={{ fontSize: 11, color: NW.gray500, lineHeight: 1.2, marginTop: 1 }}>Client portal</div>
+            </div>
+          )}
+          {expanded && (
+            <button onClick={toggle} title={collapsed ? "Keep menu open" : "Collapse menu"} style={{ background: "transparent", border: "none", cursor: "pointer", padding: 4, display: "flex", flexShrink: 0, borderRadius: 6 }}>
+              <Icon name={collapsed ? "chevrons-right" : "chevrons-left"} size={16} color={NW.gray400} />
+            </button>
+          )}
+        </div>
+
+        {/* Nav */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: tight ? 10 : 14, marginTop: 4 }}>
+          {NAV_SECTIONS.map((sec) => (
+            <div key={sec.label}>
+              {expanded && <div style={{ fontSize: 10, fontWeight: 600, color: NW.gray400, letterSpacing: "0.12em", textTransform: "uppercase", padding: "0 10px", marginBottom: 6 }}>{sec.label}</div>}
+              <div style={{ display: "flex", flexDirection: "column", gap: expanded ? 1 : 4 }}>
+                {sec.items.map((it) => (
+                  <NavItem key={it.id} it={it} active={it.id === active} tight={tight} onClick={() => go(it.id)} clickable={!!onNav} collapsed={!expanded} />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Account manager (hidden in the icon rail) */}
+        {expanded && (
+          <div style={{ background: NW.gray50, border: `1px solid ${NW.gray100}`, borderRadius: 12, padding: "11px 12px", marginTop: 10 }}>
+            <div style={{ fontSize: 9.5, fontWeight: 600, color: NW.gray400, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 7 }}>Account manager</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+              <Avatar initials={am.initials} size={28} bg={NW.black} />
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: NW.black, lineHeight: 1.2 }}>{am.name}</div>
+                <div style={{ fontSize: 10, color: NW.gray500, lineHeight: 1.25, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{am.email}</div>
+              </div>
             </div>
           </div>
-        ))}
-      </div>
+        )}
 
-      {/* Account manager */}
-      <div style={{ background: NW.gray50, border: `1px solid ${NW.gray100}`, borderRadius: 12, padding: "11px 12px", marginTop: 10 }}>
-        <div style={{ fontSize: 9.5, fontWeight: 600, color: NW.gray400, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 7 }}>Account manager</div>
-        <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-          <Avatar initials={am.initials} size={28} bg={NW.black} />
-          <div style={{ minWidth: 0, flex: 1 }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: NW.black, lineHeight: 1.2 }}>{am.name}</div>
-            <div style={{ fontSize: 10, color: NW.gray500, lineHeight: 1.25, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{am.email}</div>
-          </div>
+        {/* User */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: expanded ? "flex-start" : "center", gap: 10, padding: expanded ? "12px 10px" : "12px 0", marginTop: 8, borderTop: `1px solid ${NW.gray100}` }}>
+          <Avatar initials={client.user.initials} size={32} bg={NW.teal500} />
+          {expanded && (
+            <>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: NW.black, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{client.user.name}</div>
+                <div style={{ fontSize: 10, color: NW.gray500 }}>{client.user.role}</div>
+              </div>
+              <button onClick={() => go("logout")} style={{ background: "transparent", border: "none", cursor: "pointer", padding: 2, display: "flex" }} title="Sign out">
+                <Icon name="log-out" size={14} color={NW.gray400} />
+              </button>
+            </>
+          )}
         </div>
-      </div>
-
-      {/* User */}
-      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 10px", marginTop: 8, borderTop: `1px solid ${NW.gray100}` }}>
-        <Avatar initials={client.user.initials} size={32} bg={NW.teal500} />
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: NW.black, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{client.user.name}</div>
-          <div style={{ fontSize: 10, color: NW.gray500 }}>{client.user.role}</div>
-        </div>
-        <button onClick={() => go("logout")} style={{ background: "transparent", border: "none", cursor: "pointer", padding: 2, display: "flex" }} title="Sign out">
-          <Icon name="log-out" size={14} color={NW.gray400} />
-        </button>
-      </div>
-    </aside>
+      </aside>
+    </div>
   );
 }
 
