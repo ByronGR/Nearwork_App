@@ -592,6 +592,7 @@ export async function getClientUser(user: User): Promise<ClientUser | null> {
       || memberships[0];
     return {
       ...directProfile,
+      email: directProfile.email || email,
       orgId: directProfile.activeOrgId || directProfile.orgId || directProfile.organizationId || primaryMembership?.orgId,
       orgName: directProfile.orgName || primaryMembership?.orgName,
       orgIds: uniqueOrgIds,

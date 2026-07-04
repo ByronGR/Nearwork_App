@@ -36,9 +36,13 @@ function Centered({ children }: { children: React.ReactNode }) {
 }
 
 export function PortalApp() {
-  const { status, profile, org, pipelines, openings } = usePortalData();
+  const { status, user, profile, org, pipelines, openings } = usePortalData();
   const [route, setRoute] = useState("overview");
   const go = (id: string) => setRoute(id);
+
+  // Staff = any @nearwork.co account. Use the login email (always present) so a
+  // staff user-doc that happens not to store an email still resolves as staff.
+  const isStaff = isNearworkEmail(user?.email || profile?.email);
 
   if (status === "loading") return <Centered>Loading your portal…</Centered>;
 
@@ -47,7 +51,7 @@ export function PortalApp() {
 
   // Staff have no fixed company — reuse the existing picker (it saves the choice).
   if (status === "no-org") {
-    if (profile && isNearworkEmail(profile.email)) {
+    if (profile && isStaff) {
       return <StaffOrgPicker profile={profile} onSelect={() => { if (typeof window !== "undefined") window.location.reload(); }} />;
     }
     return (
