@@ -557,8 +557,7 @@ function DiscSummaryPanel({ disc, discColor }: { disc: CandidateDisc; discColor:
           <div style={{ fontSize: 12, color: NW.gray500, marginTop: 2 }}>{disc.label} ({disc.type})</div>
         </div>
       </div>
-      <p style={{ fontSize: 13, color: NW.gray700, lineHeight: 1.6, margin: '0 0 6px', fontWeight: 500 }}>{disc.headline}</p>
-      <p style={{ fontSize: 12.5, color: NW.gray600, lineHeight: 1.6, margin: 0 }}>{disc.narrative}</p>
+      <p style={{ fontSize: 12.5, color: NW.gray600, lineHeight: 1.6, margin: 0 }}>{disc.headline}</p>
     </CardPanel>
   );
 }
@@ -808,6 +807,12 @@ export function CandidateDetailScreen({ client, data, density = "regular", onNav
                     <DiscProfileCard title="Adapted" note="Style flexed at work" values={disc.profiles.adapted} primary={disc.type} discDims={data.discDims} />
                     <DiscProfileCard title="Under pressure" note="Default when stressed" values={disc.profiles.pressure} primary={disc.type} discDims={data.discDims} />
                   </div>
+                  {disc.narrative && (
+                    <div style={{ marginTop: 18, paddingTop: 18, borderTop: `1px solid ${NW.gray100}` }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: NW.gray400, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 8 }}>What this means</div>
+                      <p style={{ fontSize: 13, color: NW.gray700, lineHeight: 1.65, margin: 0 }}>{disc.narrative}</p>
+                    </div>
+                  )}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 16, padding: '10px 13px', background: NW.gray50, border: `1px solid ${NW.gray100}`, borderRadius: 11 }}>
                     <Icon name="info" size={13} color={NW.gray400} />
                     <span style={{ fontSize: 11.5, color: NW.gray500, lineHeight: 1.45 }}>Psychometric results are interpretive aids. Hiring decisions should not rely solely on a single instrument.</span>

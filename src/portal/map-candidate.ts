@@ -114,7 +114,7 @@ export function toCandidateData(
   const questions = rawQuestions.map((q) => ({
     n: numOr(q.n),
     prompt: strOr(q.prompt),
-    competency: `Question ${numOr(q.n)}`,
+    competency: strOr(q.competency) || `Question ${numOr(q.n)}`,
     score: numOr(q.score),
     max: 5,
     answer: strOr(q.answer),
@@ -170,7 +170,7 @@ export function toCandidateData(
 
   if (questions.length) {
     base.radar = {
-      axes: questions.map((q) => `Q${q.n}`),
+      axes: questions.map((q) => q.competency.split(/\s+/).slice(0, 2).join(" ")),
       candidate: questions.map((q) => Math.round((q.score / 5) * 100)),
       average: questions.map(() => 70),
       cohortSize: 0,
