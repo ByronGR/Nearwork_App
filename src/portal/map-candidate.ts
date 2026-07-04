@@ -27,26 +27,40 @@ export function toCandidateData(
   openings: PortalOpening[],
   assessments: PortalAssessment[],
   candidateId?: string | null,
+  pipelineCode?: string | null,
 ): CandidateData | null {
   if (!candidateId) return null;
 
-  let found: Rec | undefined;
-  let pipe: PortalPipeline | undefined;
-  for (const p of pipelines || []) {
-    const c = (p.candidates || []).find((x) => {
+  const matchCand = (p: PortalPipeline): Rec | undefined =>
+    (p.candidates || []).find((x) => {
       const rec = x as Rec;
       return (rec.candidateCode || rec.code || "") === candidateId || rec.candidateId === candidateId;
-    });
-    if (c) { found = c as Rec; pipe = p; break; }
+    }) as Rec | undefined;
+
+  let found: Rec | undefined;
+  let pipe: PortalPipeline | undefined;
+  // Prefer the pipeline the candidate was opened from (so we show that role's assessment).
+  if (pipelineCode) {
+    const pp = (pipelines || []).find((p) => p.code === pipelineCode);
+    const c = pp ? matchCand(pp) : undefined;
+    if (pp && c) { found = c; pipe = pp; }
+  }
+  if (!found) {
+    for (const p of pipelines || []) {
+      const c = matchCand(p);
+      if (c) { found = c; pipe = p; break; }
+    }
   }
   if (!found || !pipe) return null;
   const c = found;
 
   const key = clientStageKey(c.stage as string | undefined);
   const realId = (c.candidateId as string) || (c.candidateCode as string) || (c.code as string);
+  // Assessments are per (candidate, role/pipeline) — match this role's result only.
   const A = asRec(
     (assessments || []).find((a) => {
       const rec = a as Rec;
+      if (rec.pipelineCode !== pipe!.code) return false;
       return rec.candidateId === realId
         || (rec.candidateCode && rec.candidateCode === (c.candidateCode || c.code))
         || (rec.candidateEmail && c.email && rec.candidateEmail === c.email);

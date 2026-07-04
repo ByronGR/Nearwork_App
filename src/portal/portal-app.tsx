@@ -44,7 +44,14 @@ export function PortalApp() {
   const { status, user, profile, org, pipelines, openings, assessments } = usePortalData();
   const [route, setRoute] = useState("overview");
   const [navArg, setNavArg] = useState<string | number | undefined>(undefined);
-  const go = (id: string, arg?: string | number) => { setRoute(id); setNavArg(arg); };
+  // Remember which role's board we came from, so the candidate detail shows that
+  // role's assessment (a candidate can carry a different score per role).
+  const [pipelineCtx, setPipelineCtx] = useState<string | undefined>(undefined);
+  const go = (id: string, arg?: string | number) => {
+    setRoute(id);
+    setNavArg(arg);
+    if (id === "kanban") setPipelineCtx(arg != null ? String(arg) : undefined);
+  };
 
   // Staff = any @nearwork.co account. Use the login email (always present) so a
   // staff user-doc that happens not to store an email still resolves as staff.
@@ -99,7 +106,7 @@ export function PortalApp() {
 
   // Candidate detail — reached by clicking a candidate on the board.
   if (route === "candidate") {
-    const cdata = toCandidateData(pipelines, openings, assessments, navArg != null ? String(navArg) : null);
+    const cdata = toCandidateData(pipelines, openings, assessments, navArg != null ? String(navArg) : null, pipelineCtx);
     if (cdata) {
       return (
         <div style={{ position: "fixed", inset: 0 }}>
