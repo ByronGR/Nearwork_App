@@ -8,7 +8,7 @@
 
 import React from "react";
 import { NW } from "./primitives";
-import { PortalComingSoon } from "./shell";
+import { PortalComingSoon, allowedNav } from "./shell";
 import { OverviewScreen } from "./screens/overview";
 import { OpenRolesScreen } from "./screens/roles";
 import { PipelineScreen } from "./screens/pipeline";
@@ -91,10 +91,15 @@ export function PortalApp() {
 
   const client = toPortalClient(profile, org);
 
-  // Viewers are read-only and limited to Overview / Pipeline / Team. Any other
-  // route (including deep links) falls back to Overview.
-  const VIEWER_ROUTES = ["overview", "pipeline", "kanban", "candidate", "team", "hire"];
-  if (client.access === "viewer" && !VIEWER_ROUTES.includes(route)) {
+  // Enforce role access on the route (belt-and-suspenders with the nav filter).
+  // Deep routes map to their parent menu item; anything not allowed for this
+  // access level falls back to Overview.
+  const ROUTE_PARENT: Record<string, string> = {
+    kanban: "pipeline", candidate: "pipeline", kickoff: "pipeline",
+    hire: "team", "team-detail": "team", "spp-client": "spp",
+  };
+  const topRoute = ROUTE_PARENT[route] || route;
+  if (route !== "overview" && !allowedNav(client.access, topRoute)) {
     return (
       <div style={{ position: "fixed", inset: 0 }}>
         <OverviewScreen client={client} data={toOverviewData(pipelines, openings, profile)} onNav={go} />

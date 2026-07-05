@@ -14,12 +14,16 @@ export type AccountManager = { name: string; email: string; initials: string };
 export type PortalAccess = "admin" | "member" | "viewer";
 export type PortalClient = { company: string; user: PortalUser; accountManager?: AccountManager; access?: PortalAccess };
 
-// Which nav items each access level may see. A viewer is read-only and only sees
-// the pipeline + their team.
+// Which nav items each access level may see.
+//  • viewer  — read-only: Overview, Pipeline, Team
+//  • member  — the above + their own Settings
+//  • admin   — everything (billing, user management, SPP)
 const VIEWER_NAV = ["overview", "pipeline", "team"];
+const MEMBER_NAV = ["overview", "pipeline", "team", "settings"];
 export function allowedNav(access: PortalAccess | undefined, id: string): boolean {
   if (access === "viewer") return VIEWER_NAV.includes(id);
-  return true;
+  if (access === "member") return MEMBER_NAV.includes(id);
+  return true; // admin (and staff)
 }
 export type PortalActivity = {
   id: string | number;
