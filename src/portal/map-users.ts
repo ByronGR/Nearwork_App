@@ -14,8 +14,10 @@ const cap = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 // email local part (e.g. "john.doe@x.com" → "John Doe"). Never the raw email —
 // otherwise the row would show the email twice (as the name and as the email).
 function displayName(u: Rec): string {
+  // Ignore a "name" that is actually an email (some records store the email in
+  // the name field) — otherwise the row shows the email as both name and email.
   const explicit = str(u.name) || str(u.displayName);
-  if (explicit) return explicit;
+  if (explicit && !explicit.includes("@")) return explicit;
   const combined = [str(u.firstName), str(u.lastName)].filter(Boolean).join(" ");
   if (combined) return combined;
   const local = str(u.email).split("@")[0];
@@ -51,6 +53,12 @@ export function toUsersData(org: Organization | null, currentEmail?: string): Us
   const users: PortalUserRow[] = list.map((u, i) => {
     const name = displayName(u);
     const email = str(u.email);
+    const isYou = currentEmail ? email.toLowerCase() === currentEmail.toLowerCase() : false;
+    // You're viewing the portal, so you're active by definition — never show
+    // yourself (or anyone who's joined) as still "invited".
+    const rawStatus = str(u.status).toLowerCase();
+    const joined = !!(u.uid || u.joinedAt || u.lastActive);
+    const status: "invited" | "active" = (isYou || joined) ? "active" : (rawStatus === "invited" ? "invited" : "active");
     return {
       id: str(u.uid) || str(u.id) || email || String(i),
       name,
@@ -58,9 +66,9 @@ export function toUsersData(org: Organization | null, currentEmail?: string): Us
       initials: initialsFor(u, name),
       avatarBg: avatarColor(email || name),
       role: mapRole(str(u.role) || str(u.portalRole)),
-      status: (str(u.status) === "invited" ? "invited" : "active"),
+      status,
       lastActive: str(u.lastActive),
-      you: currentEmail ? email.toLowerCase() === currentEmail.toLowerCase() : false,
+      you: isYou,
     };
   });
   return { users, roles: ROLES };
