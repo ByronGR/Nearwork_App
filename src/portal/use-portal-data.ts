@@ -22,6 +22,7 @@ import {
   type PortalHire,
   type PortalAssessment,
   type PortalNote,
+  type PortalRequest,
   type TimeOffRequest,
 } from "@/lib/firebase-client";
 
@@ -39,6 +40,7 @@ export type PortalData = {
   hires: PortalHire[];
   assessments: PortalAssessment[];
   notes: PortalNote[];
+  requests: PortalRequest[];
   timeOff: TimeOffRequest[];
   reviews: Row[];
   billing: Row[];
@@ -53,6 +55,7 @@ export function usePortalData(): PortalData {
   const [hires, setHires] = useState<PortalHire[]>([]);
   const [assessments, setAssessments] = useState<PortalAssessment[]>([]);
   const [notes, setNotes] = useState<PortalNote[]>([]);
+  const [requests, setRequests] = useState<PortalRequest[]>([]);
   const [timeOff, setTimeOff] = useState<TimeOffRequest[]>([]);
   const [reviews, setReviews] = useState<Row[]>([]);
   const [billing, setBilling] = useState<Row[]>([]);
@@ -71,6 +74,7 @@ export function usePortalData(): PortalData {
           setHires([]);
           setAssessments([]);
           setNotes([]);
+          setRequests([]);
           setTimeOff([]);
           setReviews([]);
           setBilling([]);
@@ -119,6 +123,7 @@ export function usePortalData(): PortalData {
       subscribeOrgCollection<PortalHire>("placements", org, setHires),
       subscribeOrgCollection<PortalAssessment>("assessments", org, setAssessments),
       subscribeOrgCollection<PortalNote>("candidateNotes", org, setNotes),
+      subscribeOrgCollection<PortalRequest>("pipelineRequests", org, setRequests),
       subscribeOrgCollection<TimeOffRequest>("timeOffRequests", org, setTimeOff),
       subscribeOrgCollection<Row>("performanceReviews", org, setReviews),
       subscribeOrgCollection<Row>("partnerBilling", org, setBilling),
@@ -126,5 +131,5 @@ export function usePortalData(): PortalData {
     return () => unsubscribers.forEach((unsub) => unsub());
   }, [org]);
 
-  return { status, user, profile, org, openings, pipelines, hires, assessments, notes, timeOff, reviews, billing };
+  return { status, user, profile, org, openings, pipelines, hires, assessments, notes, requests, timeOff, reviews, billing };
 }

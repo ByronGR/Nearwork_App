@@ -144,6 +144,16 @@ export type CandidateNote = {
   internal?: boolean;  // your team only — not shared with Nearwork
 };
 
+// A request the client has raised on this candidate (awaiting Nearwork).
+export type CandidateRequest = {
+  type: 'advance' | 'hire' | 'reject' | 'interview';
+  toStage?: string;
+  reason?: string;
+  status: string; // pending | handled | dismissed
+  date: string;
+  by?: string;
+};
+
 export type CandidateData = {
   // ── ALWAYS PRESENT (header) ──────────────────────────────────────────────
   candidate: CandidateHeader;
@@ -154,6 +164,7 @@ export type CandidateData = {
   snapshot?: CandidateSnapshot; // partial context (safe defaults / "—")
   fitForRole?: CandidateFitForRole; // omitted when the role has no brief
   notes?: CandidateNote[]; // additional persisted notes (recruiter note seeds from candidate.note)
+  request?: CandidateRequest; // the client's latest pending request on this candidate
 
   // ── OPTIONAL / RICH (assessment) — absent → pending state ────────────────
   // `completed` false (or `assessment` undefined) renders the pending empty state.
@@ -658,17 +669,25 @@ function AssessmentPending({ c }: { c: CandidateHeader }) {
 }
 
 // ── Screen ───────────────────────────────────────────────────────────────────
-export function CandidateDetailScreen({ client, data, density = "regular", onNav, onAddNote }: {
+export function CandidateDetailScreen({ client, data, density = "regular", onNav, onAddNote, onRequest }: {
   client: PortalClient;
   data: CandidateData;
   density?: "regular" | "compact";
   onNav?: NavHandler;
   onAddNote?: (text: string, scope: 'client_visible' | 'client_internal') => Promise<void> | void;
+  onRequest?: (type: 'advance' | 'hire' | 'reject' | 'interview', opts?: { toStage?: string; reason?: string; fromStage?: string }) => Promise<void> | void;
 }) {
   const dense = density === 'compact';
   const pad = dense ? 28 : 40;
   const c = data.candidate;
-  const [advanced, setAdvanced] = useState(false);
+  // The client can't move a candidate — it asks Nearwork to advance / hire /
+  // reject. `justRequested` is the optimistic view right after submitting; the
+  // real pending request arrives on `data.request` from Firestore.
+  const [justRequested, setJustRequested] = useState<CandidateRequest | null>(null);
+  const [rejectOpen, setRejectOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [flash, setFlash] = useState<string | null>(null);
+  const readOnly = client.access === 'viewer';
 
   // The rich assessment renders only when every panel it depends on is present.
   // Any missing slice (or an explicit completed:false) falls back to pending.
@@ -684,7 +703,28 @@ export function CandidateDetailScreen({ client, data, density = "regular", onNav
   const stageCol = stageColors[c.stageIdx] || NW.gray400;
   const discColor = completed && disc ? (data.discColors[disc.type] || NW.gray500) : NW.gray500;
   const nextStage = data.stageOrder[c.stageIdx]; // stageIdx is 1-based; this is the next label
-  const canAdvance = c.stageIdx >= 1 && c.stageIdx < 5;
+  const canAdvance = c.stageIdx >= 1 && c.stageIdx <= 3;   // Applied → Final round
+  const canHire = c.stageIdx >= 3 && c.stageIdx <= 5;      // Technical onward
+  const canReject = c.stageIdx >= 1 && c.stageIdx < 6;     // anything not already dropped
+  const pending: CandidateRequest | null = justRequested || data.request || null;
+  const submitRequest = async (type: 'advance' | 'hire' | 'reject' | 'interview', opts?: { toStage?: string; reason?: string }) => {
+    if (!onRequest || busy) return;
+    setBusy(true);
+    try {
+      await onRequest(type, { ...opts, fromStage: c.stage });
+      // Interviews aren't a stage change, so they don't take over the action bar.
+      if (type === 'interview') {
+        setFlash('Interview requested — the Nearwork team has been notified.');
+      } else {
+        setJustRequested({ type, toStage: opts?.toStage, reason: opts?.reason, status: 'pending', date: 'Just now', by: client.user.name });
+      }
+    } finally { setBusy(false); }
+  };
+  const requestLabel = (r: CandidateRequest): string =>
+    r.type === 'advance' ? `advance to ${r.toStage || nextStage}`
+    : r.type === 'hire' ? 'hire'
+    : r.type === 'reject' ? 'not move forward'
+    : 'an interview';
   const goBack = () => onNav && (data.openingId ? onNav('kanban', data.openingId) : onNav('pipeline'));
   const scrollNotes = () => document.getElementById('nw-cand-notes')?.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
 
@@ -731,15 +771,32 @@ export function CandidateDetailScreen({ client, data, density = "regular", onNav
                   <MatchScore value={c.score} size={58} strokeWidth={4.5} />
                 </div>
               </div>
-              {/* Action bar */}
+              {/* Action bar — the client asks Nearwork to act; it never moves a
+                  candidate itself. A pending request takes over the bar. */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 20, paddingTop: 18, borderTop: `1px solid ${NW.gray100}`, flexWrap: 'wrap' }}>
-                {canAdvance && !advanced && <Button variant="primary" size="sm" icon="arrow-right" onClick={() => setAdvanced(true)}>Advance to {nextStage}</Button>}
-                {advanced && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 12.5, fontWeight: 600, color: NW.teal700, background: NW.teal50, padding: '8px 14px', borderRadius: 999 }}><Icon name="check" size={14} color={NW.teal600} strokeWidth={2.5} /> Moved to {nextStage} — Nearwork notified</span>}
+                {pending ? (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 12.5, fontWeight: 600, color: NW.violet500, background: NW.violet50, padding: '8px 14px', borderRadius: 999 }}>
+                    <Icon name="clock" size={14} color={NW.violet500} /> You asked Nearwork to {requestLabel(pending)} · pending
+                  </span>
+                ) : readOnly ? (
+                  <span style={{ fontSize: 12.5, color: NW.gray400 }}>View only</span>
+                ) : (
+                  <>
+                    {canAdvance && <Button variant="primary" size="sm" icon="arrow-right" disabled={busy} onClick={() => submitRequest('advance', { toStage: nextStage })}>Request to advance{nextStage ? ` to ${nextStage}` : ''}</Button>}
+                    {canHire && <Button variant="secondary" size="sm" icon="badge-check" disabled={busy} onClick={() => submitRequest('hire', { toStage: 'Offer' })}>Request to hire</Button>}
+                    {canReject && <Button variant="secondary" size="sm" icon="x" disabled={busy} onClick={() => setRejectOpen(true)}>Reject</Button>}
+                  </>
+                )}
                 <Button variant="secondary" size="sm" icon="message-square-text" onClick={scrollNotes}>Add note</Button>
-                <Button variant="secondary" size="sm" icon="calendar-plus" onClick={scrollNotes}>Request interview</Button>
+                {!readOnly && <Button variant="secondary" size="sm" icon="calendar-plus" disabled={busy} onClick={() => submitRequest('interview')}>Request interview</Button>}
                 <span style={{ flex: 1 }} />
                 <Button variant="ghost" size="sm" icon="columns-3" onClick={() => onNav && onNav('kanban', c.openingId)}>Compare</Button>
               </div>
+              {flash && (
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, marginTop: 12, fontSize: 12.5, fontWeight: 600, color: NW.teal700, background: NW.teal50, padding: '8px 14px', borderRadius: 999 }}>
+                  <Icon name="check" size={14} color={NW.teal600} strokeWidth={2.5} /> {flash}
+                </div>
+              )}
             </div>
 
             {!completed || !english || !assessment || !disc ? (
@@ -839,6 +896,43 @@ export function CandidateDetailScreen({ client, data, density = "regular", onNav
           </div>
         </div>
       </main>
+      {rejectOpen && (
+        <RejectModal
+          name={c.name}
+          busy={busy}
+          onClose={() => setRejectOpen(false)}
+          onSubmit={async (reason) => { await submitRequest('reject', { toStage: 'Not selected', reason }); setRejectOpen(false); }}
+        />
+      )}
+    </div>
+  );
+}
+
+// Reject a candidate — Nearwork needs to know WHY, so the reason is required.
+function RejectModal({ name, busy, onClose, onSubmit }: {
+  name: string;
+  busy?: boolean;
+  onClose: () => void;
+  onSubmit: (reason: string) => void | Promise<void>;
+}) {
+  const [reason, setReason] = useState('');
+  return (
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 60, padding: 20 }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: NW.white, borderRadius: 18, width: '100%', maxWidth: 460, padding: 24, boxShadow: '0 20px 50px rgba(0,0,0,0.2)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+          <div style={{ width: 34, height: 34, borderRadius: 10, background: NW.rose50, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="x" size={17} color={NW.rose600} strokeWidth={2.5} /></div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: NW.black }}>Reject {name.split(' ')[0]}?</div>
+        </div>
+        <p style={{ fontSize: 13, color: NW.gray500, lineHeight: 1.55, margin: '0 0 14px' }}>
+          Tell the Nearwork team why — they’ll see this, so they can adjust and, if it makes sense, put someone stronger forward.
+        </p>
+        <textarea value={reason} onChange={e => setReason(e.target.value)} autoFocus placeholder="e.g. Not enough backend depth for this role…"
+          style={{ width: '100%', minHeight: 96, resize: 'vertical', boxSizing: 'border-box', border: `1px solid ${NW.gray200}`, borderRadius: 11, padding: '11px 13px', fontFamily: 'inherit', fontSize: 13, color: NW.black, lineHeight: 1.5, outline: 'none', background: NW.offWhite }} />
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 16 }}>
+          <Button variant="ghost" size="sm" onClick={onClose}>Cancel</Button>
+          <Button variant="primary" size="sm" icon="send" disabled={!reason.trim() || !!busy} onClick={() => onSubmit(reason.trim())}>{busy ? 'Sending…' : 'Send to Nearwork'}</Button>
+        </div>
+      </div>
     </div>
   );
 }

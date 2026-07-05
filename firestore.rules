@@ -392,6 +392,22 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
+    // Client-raised requests on a candidate (advance / hire / reject / interview).
+    // Clients create + read their own org's requests; only Nearwork staff resolve
+    // them (status changes).
+    match /pipelineRequests/{reqId} {
+      allow read: if isStaff() || (isClient() && sameOrg(resource.data));
+
+      allow create: if isStaff() || (
+        isClient()
+        && sameOrg(request.resource.data)
+        && request.resource.data.requestedByUid == request.auth.uid
+        && request.resource.data.type in ['advance', 'hire', 'reject', 'interview']
+        && request.resource.data.status == 'pending'
+      );
+      allow update, delete: if isStaff();
+    }
+
     match /openingChats/{messageId} {
       allow read: if isStaff() || sameOrg(resource.data);
 

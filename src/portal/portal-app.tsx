@@ -31,7 +31,7 @@ import { toUsersData } from "./map-users";
 import { toSettingsData } from "./map-settings";
 import { toSppData } from "./map-spp";
 import { LoginScreen, StaffOrgPicker } from "@/components/client-portal";
-import { isNearworkEmail, logoutClient, addClientNote } from "@/lib/firebase-client";
+import { isNearworkEmail, logoutClient, addClientNote, createPipelineRequest } from "@/lib/firebase-client";
 import { useState } from "react";
 
 // Screens not yet ported from the design source. They render inside the real
@@ -49,7 +49,7 @@ function Centered({ children }: { children: React.ReactNode }) {
 }
 
 export function PortalApp() {
-  const { status, user, profile, org, pipelines, openings, assessments, notes, hires, timeOff, reviews, billing } = usePortalData();
+  const { status, user, profile, org, pipelines, openings, assessments, notes, requests, hires, timeOff, reviews, billing } = usePortalData();
   const [route, setRoute] = useState("overview");
   const [navArg, setNavArg] = useState<string | number | undefined>(undefined);
   // Remember which role's board we came from, so the candidate detail shows that
@@ -84,6 +84,33 @@ export function PortalApp() {
       pipeline: { code: pipe.code, openingTitle: pipe.openingTitle },
       text,
       scope,
+    });
+  };
+
+  // Raise a request on the current candidate (advance / hire / reject / interview).
+  // The client never moves a candidate itself — Nearwork acts on the request.
+  const requestOnCandidate = async (
+    type: "advance" | "hire" | "reject" | "interview",
+    opts?: { toStage?: string; reason?: string; fromStage?: string },
+  ) => {
+    if (!org || !profile) return;
+    const found = findPipelineCandidate(pipelines, navArg != null ? String(navArg) : null, pipelineCtx);
+    if (!found) return;
+    const { c, pipe } = found;
+    await createPipelineRequest({
+      org,
+      profile,
+      candidate: {
+        id: String(c.candidateId || c.candidateCode || c.code || ""),
+        code: String(c.candidateCode || c.code || ""),
+        name: String(c.name || ""),
+        role: String(c.role || ""),
+      },
+      pipeline: { code: pipe.code, openingTitle: pipe.openingTitle },
+      type,
+      fromStage: opts?.fromStage,
+      toStage: opts?.toStage,
+      reason: opts?.reason,
     });
   };
 
@@ -212,11 +239,11 @@ export function PortalApp() {
 
   // Candidate detail — reached by clicking a candidate on the board.
   if (route === "candidate") {
-    const cdata = toCandidateData(pipelines, openings, assessments, navArg != null ? String(navArg) : null, pipelineCtx, notes);
+    const cdata = toCandidateData(pipelines, openings, assessments, navArg != null ? String(navArg) : null, pipelineCtx, notes, requests);
     if (cdata) {
       return (
         <div style={{ position: "fixed", inset: 0 }}>
-          <CandidateDetailScreen client={client} data={cdata} onNav={go} onAddNote={addNote} />
+          <CandidateDetailScreen client={client} data={cdata} onNav={go} onAddNote={addNote} onRequest={requestOnCandidate} />
         </div>
       );
     }

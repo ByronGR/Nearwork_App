@@ -296,6 +296,30 @@ export type PortalNote = {
   createdAt?: unknown;
 };
 
+// A client-raised request on a candidate. Clients don't move stages themselves —
+// they ASK Nearwork to advance / hire / reject / interview, and the Nearwork team
+// acts on it. status: "pending" | "handled" | "dismissed".
+export type PortalRequest = {
+  id: string;
+  orgId?: string;
+  orgName?: string;
+  candidateId?: string;
+  candidateCode?: string;
+  candidateName?: string;
+  pipelineCode?: string;
+  pipelineTitle?: string;
+  type?: string; // advance | hire | reject | interview
+  fromStage?: string;
+  toStage?: string;
+  reason?: string;
+  status?: string;
+  requestedBy?: string;
+  requestedByEmail?: string;
+  requestedByUid?: string;
+  side?: string;
+  createdAt?: unknown;
+};
+
 export type PortalNotification = {
   id: string;
   title?: string;
@@ -821,6 +845,40 @@ export async function addClientNote(input: {
     createdAt: serverTimestamp(),
   };
   await addDoc(collection(db, "candidateNotes"), note);
+}
+
+export async function createPipelineRequest(input: {
+  org: Organization;
+  profile: ClientUser;
+  candidate: { id?: string; code?: string; name?: string; role?: string };
+  pipeline?: { code?: string; openingTitle?: string };
+  type: "advance" | "hire" | "reject" | "interview";
+  fromStage?: string;
+  toStage?: string;
+  reason?: string;
+}) {
+  const by = input.profile.name || input.profile.email || "Client user";
+  const req = {
+    orgId: input.org.orgId || input.org.id,
+    orgName: input.org.name,
+    candidateId: input.candidate.id || "",
+    candidateCode: input.candidate.code || "",
+    candidateName: input.candidate.name || "",
+    pipelineCode: input.pipeline?.code || "",
+    pipelineTitle: input.pipeline?.openingTitle || input.candidate.role || "",
+    type: input.type,
+    fromStage: input.fromStage || "",
+    toStage: input.toStage || "",
+    reason: input.reason || "",
+    status: "pending",
+    requestedBy: by,
+    requestedByEmail: input.profile.email || "",
+    requestedByUid: input.profile.id,
+    side: "client",
+    app: "app.nearwork.co",
+    createdAt: serverTimestamp(),
+  };
+  await addDoc(collection(db, "pipelineRequests"), req);
 }
 
 export function subscribeOpeningChat(org: Organization, openingCode: string, callback: (items: OpeningChatMessage[]) => void) {

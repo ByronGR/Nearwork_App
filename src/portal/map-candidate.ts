@@ -3,8 +3,8 @@
 // radar) from the parsed assessments doc once Admin has uploaded the PDFs. If the
 // rich data isn't there yet, the screen shows its clean "pending" state.
 
-import { isNearworkEmail, type PortalOpening, type PortalPipeline, type PortalAssessment, type PortalNote } from "@/lib/firebase-client";
-import type { CandidateData, CandidateHeader, CandidateDiscDim, CandidateNote } from "./screens/candidate";
+import { isNearworkEmail, type PortalOpening, type PortalPipeline, type PortalAssessment, type PortalNote, type PortalRequest } from "@/lib/firebase-client";
+import type { CandidateData, CandidateHeader, CandidateDiscDim, CandidateNote, CandidateRequest } from "./screens/candidate";
 import { clientStageKey, stageIdxOf, STAGE_LABELS, avatarColor, initialsOf } from "./stage-map";
 
 const DISC_COLORS: Record<string, string> = { D: "#E74C7C", I: "#EAB308", S: "#16A085", C: "#3B82F6" };
@@ -82,6 +82,26 @@ function toCandidateNotes(notes: PortalNote[], c: Rec, realId: string): Candidat
     }));
 }
 
+// The client's latest pending request on this candidate, if any.
+function toCandidateRequest(requests: PortalRequest[], c: Rec, realId: string): CandidateRequest | undefined {
+  const code = (c.candidateCode || c.code || "") as string;
+  const mine = (requests || [])
+    .filter((r) => (r.candidateCode && r.candidateCode === code) || (r.candidateId && r.candidateId === realId))
+    .filter((r) => (r.status || "pending") === "pending")
+    .sort((a, b) => tsOf(b.createdAt) - tsOf(a.createdAt));
+  const r = mine[0];
+  if (!r) return undefined;
+  const t = (r.type as CandidateRequest["type"]) || "advance";
+  return {
+    type: ["advance", "hire", "reject", "interview"].includes(t) ? t : "advance",
+    toStage: r.toStage || undefined,
+    reason: r.reason || undefined,
+    status: r.status || "pending",
+    date: fmtNoteDate(r.createdAt),
+    by: r.requestedBy || undefined,
+  };
+}
+
 export function toCandidateData(
   pipelines: PortalPipeline[],
   openings: PortalOpening[],
@@ -89,6 +109,7 @@ export function toCandidateData(
   candidateId?: string | null,
   pipelineCode?: string | null,
   notes: PortalNote[] = [],
+  requests: PortalRequest[] = [],
 ): CandidateData | null {
   if (!candidateId) return null;
 
@@ -162,6 +183,7 @@ export function toCandidateData(
     fitForRole,
     completed: false,
     notes: toCandidateNotes(notes, c, realId),
+    request: toCandidateRequest(requests, c, realId),
   };
 
   // ── Rich report (once the assessment PDF has been parsed) ──────────────────
