@@ -848,6 +848,22 @@ export async function markNotificationUnread(id: string) {
   await setDoc(doc(db, "notifications", id), { read: false, readAt: null }, { merge: true });
 }
 
+// Fire an event at the notification writer (/api/notify → Admin SDK). Best-effort:
+// notifications must never block or break the underlying action.
+export async function notifyEvent(payload: Record<string, unknown>) {
+  try {
+    const token = await auth.currentUser?.getIdToken();
+    if (!token) return;
+    await fetch("/api/notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify(payload),
+    });
+  } catch {
+    /* ignore — best-effort */
+  }
+}
+
 export async function addClientNote(input: {
   org: Organization;
   profile: ClientUser;
@@ -881,6 +897,18 @@ export async function addClientNote(input: {
     createdAt: serverTimestamp(),
   };
   await addDoc(collection(db, "candidateNotes"), note);
+  // Only shared notes ping Nearwork — team-only notes stay private to the client.
+  if (input.scope === "client_visible") {
+    void notifyEvent({
+      event: "client_note",
+      orgId: input.org.orgId || input.org.id,
+      pipelineCode: input.pipeline?.code || "",
+      candidateCode: input.candidate.code || "",
+      candidateName: input.candidate.name || "",
+      noteExcerpt: input.text.slice(0, 140),
+      actorName: author,
+    });
+  }
 }
 
 export async function createPipelineRequest(input: {
@@ -915,6 +943,17 @@ export async function createPipelineRequest(input: {
     createdAt: serverTimestamp(),
   };
   await addDoc(collection(db, "pipelineRequests"), req);
+  void notifyEvent({
+    event: "client_request",
+    orgId: input.org.orgId || input.org.id,
+    pipelineCode: input.pipeline?.code || "",
+    candidateCode: input.candidate.code || "",
+    candidateName: input.candidate.name || "",
+    requestType: input.type,
+    toStage: input.toStage || "",
+    reason: input.reason || "",
+    actorName: by,
+  });
 }
 
 export function subscribeOpeningChat(org: Organization, openingCode: string, callback: (items: OpeningChatMessage[]) => void) {
