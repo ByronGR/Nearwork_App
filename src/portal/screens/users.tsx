@@ -106,14 +106,21 @@ function RolePill({ roleId, roles, onChange, editable }: {
 }
 
 // ── Invite modal ──────────────────────────────────────────────────────────────
-function InviteModal({ roles, onClose, onInvite }: {
+function InviteModal({ roles, onClose, onInvite, error }: {
   roles: PortalUserRole[];
   onClose: () => void;
-  onInvite: (email: string, role: string) => void;
+  onInvite: (email: string, role: string) => void | Promise<void>;
+  error?: string | null;
 }) {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("member");
+  const [submitting, setSubmitting] = useState(false);
   const valid = /.+@.+\..+/.test(email);
+  const send = async () => {
+    if (!valid || submitting) return;
+    setSubmitting(true);
+    try { await onInvite(email.trim(), role); } finally { setSubmitting(false); }
+  };
   const field: React.CSSProperties = { width: "100%", boxSizing: "border-box", border: `1px solid ${NW.gray200}`, borderRadius: 10, padding: "11px 13px", fontFamily: "inherit", fontSize: 13.5, color: NW.black, outline: "none", background: NW.white };
   return (
     <ModalShell onClose={onClose} width={460}>
@@ -140,20 +147,24 @@ function InviteModal({ roles, onClose, onInvite }: {
           })}
         </div>
       </div>
+      {error && (
+        <div style={{ margin: "0 28px", padding: "10px 13px", background: NW.rose50, border: `1px solid ${NW.rose500}22`, borderRadius: 10, fontSize: 12.5, color: NW.rose600 }}>{error}</div>
+      )}
       <div style={{ padding: "16px 28px", borderTop: `1px solid ${NW.gray100}`, display: "flex", justifyContent: "flex-end", gap: 10 }}>
         <Button variant="ghost" size="md" onClick={onClose}>Cancel</Button>
-        <Button variant="primary" size="md" icon="send" disabled={!valid} onClick={() => onInvite(email.trim(), role)}>Send invite</Button>
+        <Button variant="primary" size="md" icon="send" disabled={!valid || submitting} onClick={send}>{submitting ? "Sending…" : "Send invite"}</Button>
       </div>
     </ModalShell>
   );
 }
 
 // ── Users screen ──────────────────────────────────────────────────────────────
-export function UsersScreen({ client, data, density = "regular", onNav }: {
+export function UsersScreen({ client, data, density = "regular", onNav, onInvite }: {
   client: PortalClient;
   data: UsersData;
   density?: "regular" | "compact";
   onNav?: NavHandler;
+  onInvite?: (email: string, role: string) => Promise<{ ok: boolean; error?: string }>;
 }) {
   const dense = density === "compact";
   const pad = dense ? 32 : 44;
@@ -161,6 +172,7 @@ export function UsersScreen({ client, data, density = "regular", onNav }: {
   const [members, setMembers] = useState<PortalUserRow[]>(() => (data.users || []).map((u) => ({ ...u })));
   const [inviting, setInviting] = useState(false);
   const [resent, setResent] = useState<Record<string, boolean>>({});
+  const [inviteErr, setInviteErr] = useState<string | null>(null);
 
   const populated = members.length > 0;
 
@@ -169,7 +181,12 @@ export function UsersScreen({ client, data, density = "regular", onNav }: {
     setResent((r) => ({ ...r, [id]: true }));
     setTimeout(() => setResent((r) => ({ ...r, [id]: false })), 2600);
   };
-  const invite = (email: string, role: string) => {
+  const invite = async (email: string, role: string) => {
+    setInviteErr(null);
+    if (onInvite) {
+      const res = await onInvite(email, role);
+      if (!res.ok) { setInviteErr(res.error || "Couldn't send the invite. Please try again."); return; }
+    }
     const name = email.split("@")[0].split(".").map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join(" ");
     const initials = name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
     setMembers((ms) => [...ms, { id: "u" + Date.now(), name, email, initials, avatarBg: "#12866E", role, status: "invited", lastActive: "Invite sent · just now" }]);
@@ -262,7 +279,7 @@ export function UsersScreen({ client, data, density = "regular", onNav }: {
             )}
           </div>
         </div>
-        {inviting && <InviteModal roles={roles} onClose={() => setInviting(false)} onInvite={invite} />}
+        {inviting && <InviteModal roles={roles} onClose={() => { setInviting(false); setInviteErr(null); }} onInvite={invite} error={inviteErr} />}
       </main>
     </div>
   );

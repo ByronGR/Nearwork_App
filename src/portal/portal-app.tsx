@@ -32,7 +32,7 @@ import { toSettingsData } from "./map-settings";
 import { toSppData } from "./map-spp";
 import { LoginScreen, StaffOrgPicker } from "@/components/client-portal";
 import { KickoffBriefPage } from "@/components/kickoff-brief";
-import { isNearworkEmail, logoutClient, addClientNote, createPipelineRequest } from "@/lib/firebase-client";
+import { isNearworkEmail, logoutClient, addClientNote, createPipelineRequest, sendOrgInvite } from "@/lib/firebase-client";
 import { useState } from "react";
 
 // Screens not yet ported from the design source. They render inside the real
@@ -115,6 +115,18 @@ export function PortalApp() {
     });
   };
 
+  // Invite a teammate to this workspace (client admins only — the Users screen is
+  // already admin-gated). Goes through the existing server invite (email + record).
+  const inviteTeammate = async (email: string, role: string): Promise<{ ok: boolean; error?: string }> => {
+    if (!org) return { ok: false, error: "No workspace is loaded yet." };
+    const portalRole = role === "admin" ? "client_admin" : role === "viewer" ? "viewer_client" : "client_user";
+    try {
+      return await sendOrgInvite(email, org.orgId || org.id, org.name, { role: portalRole });
+    } catch {
+      return { ok: false, error: "Couldn't reach the invite service. Please try again." };
+    }
+  };
+
   // Staff = any @nearwork.co account. Use the login email (always present) so a
   // staff user-doc that happens not to store an email still resolves as staff.
   const isStaff = isNearworkEmail(user?.email || profile?.email);
@@ -192,7 +204,7 @@ export function PortalApp() {
   if (route === "users") {
     return (
       <div style={{ position: "fixed", inset: 0 }}>
-        <UsersScreen client={client} data={toUsersData(org, user?.email ?? undefined)} onNav={go} />
+        <UsersScreen client={client} data={toUsersData(org, user?.email ?? undefined)} onNav={go} onInvite={inviteTeammate} />
       </div>
     );
   }
