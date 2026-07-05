@@ -5,7 +5,7 @@
 // globals; this takes a `data` object + `client` as PROPS so real Firebase data
 // drops in later. Inline styles preserved verbatim for fidelity.
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { NW, Icon, Button, Chip, Avatar } from "../primitives";
 import { PortalSidebar, PortalTopBar, SectionHead, ActivityRow, EmptyBlock, type PortalClient, type PortalActivity } from "../shell";
 
@@ -185,6 +185,13 @@ export function OverviewScreen({ client, data, density = "regular", onNav }: {
 }) {
   const dense = density === "compact";
   const [range, setRange] = useState("This week");
+  // Greeting follows the viewer's local clock. Set after mount so server and
+  // client render the same thing first (no hydration mismatch).
+  const [greeting, setGreeting] = useState("Hello");
+  useEffect(() => {
+    const h = new Date().getHours();
+    setGreeting(h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening");
+  }, []);
   const pad = dense ? 32 : 44;
   const populated = data.candidates.length > 0;
   const queueItems = [...data.candidates].filter((c) => c.awaitingDays >= 1).sort((a, b) => b.awaitingDays - a.awaitingDays).slice(0, 6);
@@ -203,7 +210,7 @@ export function OverviewScreen({ client, data, density = "regular", onNav }: {
               <div style={{ fontSize: 11, fontWeight: 600, color: NW.gray500, letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: 12 }}>{data.dateLabel}</div>
               <h1 style={{ fontSize: dense ? 36 : 46, fontWeight: 700, color: NW.black, letterSpacing: "-0.04em", lineHeight: 1.02, margin: 0, fontFamily: "Poppins, sans-serif" }}>
                 {populated ? (
-                  <>Good morning, {data.greetingName}.<br /><span style={{ color: NW.gray400 }}>You have </span><span style={{ color: NW.teal500 }}>{reviewN} candidates</span><span style={{ color: NW.gray400 }}> to review.</span></>
+                  <>{greeting}, {data.greetingName}.<br /><span style={{ color: NW.gray400 }}>You have </span><span style={{ color: NW.teal500 }}>{reviewN} candidates</span><span style={{ color: NW.gray400 }}> to review.</span></>
                 ) : (
                   <>Welcome, {data.greetingName}.<br /><span style={{ color: NW.gray400 }}>Let&apos;s get your first role moving.</span></>
                 )}

@@ -218,26 +218,6 @@ export function UsersScreen({ client, data, density = "regular", onNav }: {
                   ))}
                 </div>
 
-                {/* Roles legend */}
-                <div style={{ display: "grid", gridTemplateColumns: dense ? "1fr" : "repeat(3, 1fr)", gap: dense ? 14 : 18, marginBottom: dense ? 18 : 24 }}>
-                  {roles.map((r) => (
-                    <div key={r.id} style={{ background: NW.white, border: `1px solid ${NW.gray100}`, borderRadius: 16, padding: dense ? 18 : 20 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                        <span style={{ width: 9, height: 9, borderRadius: "50%", background: r.color }} />
-                        <span style={{ fontSize: 14, fontWeight: 700, color: NW.black }}>{r.label}</span>
-                      </div>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
-                        {r.can.map((c, i) => (
-                          <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
-                            <Icon name="check" size={14} color={r.color} strokeWidth={2.5} style={{ marginTop: 1, flexShrink: 0 }} />
-                            <span style={{ fontSize: 12.5, color: NW.gray700, lineHeight: 1.4 }}>{c}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
                 {/* Members table */}
                 <section style={{ background: NW.white, border: `1px solid ${NW.gray100}`, borderRadius: 20, padding: dense ? "16px 14px" : "20px 18px" }}>
                   <div style={{ display: "grid", gridTemplateColumns: "2.4fr 1.2fr 1fr 0.8fr", gap: 16, padding: "0 14px 12px", fontSize: 10, fontWeight: 600, color: NW.gray400, letterSpacing: "0.12em", textTransform: "uppercase", borderBottom: `1px solid ${NW.gray100}` }}>

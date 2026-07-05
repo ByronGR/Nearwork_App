@@ -6,11 +6,13 @@
 
 import {
   readableRole,
+  isNearworkEmail,
   type ClientUser,
   type Organization,
   type PortalOpening,
   type PortalPipeline,
 } from "@/lib/firebase-client";
+import type { PortalAccess } from "./shell";
 import type { PortalClient } from "./shell";
 import type { OverviewData, OverviewCandidate } from "./screens/overview";
 import { clientStageKey, stageIdxOf, STAGE_LABELS, avatarColor, initialsOf } from "./stage-map";
@@ -31,11 +33,21 @@ function isOpeningActive(o: PortalOpening): boolean {
   return !["closed", "filled", "cancelled", "canceled", "archived", "paused"].includes(s);
 }
 
+// Access level for role-based nav + read-only enforcement. Staff and client
+// admins get full access; a "viewer" is read-only; everyone else is a member.
+export function accessOf(profile: ClientUser | null): PortalAccess {
+  const r = `${profile?.role || ""} ${profile?.portalRole || ""}`.toLowerCase();
+  if (isNearworkEmail(profile?.email) || r.includes("admin")) return "admin";
+  if (r.includes("viewer")) return "viewer";
+  return "member";
+}
+
 export function toPortalClient(profile: ClientUser | null, org: Organization | null): PortalClient {
   const name = fullName(profile);
   const amName = org?.accountManagerName || "";
   const client: PortalClient = {
     company: org?.name || profile?.orgName || "Your company",
+    access: accessOf(profile),
     user: {
       name,
       initials: initialsOf(name),

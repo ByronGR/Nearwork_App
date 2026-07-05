@@ -11,7 +11,16 @@ import { NW, Icon, Avatar, Button } from "./primitives";
 
 export type PortalUser = { name: string; initials: string; role?: string };
 export type AccountManager = { name: string; email: string; initials: string };
-export type PortalClient = { company: string; user: PortalUser; accountManager?: AccountManager };
+export type PortalAccess = "admin" | "member" | "viewer";
+export type PortalClient = { company: string; user: PortalUser; accountManager?: AccountManager; access?: PortalAccess };
+
+// Which nav items each access level may see. A viewer is read-only and only sees
+// the pipeline + their team.
+const VIEWER_NAV = ["overview", "pipeline", "team"];
+export function allowedNav(access: PortalAccess | undefined, id: string): boolean {
+  if (access === "viewer") return VIEWER_NAV.includes(id);
+  return true;
+}
 export type PortalActivity = {
   id: string | number;
   type?: string;
@@ -151,16 +160,20 @@ export function PortalSidebar({ active = "overview", density = "regular", onNav,
 
         {/* Nav */}
         <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: tight ? 10 : 14, marginTop: 4 }}>
-          {NAV_SECTIONS.map((sec) => (
-            <div key={sec.label}>
-              {expanded && <div style={{ fontSize: 10, fontWeight: 600, color: NW.gray400, letterSpacing: "0.12em", textTransform: "uppercase", padding: "0 10px", marginBottom: 6 }}>{sec.label}</div>}
-              <div style={{ display: "flex", flexDirection: "column", gap: expanded ? 1 : 4 }}>
-                {sec.items.map((it) => (
-                  <NavItem key={it.id} it={it} active={it.id === active} tight={tight} onClick={() => go(it.id)} clickable={!!onNav} collapsed={!expanded} />
-                ))}
+          {NAV_SECTIONS.map((sec) => {
+            const items = sec.items.filter((it) => allowedNav(client.access, it.id));
+            if (!items.length) return null;
+            return (
+              <div key={sec.label}>
+                {expanded && <div style={{ fontSize: 10, fontWeight: 600, color: NW.gray400, letterSpacing: "0.12em", textTransform: "uppercase", padding: "0 10px", marginBottom: 6 }}>{sec.label}</div>}
+                <div style={{ display: "flex", flexDirection: "column", gap: expanded ? 1 : 4 }}>
+                  {items.map((it) => (
+                    <NavItem key={it.id} it={it} active={it.id === active} tight={tight} onClick={() => go(it.id)} clickable={!!onNav} collapsed={!expanded} />
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Account manager (hidden in the icon rail) */}

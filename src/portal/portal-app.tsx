@@ -31,7 +31,7 @@ import { toUsersData } from "./map-users";
 import { toSettingsData } from "./map-settings";
 import { toSppData } from "./map-spp";
 import { LoginScreen, StaffOrgPicker } from "@/components/client-portal";
-import { isNearworkEmail } from "@/lib/firebase-client";
+import { isNearworkEmail, logoutClient } from "@/lib/firebase-client";
 import { useState } from "react";
 
 // Screens not yet ported from the design source. They render inside the real
@@ -56,6 +56,10 @@ export function PortalApp() {
   // role's assessment (a candidate can carry a different score per role).
   const [pipelineCtx, setPipelineCtx] = useState<string | undefined>(undefined);
   const go = (id: string, arg?: string | number) => {
+    if (id === "logout") {
+      logoutClient().finally(() => { if (typeof window !== "undefined") window.location.reload(); });
+      return;
+    }
     setRoute(id);
     setNavArg(arg);
     if (id === "kanban") setPipelineCtx(arg != null ? String(arg) : undefined);
@@ -86,6 +90,17 @@ export function PortalApp() {
   }
 
   const client = toPortalClient(profile, org);
+
+  // Viewers are read-only and limited to Overview / Pipeline / Team. Any other
+  // route (including deep links) falls back to Overview.
+  const VIEWER_ROUTES = ["overview", "pipeline", "kanban", "candidate", "team", "hire"];
+  if (client.access === "viewer" && !VIEWER_ROUTES.includes(route)) {
+    return (
+      <div style={{ position: "fixed", inset: 0 }}>
+        <OverviewScreen client={client} data={toOverviewData(pipelines, openings, profile)} onNav={go} />
+      </div>
+    );
+  }
 
   if (route === "overview") {
     return (
