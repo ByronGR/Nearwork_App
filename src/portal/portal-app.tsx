@@ -31,6 +31,7 @@ import { toUsersData } from "./map-users";
 import { toSettingsData } from "./map-settings";
 import { toSppData } from "./map-spp";
 import { LoginScreen, StaffOrgPicker } from "@/components/client-portal";
+import { KickoffBriefPage } from "@/components/kickoff-brief";
 import { isNearworkEmail, logoutClient, addClientNote, createPipelineRequest } from "@/lib/firebase-client";
 import { useState } from "react";
 
@@ -226,6 +227,19 @@ export function PortalApp() {
         <PortalComingSoon active="team" title="Team member not found" desc="This person is no longer on your team. Head back to Team." icon="user-x" onNav={go} client={client} />
       </div>
     );
+  }
+
+  // Kickoff brief review — reached from "Review brief" in Open roles. Reuses the
+  // full standalone brief page (loads via /api/kickoff, approve / request changes).
+  if (route === "kickoff" && client.access !== "viewer") {
+    const code = navArg != null ? String(navArg) : "";
+    if (code) {
+      return (
+        <div style={{ position: "fixed", inset: 0, overflow: "auto" }}>
+          <KickoffBriefPage code={code} onBack={() => go("pipeline")} />
+        </div>
+      );
+    }
   }
 
   // The kanban board for one role — reached by clicking a role in Open roles.
