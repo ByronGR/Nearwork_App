@@ -56,7 +56,10 @@ const NAV_SECTIONS: { label: string; items: { id: string; label: string; icon: s
   ]},
 ];
 
-const DEFAULT_AM: AccountManager = { name: "Jesus Buitrago", email: "jesus.buitrago@nearwork.co", initials: "JB" };
+// Neutral fallback when an org has no account manager assigned yet — never a
+// specific real person (that would be misleading). The real AM comes from the
+// org's assignment in Admin.
+const DEFAULT_AM: AccountManager = { name: "Your Nearwork team", email: "", initials: "NW" };
 
 function NavItem({ it, active, tight, onClick, clickable, collapsed }: {
   it: { id: string; label: string; icon: string };
@@ -188,7 +191,7 @@ export function PortalSidebar({ active = "overview", density = "regular", onNav,
               <Avatar initials={am.initials} size={28} bg={NW.black} />
               <div style={{ minWidth: 0, flex: 1 }}>
                 <div style={{ fontSize: 12, fontWeight: 600, color: NW.black, lineHeight: 1.2 }}>{am.name}</div>
-                <div style={{ fontSize: 10, color: NW.gray500, lineHeight: 1.25, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{am.email}</div>
+                {am.email && <div style={{ fontSize: 10, color: NW.gray500, lineHeight: 1.25, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{am.email}</div>}
               </div>
             </div>
           </div>

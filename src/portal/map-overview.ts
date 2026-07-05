@@ -44,7 +44,10 @@ export function accessOf(profile: ClientUser | null): PortalAccess {
 
 export function toPortalClient(profile: ClientUser | null, org: Organization | null): PortalClient {
   const name = fullName(profile);
-  const amName = org?.accountManagerName || "";
+  // Admin stores the assigned AM's name in `accountManager` (with `accountManagerName`
+  // as a legacy mirror) and the email — pulled from the AM's staff profile — in
+  // `accountManagerEmail`. Read the real assignment, not a hardcoded default.
+  const amName = org?.accountManager || org?.accountManagerName || "";
   const client: PortalClient = {
     company: org?.name || profile?.orgName || "Your company",
     access: accessOf(profile),
