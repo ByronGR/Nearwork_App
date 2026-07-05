@@ -97,8 +97,9 @@ export type Organization = {
   plan?: string;
   status?: string;
   seats?: number;
-  accountManagerName?: string;
-  accountManagerEmail?: string;
+  accountManager?: string;      // Admin's primary field for the assigned AM's name
+  accountManagerName?: string;  // legacy/mirror of the same name
+  accountManagerEmail?: string; // pulled from the AM's staff profile when assigned in Admin
   accountManagerPhone?: string;
 };
 
