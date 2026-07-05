@@ -21,7 +21,10 @@ import {
   type PortalPipeline,
   type PortalHire,
   type PortalAssessment,
+  type TimeOffRequest,
 } from "@/lib/firebase-client";
+
+type Row = Record<string, unknown>;
 
 export type PortalDataStatus = "loading" | "signed-out" | "no-org" | "ready";
 
@@ -34,6 +37,9 @@ export type PortalData = {
   pipelines: PortalPipeline[];
   hires: PortalHire[];
   assessments: PortalAssessment[];
+  timeOff: TimeOffRequest[];
+  reviews: Row[];
+  billing: Row[];
 };
 
 export function usePortalData(): PortalData {
@@ -44,6 +50,9 @@ export function usePortalData(): PortalData {
   const [pipelines, setPipelines] = useState<PortalPipeline[]>([]);
   const [hires, setHires] = useState<PortalHire[]>([]);
   const [assessments, setAssessments] = useState<PortalAssessment[]>([]);
+  const [timeOff, setTimeOff] = useState<TimeOffRequest[]>([]);
+  const [reviews, setReviews] = useState<Row[]>([]);
+  const [billing, setBilling] = useState<Row[]>([]);
   const [status, setStatus] = useState<PortalDataStatus>("loading");
 
   // Auth → profile → org.
@@ -58,6 +67,9 @@ export function usePortalData(): PortalData {
           setPipelines([]);
           setHires([]);
           setAssessments([]);
+          setTimeOff([]);
+          setReviews([]);
+          setBilling([]);
           setStatus("signed-out");
           return;
         }
@@ -102,9 +114,12 @@ export function usePortalData(): PortalData {
       subscribeOrgCollection<PortalPipeline>("pipelines", org, setPipelines),
       subscribeOrgCollection<PortalHire>("placements", org, setHires),
       subscribeOrgCollection<PortalAssessment>("assessments", org, setAssessments),
+      subscribeOrgCollection<TimeOffRequest>("timeOffRequests", org, setTimeOff),
+      subscribeOrgCollection<Row>("performanceReviews", org, setReviews),
+      subscribeOrgCollection<Row>("partnerBilling", org, setBilling),
     ];
     return () => unsubscribers.forEach((unsub) => unsub());
   }, [org]);
 
-  return { status, user, profile, org, openings, pipelines, hires, assessments };
+  return { status, user, profile, org, openings, pipelines, hires, assessments, timeOff, reviews, billing };
 }

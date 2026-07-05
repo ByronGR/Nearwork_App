@@ -14,12 +14,14 @@ import { OpenRolesScreen } from "./screens/roles";
 import { PipelineScreen } from "./screens/pipeline";
 import { CandidateDetailScreen } from "./screens/candidate";
 import { TeamScreen } from "./screens/team";
+import { HireDetailScreen } from "./screens/hire";
 import { usePortalData } from "./use-portal-data";
 import { toPortalClient, toOverviewData } from "./map-overview";
 import { toRolesData } from "./map-roles";
 import { toPipelineData } from "./map-pipeline";
 import { toCandidateData } from "./map-candidate";
 import { toTeamData } from "./map-team";
+import { toHireData } from "./map-hire";
 import { LoginScreen, StaffOrgPicker } from "@/components/client-portal";
 import { isNearworkEmail } from "@/lib/firebase-client";
 import { useState } from "react";
@@ -42,7 +44,7 @@ function Centered({ children }: { children: React.ReactNode }) {
 }
 
 export function PortalApp() {
-  const { status, user, profile, org, pipelines, openings, assessments, hires } = usePortalData();
+  const { status, user, profile, org, pipelines, openings, assessments, hires, timeOff, reviews } = usePortalData();
   const [route, setRoute] = useState("overview");
   const [navArg, setNavArg] = useState<string | number | undefined>(undefined);
   // Remember which role's board we came from, so the candidate detail shows that
@@ -100,6 +102,22 @@ export function PortalApp() {
     return (
       <div style={{ position: "fixed", inset: 0 }}>
         <TeamScreen client={client} data={toTeamData(hires)} onNav={go} />
+      </div>
+    );
+  }
+
+  if (route === "hire") {
+    const hdata = toHireData(hires, timeOff, reviews, navArg != null ? String(navArg) : null);
+    if (hdata) {
+      return (
+        <div style={{ position: "fixed", inset: 0 }}>
+          <HireDetailScreen client={client} data={hdata} onNav={go} />
+        </div>
+      );
+    }
+    return (
+      <div style={{ position: "fixed", inset: 0 }}>
+        <PortalComingSoon active="team" title="Team member not found" desc="This person is no longer on your team. Head back to Team." icon="user-x" onNav={go} client={client} />
       </div>
     );
   }
