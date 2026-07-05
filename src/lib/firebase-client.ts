@@ -277,15 +277,20 @@ export type PortalAssessment = {
 
 export type PortalNote = {
   id: string;
+  candidateId?: string;
   candidateCode?: string;
+  candidateName?: string;
   pipelineCode?: string;
   pipelineTitle?: string;
   orgId?: string;
   orgName?: string;
   scope?: string;
   visibility?: string;
+  side?: string; // "client" | "nearwork"
   text?: string;
+  body?: string; // mirror of text (Admin renders `body`)
   author?: string;
+  authorName?: string;
   authorUid?: string;
   authorEmail?: string;
   createdAt?: unknown;
@@ -786,22 +791,30 @@ export async function markNotificationRead(id: string) {
 export async function addClientNote(input: {
   org: Organization;
   profile: ClientUser;
-  candidate: PortalCandidate;
-  pipeline?: PortalPipeline;
+  // A light candidate shape — we write every join key we have so the note is
+  // findable from either side (Admin keys by candidateId, the portal by code).
+  candidate: { id?: string; code?: string; name?: string; role?: string };
+  pipeline?: { code?: string; openingTitle?: string };
   text: string;
+  // client_visible = shared with Nearwork · client_internal = this team only
   scope: "client_visible" | "client_internal";
 }) {
+  const author = input.profile.name || input.profile.email || "Client user";
   const note = {
-    candidateCode: input.candidate.code,
-    candidateName: input.candidate.name,
+    candidateId: input.candidate.id || "",
+    candidateCode: input.candidate.code || "",
+    candidateName: input.candidate.name || "",
     pipelineCode: input.pipeline?.code || "",
     pipelineTitle: input.pipeline?.openingTitle || input.candidate.role || "",
     orgId: input.org.orgId || input.org.id,
     orgName: input.org.name,
     scope: input.scope,
     visibility: input.scope,
+    side: "client",
     text: input.text,
-    author: input.profile.name || input.profile.email || "Client user",
+    body: input.text, // mirror so Admin's `body` renderer shows it too
+    author,
+    authorName: author,
     authorEmail: input.profile.email || "",
     authorUid: input.profile.id,
     app: "app.nearwork.co",

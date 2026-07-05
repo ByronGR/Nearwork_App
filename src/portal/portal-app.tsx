@@ -23,7 +23,7 @@ import { usePortalData } from "./use-portal-data";
 import { toPortalClient, toOverviewData } from "./map-overview";
 import { toRolesData } from "./map-roles";
 import { toPipelineData } from "./map-pipeline";
-import { toCandidateData } from "./map-candidate";
+import { toCandidateData, findPipelineCandidate } from "./map-candidate";
 import { toTeamData } from "./map-team";
 import { toHireData } from "./map-hire";
 import { toBillingData } from "./map-billing";
@@ -31,7 +31,7 @@ import { toUsersData } from "./map-users";
 import { toSettingsData } from "./map-settings";
 import { toSppData } from "./map-spp";
 import { LoginScreen, StaffOrgPicker } from "@/components/client-portal";
-import { isNearworkEmail, logoutClient } from "@/lib/firebase-client";
+import { isNearworkEmail, logoutClient, addClientNote } from "@/lib/firebase-client";
 import { useState } from "react";
 
 // Screens not yet ported from the design source. They render inside the real
@@ -49,7 +49,7 @@ function Centered({ children }: { children: React.ReactNode }) {
 }
 
 export function PortalApp() {
-  const { status, user, profile, org, pipelines, openings, assessments, hires, timeOff, reviews, billing } = usePortalData();
+  const { status, user, profile, org, pipelines, openings, assessments, notes, hires, timeOff, reviews, billing } = usePortalData();
   const [route, setRoute] = useState("overview");
   const [navArg, setNavArg] = useState<string | number | undefined>(undefined);
   // Remember which role's board we came from, so the candidate detail shows that
@@ -63,6 +63,28 @@ export function PortalApp() {
     setRoute(id);
     setNavArg(arg);
     if (id === "kanban") setPipelineCtx(arg != null ? String(arg) : undefined);
+  };
+
+  // Post a note from the client side. Resolves the same raw candidate + pipeline
+  // the detail screen is showing, then writes to the shared candidateNotes.
+  const addNote = async (text: string, scope: "client_visible" | "client_internal") => {
+    if (!org || !profile) return;
+    const found = findPipelineCandidate(pipelines, navArg != null ? String(navArg) : null, pipelineCtx);
+    if (!found) return;
+    const { c, pipe } = found;
+    await addClientNote({
+      org,
+      profile,
+      candidate: {
+        id: String(c.candidateId || c.candidateCode || c.code || ""),
+        code: String(c.candidateCode || c.code || ""),
+        name: String(c.name || ""),
+        role: String(c.role || ""),
+      },
+      pipeline: { code: pipe.code, openingTitle: pipe.openingTitle },
+      text,
+      scope,
+    });
   };
 
   // Staff = any @nearwork.co account. Use the login email (always present) so a
@@ -190,11 +212,11 @@ export function PortalApp() {
 
   // Candidate detail — reached by clicking a candidate on the board.
   if (route === "candidate") {
-    const cdata = toCandidateData(pipelines, openings, assessments, navArg != null ? String(navArg) : null, pipelineCtx);
+    const cdata = toCandidateData(pipelines, openings, assessments, navArg != null ? String(navArg) : null, pipelineCtx, notes);
     if (cdata) {
       return (
         <div style={{ position: "fixed", inset: 0 }}>
-          <CandidateDetailScreen client={client} data={cdata} onNav={go} />
+          <CandidateDetailScreen client={client} data={cdata} onNav={go} onAddNote={addNote} />
         </div>
       );
     }

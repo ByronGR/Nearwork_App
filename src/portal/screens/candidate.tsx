@@ -140,7 +140,8 @@ export type CandidateNote = {
   author: string;
   date: string;
   text: string;
-  recruiter?: boolean;
+  recruiter?: boolean; // authored by the Nearwork team
+  internal?: boolean;  // your team only — not shared with Nearwork
 };
 
 export type CandidateData = {
@@ -563,53 +564,67 @@ function DiscSummaryPanel({ disc, discColor }: { disc: CandidateDisc; discColor:
 }
 
 // Client notes on a candidate (functional, persisted per candidate).
-function NotesPanel({ c, user, seedNotes }: {
+function NotesPanel({ c, user, notes, onAddNote, readOnly }: {
   c: CandidateHeader;
   user: { name: string; initials: string };
-  seedNotes?: CandidateNote[];
+  notes?: CandidateNote[];
+  onAddNote?: (text: string, scope: 'client_visible' | 'client_internal') => Promise<void> | void;
+  readOnly?: boolean;
 }) {
-  const key = 'nw_cand_notes_' + c.id;
+  // Live notes come newest-first from Firestore; the recruiter seed (if any) sits
+  // at the bottom as the oldest entry.
   const seed: CandidateNote[] = c.note
-    ? [{ author: 'Lina Pardo · Nearwork', date: 'Recruiter note', text: c.note, recruiter: true }]
-    : (seedNotes || []);
-  const [notes, setNotes] = useState<CandidateNote[]>(() => {
-    try {
-      const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(key) : null;
-      const s = raw ? JSON.parse(raw) : null;
-      if (Array.isArray(s)) return s.concat(seed);
-    } catch { /* ignore */ }
-    return seed;
-  });
+    ? [{ author: 'Nearwork team', date: 'Recruiter note', text: c.note, recruiter: true }]
+    : [];
+  const list: CandidateNote[] = [...(notes || []), ...seed];
   const [draft, setDraft] = useState('');
-  const add = () => {
-    if (!draft.trim()) return;
-    const mine = notes.filter(n => !n.recruiter);
-    const next: CandidateNote[] = [{ author: user.name, date: 'Just now', text: draft.trim() }, ...mine];
-    setNotes(next.concat(seed));
-    try { localStorage.setItem(key, JSON.stringify(next)); } catch { /* ignore */ }
-    setDraft('');
+  const [scope, setScope] = useState<'client_visible' | 'client_internal'>('client_visible');
+  const [posting, setPosting] = useState(false);
+  const add = async () => {
+    if (!draft.trim() || !onAddNote || posting) return;
+    setPosting(true);
+    try { await onAddNote(draft.trim(), scope); setDraft(''); } finally { setPosting(false); }
   };
+  const canPost = !readOnly && !!onAddNote;
+  const shared = scope === 'client_visible';
   return (
     <CardPanel title="Notes" icon="message-square-text" id="nw-cand-notes">
-      <div style={{ display: 'flex', gap: 10, marginBottom: notes.length ? 16 : 0 }}>
-        <Avatar initials={user.initials} size={32} bg={NW.teal500} />
-        <div style={{ flex: 1 }}>
-          <textarea value={draft} onChange={e => setDraft(e.target.value)} placeholder={`Add a note about ${c.name.split(' ')[0]}…`}
-            style={{ width: '100%', minHeight: 58, resize: 'vertical', boxSizing: 'border-box', border: `1px solid ${NW.gray200}`, borderRadius: 11, padding: '10px 12px', fontFamily: 'inherit', fontSize: 13, color: NW.black, lineHeight: 1.5, outline: 'none', background: NW.offWhite }} />
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 9 }}>
-            <Button variant="primary" size="sm" icon="send" disabled={!draft.trim()} onClick={add}>Post note</Button>
+      {canPost && (
+        <div style={{ display: 'flex', gap: 10, marginBottom: list.length ? 16 : 0 }}>
+          <Avatar initials={user.initials} size={32} bg={NW.teal500} />
+          <div style={{ flex: 1 }}>
+            <textarea value={draft} onChange={e => setDraft(e.target.value)} placeholder={`Add a note about ${c.name.split(' ')[0]}…`}
+              style={{ width: '100%', minHeight: 58, resize: 'vertical', boxSizing: 'border-box', border: `1px solid ${NW.gray200}`, borderRadius: 11, padding: '10px 12px', fontFamily: 'inherit', fontSize: 13, color: NW.black, lineHeight: 1.5, outline: 'none', background: NW.offWhite }} />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 9, gap: 10, flexWrap: 'wrap' }}>
+              {/* Visibility toggle — who can see this note */}
+              <div style={{ display: 'inline-flex', background: NW.gray50, border: `1px solid ${NW.gray200}`, borderRadius: 9, padding: 2 }}>
+                {([['client_visible', 'Shared with Nearwork'], ['client_internal', 'My team only']] as const).map(([val, label]) => (
+                  <button key={val} onClick={() => setScope(val)} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, border: 'none', cursor: 'pointer', font: 'inherit', fontSize: 11.5, fontWeight: 600, padding: '5px 10px', borderRadius: 7, background: scope === val ? NW.white : 'transparent', color: scope === val ? NW.black : NW.gray500, boxShadow: scope === val ? '0 1px 2px rgba(0,0,0,0.06)' : 'none' }}>
+                    <Icon name={val === 'client_visible' ? 'users' : 'lock'} size={12} color={scope === val ? (val === 'client_visible' ? NW.teal600 : NW.gray600) : NW.gray400} /> {label}
+                  </button>
+                ))}
+              </div>
+              <Button variant="primary" size="sm" icon="send" disabled={!draft.trim() || posting} onClick={add}>{posting ? 'Posting…' : 'Post note'}</Button>
+            </div>
+            <div style={{ fontSize: 10.5, color: NW.gray400, marginTop: 6 }}>
+              {shared ? 'Visible to your team and the Nearwork team.' : 'Visible only to your team — the Nearwork team can’t see this.'}
+            </div>
           </div>
         </div>
-      </div>
+      )}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
-        {notes.map((n, i) => (
+        {list.length === 0 && (
+          <div style={{ fontSize: 12.5, color: NW.gray400, padding: '4px 0' }}>No notes yet.</div>
+        )}
+        {list.map((n, i) => (
           <div key={i} style={{ display: 'flex', gap: 10 }}>
-            <Avatar initials={n.recruiter ? 'LP' : n.author.split(' ').map(w => w[0]).join('').slice(0, 2)} size={32} bg={n.recruiter ? NW.black : NW.violet500} />
+            <Avatar initials={n.recruiter ? 'NW' : n.author.split(' ').map(w => w[0]).join('').slice(0, 2)} size={32} bg={n.recruiter ? NW.black : NW.violet500} />
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3, flexWrap: 'wrap' }}>
                 <span style={{ fontSize: 12.5, fontWeight: 600, color: NW.black }}>{n.author}</span>
                 <span style={{ fontSize: 10.5, color: NW.gray400 }}>{n.date}</span>
                 {n.recruiter && <span style={{ fontSize: 9.5, fontWeight: 700, color: NW.teal700, background: NW.teal50, padding: '2px 7px', borderRadius: 999, letterSpacing: '0.04em', textTransform: 'uppercase' }}>From Nearwork</span>}
+                {n.internal && <span style={{ fontSize: 9.5, fontWeight: 700, color: NW.gray600, background: NW.gray100, padding: '2px 7px', borderRadius: 999, letterSpacing: '0.04em', textTransform: 'uppercase', display: 'inline-flex', alignItems: 'center', gap: 3 }}><Icon name="lock" size={9} color={NW.gray600} /> Team only</span>}
               </div>
               <p style={{ fontSize: 13, color: NW.gray700, lineHeight: 1.55, margin: 0 }}>{n.text}</p>
             </div>
@@ -643,11 +658,12 @@ function AssessmentPending({ c }: { c: CandidateHeader }) {
 }
 
 // ── Screen ───────────────────────────────────────────────────────────────────
-export function CandidateDetailScreen({ client, data, density = "regular", onNav }: {
+export function CandidateDetailScreen({ client, data, density = "regular", onNav, onAddNote }: {
   client: PortalClient;
   data: CandidateData;
   density?: "regular" | "compact";
   onNav?: NavHandler;
+  onAddNote?: (text: string, scope: 'client_visible' | 'client_internal') => Promise<void> | void;
 }) {
   const dense = density === 'compact';
   const pad = dense ? 28 : 40;
@@ -793,7 +809,7 @@ export function CandidateDetailScreen({ client, data, density = "regular", onNav
                     <SnapshotPanel c={c} x={x} />
                     <SkillsMatchPanel c={c} fit={data.fitForRole} />
                     {highlights && <HighlightsPanel h={highlights} />}
-                    <NotesPanel c={c} user={{ name: client.user.name, initials: client.user.initials }} seedNotes={data.notes} />
+                    <NotesPanel c={c} user={{ name: client.user.name, initials: client.user.initials }} notes={data.notes} onAddNote={onAddNote} readOnly={client.access === 'viewer'} />
                   </div>
                 </div>
 

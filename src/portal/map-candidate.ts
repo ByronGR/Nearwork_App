@@ -3,8 +3,8 @@
 // radar) from the parsed assessments doc once Admin has uploaded the PDFs. If the
 // rich data isn't there yet, the screen shows its clean "pending" state.
 
-import type { PortalOpening, PortalPipeline, PortalAssessment } from "@/lib/firebase-client";
-import type { CandidateData, CandidateHeader, CandidateDiscDim } from "./screens/candidate";
+import { isNearworkEmail, type PortalOpening, type PortalPipeline, type PortalAssessment, type PortalNote } from "@/lib/firebase-client";
+import type { CandidateData, CandidateHeader, CandidateDiscDim, CandidateNote } from "./screens/candidate";
 import { clientStageKey, stageIdxOf, STAGE_LABELS, avatarColor, initialsOf } from "./stage-map";
 
 const DISC_COLORS: Record<string, string> = { D: "#E74C7C", I: "#EAB308", S: "#16A085", C: "#3B82F6" };
@@ -22,20 +22,77 @@ const asRec = (v: unknown): Rec => (v && typeof v === "object" ? (v as Rec) : {}
 const numOr = (v: unknown, d = 0) => (typeof v === "number" ? v : d);
 const strOr = (v: unknown, d = "") => (typeof v === "string" ? v : d);
 
+const matchCandIn = (p: PortalPipeline, candidateId: string): Rec | undefined =>
+  (p.candidates || []).find((x) => {
+    const rec = x as Rec;
+    return (rec.candidateCode || rec.code || "") === candidateId || rec.candidateId === candidateId;
+  }) as Rec | undefined;
+
+// Locate the raw pipeline-candidate + its pipeline by the id the UI navigates with,
+// preferring the pipeline the candidate was opened from. Shared by the detail
+// mapper and the note writer so both resolve the same record.
+export function findPipelineCandidate(
+  pipelines: PortalPipeline[],
+  candidateId?: string | null,
+  pipelineCode?: string | null,
+): { c: Rec; pipe: PortalPipeline } | null {
+  if (!candidateId) return null;
+  if (pipelineCode) {
+    const pp = (pipelines || []).find((p) => p.code === pipelineCode);
+    const c = pp ? matchCandIn(pp, candidateId) : undefined;
+    if (pp && c) return { c, pipe: pp };
+  }
+  for (const p of pipelines || []) {
+    const c = matchCandIn(p, candidateId);
+    if (c) return { c, pipe: p };
+  }
+  return null;
+}
+
+const tsOf = (v: unknown): number => {
+  const r = asRec(v);
+  return typeof r.seconds === "number" ? r.seconds : 0;
+};
+function fmtNoteDate(v: unknown): string {
+  const secs = tsOf(v);
+  if (!secs) return "Just now";
+  const d = new Date(secs * 1000);
+  const now = Date.now();
+  const diff = now - d.getTime();
+  if (diff < 60_000) return "Just now";
+  if (diff < 3_600_000) return `${Math.floor(diff / 60_000)}m ago`;
+  if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)}h ago`;
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+// candidateNotes for this candidate → the screen's note shape, newest first.
+// The org-scoped subscription already excludes notes this client may not read
+// (Nearwork-internal), so we only translate + tag them here.
+function toCandidateNotes(notes: PortalNote[], c: Rec, realId: string): CandidateNote[] {
+  const code = (c.candidateCode || c.code || "") as string;
+  return (notes || [])
+    .filter((n) => (n.candidateCode && n.candidateCode === code) || (n.candidateId && n.candidateId === realId))
+    .sort((a, b) => tsOf(b.createdAt) - tsOf(a.createdAt))
+    .map((n) => ({
+      author: n.author || n.authorName || "Someone",
+      date: fmtNoteDate(n.createdAt),
+      text: n.text || n.body || "",
+      recruiter: n.side === "nearwork" || isNearworkEmail(n.authorEmail),
+      internal: n.scope === "client_internal" || n.visibility === "client_internal",
+    }));
+}
+
 export function toCandidateData(
   pipelines: PortalPipeline[],
   openings: PortalOpening[],
   assessments: PortalAssessment[],
   candidateId?: string | null,
   pipelineCode?: string | null,
+  notes: PortalNote[] = [],
 ): CandidateData | null {
   if (!candidateId) return null;
 
-  const matchCand = (p: PortalPipeline): Rec | undefined =>
-    (p.candidates || []).find((x) => {
-      const rec = x as Rec;
-      return (rec.candidateCode || rec.code || "") === candidateId || rec.candidateId === candidateId;
-    }) as Rec | undefined;
+  const matchCand = (p: PortalPipeline): Rec | undefined => matchCandIn(p, candidateId);
 
   let found: Rec | undefined;
   let pipe: PortalPipeline | undefined;
@@ -104,6 +161,7 @@ export function toCandidateData(
     snapshot: salaryExp ? { salaryExp } : undefined,
     fitForRole,
     completed: false,
+    notes: toCandidateNotes(notes, c, realId),
   };
 
   // ── Rich report (once the assessment PDF has been parsed) ──────────────────
