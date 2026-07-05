@@ -277,17 +277,46 @@ export type PortalAssessment = {
 
 export type PortalNote = {
   id: string;
+  candidateId?: string;
   candidateCode?: string;
+  candidateName?: string;
   pipelineCode?: string;
   pipelineTitle?: string;
   orgId?: string;
   orgName?: string;
   scope?: string;
   visibility?: string;
+  side?: string; // "client" | "nearwork"
   text?: string;
+  body?: string; // mirror of text (Admin renders `body`)
   author?: string;
+  authorName?: string;
   authorUid?: string;
   authorEmail?: string;
+  createdAt?: unknown;
+};
+
+// A client-raised request on a candidate. Clients don't move stages themselves —
+// they ASK Nearwork to advance / hire / reject / interview, and the Nearwork team
+// acts on it. status: "pending" | "handled" | "dismissed".
+export type PortalRequest = {
+  id: string;
+  orgId?: string;
+  orgName?: string;
+  candidateId?: string;
+  candidateCode?: string;
+  candidateName?: string;
+  pipelineCode?: string;
+  pipelineTitle?: string;
+  type?: string; // advance | hire | reject | interview
+  fromStage?: string;
+  toStage?: string;
+  reason?: string;
+  status?: string;
+  requestedBy?: string;
+  requestedByEmail?: string;
+  requestedByUid?: string;
+  side?: string;
   createdAt?: unknown;
 };
 
@@ -467,6 +496,29 @@ export async function sendOrgInvite(
   }
 }
 
+// Revoke a teammate's access to a workspace (client admins). Goes through the
+// server (Admin SDK) since clients can't edit org membership directly. Reversible
+// — the person's account stays; re-inviting restores access.
+export async function removeOrgMember(
+  orgId: string,
+  member: { email?: string; uid?: string },
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const res = await fetch("/api/remove-member", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ orgId, email: (member.email || "").trim().toLowerCase(), uid: member.uid || "" }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || data?.ok === false) {
+      return { ok: false, error: data?.error || `Remove failed (${res.status})` };
+    }
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: (e as Error).message || "Network error" };
+  }
+}
+
 export async function sendClientPasswordReset(email: string) {
   const normalizedEmail = email.trim().toLowerCase();
   // Send the branded Nearwork reset email via the Admin API, which generates the
@@ -592,6 +644,7 @@ export async function getClientUser(user: User): Promise<ClientUser | null> {
       || memberships[0];
     return {
       ...directProfile,
+      email: directProfile.email || email,
       orgId: directProfile.activeOrgId || directProfile.orgId || directProfile.organizationId || primaryMembership?.orgId,
       orgName: directProfile.orgName || primaryMembership?.orgName,
       orgIds: uniqueOrgIds,
@@ -785,28 +838,70 @@ export async function markNotificationRead(id: string) {
 export async function addClientNote(input: {
   org: Organization;
   profile: ClientUser;
-  candidate: PortalCandidate;
-  pipeline?: PortalPipeline;
+  // A light candidate shape — we write every join key we have so the note is
+  // findable from either side (Admin keys by candidateId, the portal by code).
+  candidate: { id?: string; code?: string; name?: string; role?: string };
+  pipeline?: { code?: string; openingTitle?: string };
   text: string;
+  // client_visible = shared with Nearwork · client_internal = this team only
   scope: "client_visible" | "client_internal";
 }) {
+  const author = input.profile.name || input.profile.email || "Client user";
   const note = {
-    candidateCode: input.candidate.code,
-    candidateName: input.candidate.name,
+    candidateId: input.candidate.id || "",
+    candidateCode: input.candidate.code || "",
+    candidateName: input.candidate.name || "",
     pipelineCode: input.pipeline?.code || "",
     pipelineTitle: input.pipeline?.openingTitle || input.candidate.role || "",
     orgId: input.org.orgId || input.org.id,
     orgName: input.org.name,
     scope: input.scope,
     visibility: input.scope,
+    side: "client",
     text: input.text,
-    author: input.profile.name || input.profile.email || "Client user",
+    body: input.text, // mirror so Admin's `body` renderer shows it too
+    author,
+    authorName: author,
     authorEmail: input.profile.email || "",
     authorUid: input.profile.id,
     app: "app.nearwork.co",
     createdAt: serverTimestamp(),
   };
   await addDoc(collection(db, "candidateNotes"), note);
+}
+
+export async function createPipelineRequest(input: {
+  org: Organization;
+  profile: ClientUser;
+  candidate: { id?: string; code?: string; name?: string; role?: string };
+  pipeline?: { code?: string; openingTitle?: string };
+  type: "advance" | "hire" | "reject" | "interview";
+  fromStage?: string;
+  toStage?: string;
+  reason?: string;
+}) {
+  const by = input.profile.name || input.profile.email || "Client user";
+  const req = {
+    orgId: input.org.orgId || input.org.id,
+    orgName: input.org.name,
+    candidateId: input.candidate.id || "",
+    candidateCode: input.candidate.code || "",
+    candidateName: input.candidate.name || "",
+    pipelineCode: input.pipeline?.code || "",
+    pipelineTitle: input.pipeline?.openingTitle || input.candidate.role || "",
+    type: input.type,
+    fromStage: input.fromStage || "",
+    toStage: input.toStage || "",
+    reason: input.reason || "",
+    status: "pending",
+    requestedBy: by,
+    requestedByEmail: input.profile.email || "",
+    requestedByUid: input.profile.id,
+    side: "client",
+    app: "app.nearwork.co",
+    createdAt: serverTimestamp(),
+  };
+  await addDoc(collection(db, "pipelineRequests"), req);
 }
 
 export function subscribeOpeningChat(org: Organization, openingCode: string, callback: (items: OpeningChatMessage[]) => void) {

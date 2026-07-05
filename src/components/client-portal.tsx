@@ -464,7 +464,7 @@ function LoginField({
   );
 }
 
-function LoginScreen({ message }: { message?: string }) {
+export function LoginScreen({ message }: { message?: string }) {
   const inviteEmail = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("email") || "" : "";
   const inviteToken = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("token") || "" : "";
   const inviteOrgId = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("orgId") || "" : "";
@@ -820,7 +820,7 @@ function NotificationPanel({
 // Shown to @nearwork.co staff after they sign in: lets them pick which client
 // organization's workspace to view. The choice is saved as activeOrgId so
 // future logins land directly in that org until they switch again.
-function StaffOrgPicker({ profile, onSelect }: { profile: ClientUser; onSelect: (org: Organization) => void }) {
+export function StaffOrgPicker({ profile, onSelect }: { profile: ClientUser; onSelect: (org: Organization) => void }) {
   const [orgs, setOrgs] = useState<Organization[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");

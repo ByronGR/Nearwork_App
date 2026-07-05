@@ -197,7 +197,7 @@ function Grid3({ children }: { children: React.ReactNode }) {
 
 // ─── Main component ──────────────────────────────────────────────────────────
 
-export function KickoffBriefPage({ code }: { code: string }) {
+export function KickoffBriefPage({ code, onBack }: { code: string; onBack?: () => void }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<ClientUser | null>(null);
   const [brief, setBrief] = useState<KickoffBrief | null>(null);
@@ -341,9 +341,15 @@ export function KickoffBriefPage({ code }: { code: string }) {
         <p className="text-sm text-[#9E9E9E]">
           The Nearwork team hasn&apos;t created the kick-off brief for this role yet. Check back after your kick-off call.
         </p>
-        <a href={`/pipeline/${code}`} className="inline-flex items-center gap-2 mt-6 text-sm font-semibold text-[#16A085] hover:underline">
-          <ArrowLeft size={14} /> Back to pipeline
-        </a>
+        {onBack ? (
+          <button onClick={onBack} className="inline-flex items-center gap-2 mt-6 text-sm font-semibold text-[#16A085] hover:underline">
+            <ArrowLeft size={14} /> Back to roles
+          </button>
+        ) : (
+          <a href={`/pipeline/${code}`} className="inline-flex items-center gap-2 mt-6 text-sm font-semibold text-[#16A085] hover:underline">
+            <ArrowLeft size={14} /> Back to pipeline
+          </a>
+        )}
       </div>
     </div>
   );
@@ -373,9 +379,15 @@ export function KickoffBriefPage({ code }: { code: string }) {
           Near<span className="text-[#16A085]">work</span>
         </a>
         <div className="w-px h-4 bg-white/20" />
-        <a href={`/pipeline/${code}`} className="flex items-center gap-1.5 text-xs text-white/60 hover:text-white">
-          <ArrowLeft size={13} /> Back to pipeline
-        </a>
+        {onBack ? (
+          <button onClick={onBack} className="flex items-center gap-1.5 text-xs text-white/60 hover:text-white">
+            <ArrowLeft size={13} /> Back to roles
+          </button>
+        ) : (
+          <a href={`/pipeline/${code}`} className="flex items-center gap-1.5 text-xs text-white/60 hover:text-white">
+            <ArrowLeft size={13} /> Back to pipeline
+          </a>
+        )}
         <div className="flex-1" />
         <StatusBadge status={status} />
         {profile && (
