@@ -408,6 +408,15 @@ service cloud.firestore {
       allow update, delete: if isStaff();
     }
 
+    // Follows — a user opts in to notifications about a role/team/SPP. Each person
+    // manages only their own follow docs; the notification writer (Admin SDK) reads
+    // followers server-side.
+    match /follows/{followId} {
+      allow read: if isStaff() || (isAuth() && resource.data.uid == request.auth.uid);
+      allow create, update: if isAuth() && request.resource.data.uid == request.auth.uid;
+      allow delete: if isAuth() && resource.data.uid == request.auth.uid;
+    }
+
     match /openingChats/{messageId} {
       allow read: if isStaff() || sameOrg(resource.data);
 

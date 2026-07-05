@@ -19,6 +19,7 @@ import { BillingScreen } from "./screens/billing";
 import { UsersScreen } from "./screens/users";
 import { SettingsScreen } from "./screens/settings";
 import { SppScreen } from "./screens/spp";
+import { NotificationsScreen } from "./screens/notifications";
 import { usePortalData } from "./use-portal-data";
 import { toPortalClient, toOverviewData } from "./map-overview";
 import { toRolesData } from "./map-roles";
@@ -186,7 +187,7 @@ export function PortalApp() {
   if (route === "pipeline") {
     return (
       <div style={{ position: "fixed", inset: 0 }}>
-        <OpenRolesScreen client={client} data={toRolesData(openings, pipelines)} onNav={go} />
+        <OpenRolesScreen client={client} data={toRolesData(openings, pipelines)} orgId={org?.orgId || org?.id || ""} onNav={go} />
       </div>
     );
   }
@@ -227,6 +228,14 @@ export function PortalApp() {
     return (
       <div style={{ position: "fixed", inset: 0 }}>
         <SppScreen client={client} data={toSppData()} onNav={go} />
+      </div>
+    );
+  }
+
+  if (route === "notifications") {
+    return (
+      <div style={{ position: "fixed", inset: 0 }}>
+        <NotificationsScreen client={client} onNav={go} />
       </div>
     );
   }

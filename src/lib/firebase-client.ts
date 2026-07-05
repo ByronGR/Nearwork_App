@@ -19,6 +19,7 @@ import {
 import {
   addDoc,
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocFromServer,
@@ -325,10 +326,18 @@ export type PortalNotification = {
   id: string;
   title?: string;
   message?: string;
+  body?: string;        // Admin-written mirror of message
   read?: boolean;
+  readAt?: unknown;
   createdAt?: unknown;
+  type?: string;        // event type (for icon/colour)
+  category?: string;    // "Pipeline" | "Kickoff" | "Note" | ...
+  link?: string;
   candidateCode?: string;
+  candidateName?: string;
   pipelineCode?: string;
+  actorName?: string;
+  orgId?: string;
   channel?: string;
 };
 
@@ -836,6 +845,26 @@ export async function markNotificationRead(id: string) {
   await setDoc(doc(db, "notifications", id), { read: true, readAt: serverTimestamp() }, { merge: true });
 }
 
+export async function markNotificationUnread(id: string) {
+  await setDoc(doc(db, "notifications", id), { read: false, readAt: null }, { merge: true });
+}
+
+// Fire an event at the notification writer (/api/notify → Admin SDK). Best-effort:
+// notifications must never block or break the underlying action.
+export async function notifyEvent(payload: Record<string, unknown>) {
+  try {
+    const token = await auth.currentUser?.getIdToken();
+    if (!token) return;
+    await fetch("/api/notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify(payload),
+    });
+  } catch {
+    /* ignore — best-effort */
+  }
+}
+
 export async function addClientNote(input: {
   org: Organization;
   profile: ClientUser;
@@ -869,6 +898,60 @@ export async function addClientNote(input: {
     createdAt: serverTimestamp(),
   };
   await addDoc(collection(db, "candidateNotes"), note);
+  // Noting on a role auto-follows it — the client cares about the role either
+  // way, so both shared and team-only notes trigger a follow.
+  if (input.pipeline?.code) {
+    void followEntity(input.profile.id, "opening", input.pipeline.code, input.org.orgId || input.org.id);
+  }
+  // Only shared notes ping Nearwork — team-only notes stay private to the client.
+  if (input.scope === "client_visible") {
+    void notifyEvent({
+      event: "client_note",
+      orgId: input.org.orgId || input.org.id,
+      pipelineCode: input.pipeline?.code || "",
+      candidateCode: input.candidate.code || "",
+      candidateName: input.candidate.name || "",
+      noteExcerpt: input.text.slice(0, 140),
+      actorName: author,
+    });
+  }
+}
+
+// ─── Follows (follows collection) ──────────────────────────────────────────
+// A client can "follow" an entity (e.g. an opening/role) to get notified about
+// its activity. Doc id is `${uid}_${entityType}_${entityId}` so a follow is
+// idempotent and easy to delete. All best-effort — following must never crash
+// the UI.
+export async function followEntity(uid: string, entityType: string, entityId: string, orgId?: string) {
+  try {
+    await setDoc(
+      doc(db, "follows", `${uid}_${entityType}_${entityId}`),
+      { uid, entityType, entityId, entityKey: `${entityType}:${entityId}`, orgId: orgId || "", createdAt: serverTimestamp() },
+      { merge: true },
+    );
+  } catch (error) {
+    console.warn("[followEntity] Could not follow entity.", error);
+  }
+}
+
+export async function unfollowEntity(uid: string, entityType: string, entityId: string) {
+  try {
+    await deleteDoc(doc(db, "follows", `${uid}_${entityType}_${entityId}`));
+  } catch (error) {
+    console.warn("[unfollowEntity] Could not unfollow entity.", error);
+  }
+}
+
+// Live set of the user's follows, keyed as `${entityType}:${entityId}` so a
+// screen can cheaply check `keys.has('opening:'+openingId)`. Returns unsubscribe.
+export function subscribeMyFollows(uid: string, cb: (keys: Set<string>) => void) {
+  return onSnapshot(
+    query(collection(db, "follows"), where("uid", "==", uid)),
+    (snap) => cb(new Set(snap.docs.map((d) => {
+      const x = d.data();
+      return `${x.entityType}:${x.entityId}`;
+    }))),
+  );
 }
 
 export async function createPipelineRequest(input: {
@@ -903,6 +986,21 @@ export async function createPipelineRequest(input: {
     createdAt: serverTimestamp(),
   };
   await addDoc(collection(db, "pipelineRequests"), req);
+  // Acting on a role auto-follows it, so the client is kept in the loop.
+  if (input.pipeline?.code) {
+    void followEntity(input.profile.id, "opening", input.pipeline.code, input.org.orgId || input.org.id);
+  }
+  void notifyEvent({
+    event: "client_request",
+    orgId: input.org.orgId || input.org.id,
+    pipelineCode: input.pipeline?.code || "",
+    candidateCode: input.candidate.code || "",
+    candidateName: input.candidate.name || "",
+    requestType: input.type,
+    toStage: input.toStage || "",
+    reason: input.reason || "",
+    actorName: by,
+  });
 }
 
 export function subscribeOpeningChat(org: Organization, openingCode: string, callback: (items: OpeningChatMessage[]) => void) {
