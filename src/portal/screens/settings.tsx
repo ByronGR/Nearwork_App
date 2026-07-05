@@ -10,19 +10,31 @@
 import React, { useState } from "react";
 import { NW, Icon, Button, Avatar } from "../primitives";
 import { PortalSidebar, PortalTopBar, type PortalClient } from "../shell";
+import { auth, saveNotificationPreferences } from "@/lib/firebase-client";
 
 // ── Typed data prop shapes ────────────────────────────────────────────────────
 export type SettingsProfile = {
   email: string; // partner user's email (not carried on PortalClient.user)
 };
 
+// 3-state per notification type: Off / In-app / In-app + Email.
+export type NotifState = "off" | "app" | "both";
+
 export type SettingsNotificationPrefs = {
-  newCandidate: boolean; // when Nearwork shares a candidate for your roles
-  interview: boolean; // scheduling and reminders for upcoming interviews
-  pto: boolean; // when a hire requests PTO that needs your approval
-  kickoff: boolean; // when a new kickoff brief is ready for your approval
-  billing: boolean; // upcoming invoices and payment confirmations
-  weekly: boolean; // a Monday digest of pipeline and team activity
+  candidates: NotifState; // new candidates, stage changes, assessment results
+  notes: NotifState; // when Nearwork leaves a note on a candidate
+  requests: NotifState; // when Nearwork acts on a request you raised
+  kickoff: NotifState; // when a brief is ready for your approval
+  team: NotifState; // new hires and team updates
+  billing: NotifState; // invoices and payment updates
+  weekly: NotifState; // a Monday email digest
+};
+
+// 3-state → stored { app, email } shape (must match the notification writer).
+const STATE_TO_STORED: Record<NotifState, { app: boolean; email: boolean }> = {
+  off: { app: false, email: false },
+  app: { app: true, email: false },
+  both: { app: true, email: true },
 };
 
 export type SettingsData = {
@@ -51,12 +63,26 @@ function ModalShell({ children, onClose, width = 620 }: { children?: React.React
   );
 }
 
-// ── Toggle ────────────────────────────────────────────────────────────────────
-function Toggle({ on, onClick }: { on?: boolean; onClick?: () => void }) {
+// ── 3-state segmented control (Off / In-app / In-app + Email) ─────────────────
+// Mirrors the pill-segment styling used in NotesPanel on the candidate screen.
+const NOTIF_SEGMENTS: { val: NotifState; label: string; icon: string }[] = [
+  { val: "off", label: "Off", icon: "bell-off" },
+  { val: "app", label: "In-app", icon: "bell" },
+  { val: "both", label: "In-app + Email", icon: "mail" },
+];
+
+function NotifSegment({ value, onChange }: { value: NotifState; onChange: (v: NotifState) => void }) {
   return (
-    <button onClick={onClick} style={{ width: 42, height: 24, borderRadius: 999, border: "none", background: on ? NW.teal500 : NW.gray200, position: "relative", cursor: "pointer", transition: "background 160ms", flexShrink: 0 }}>
-      <span style={{ position: "absolute", top: 3, left: on ? 21 : 3, width: 18, height: 18, borderRadius: 999, background: NW.white, boxShadow: "0 1px 2px rgba(0,0,0,0.2)", transition: "left 160ms" }} />
-    </button>
+    <div style={{ display: "inline-flex", background: NW.gray50, border: `1px solid ${NW.gray200}`, borderRadius: 9, padding: 2 }}>
+      {NOTIF_SEGMENTS.map(({ val, label, icon }) => {
+        const active = value === val;
+        return (
+          <button key={val} onClick={() => onChange(val)} style={{ display: "inline-flex", alignItems: "center", gap: 5, border: "none", cursor: "pointer", font: "inherit", fontSize: 11.5, fontWeight: 600, padding: "5px 10px", borderRadius: 7, background: active ? NW.white : "transparent", color: active ? NW.black : NW.gray500, boxShadow: active ? "0 1px 2px rgba(0,0,0,0.06)" : "none", transition: "background 120ms" }}>
+            <Icon name={icon} size={12} color={active ? NW.teal600 : NW.gray400} /> {label}
+          </button>
+        );
+      })}
+    </div>
   );
 }
 
@@ -160,7 +186,26 @@ export function SettingsScreen({ client, data, density = "regular", onNav }: {
   const [editOpen, setEditOpen] = useState(false);
   const [saved, setSaved] = useState(false);
   const [notif, setNotif] = useState<SettingsNotificationPrefs>(data.notifications);
-  const flip = (k: keyof SettingsNotificationPrefs) => setNotif((n) => ({ ...n, [k]: !n[k] }));
+  const [notifSaved, setNotifSaved] = useState(false);
+  const setNotifState = (k: keyof SettingsNotificationPrefs, v: NotifState) => {
+    setNotif((prev) => {
+      const next = { ...prev, [k]: v };
+      // Persist the FULL preferences map as { [key]: { app, email } } for all keys.
+      const prefs = Object.fromEntries(
+        (Object.keys(next) as (keyof SettingsNotificationPrefs)[]).map((key) => [key, STATE_TO_STORED[next[key]]]),
+      );
+      const uid = auth.currentUser?.uid;
+      if (uid) {
+        saveNotificationPreferences(uid, prefs)
+          .then(() => {
+            setNotifSaved(true);
+            setTimeout(() => setNotifSaved(false), 2000);
+          })
+          .catch(() => { /* ignore save errors — optimistic local state stands */ });
+      }
+      return next;
+    });
+  };
   const saveProfile = (p: EditProfileValues) => {
     const initials = p.name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
     setProfile({ ...p, initials });
@@ -169,12 +214,13 @@ export function SettingsScreen({ client, data, density = "regular", onNav }: {
   };
 
   const notifRows: { k: keyof SettingsNotificationPrefs; t: string; d: string }[] = [
-    { k: "newCandidate", t: "New candidates", d: "When Nearwork shares a candidate for your roles" },
-    { k: "interview",    t: "Interview updates", d: "Scheduling and reminders for upcoming interviews" },
-    { k: "pto",          t: "Time-off requests", d: "When a hire requests PTO that needs your approval" },
-    { k: "kickoff",      t: "Kickoff briefs", d: "When a new kickoff brief is ready for your approval" },
-    { k: "billing",      t: "Billing reminders", d: "Upcoming invoices and payment confirmations" },
-    { k: "weekly",       t: "Weekly summary", d: "A Monday digest of pipeline and team activity" },
+    { k: "candidates", t: "Candidate updates", d: "New candidates, stage changes, and assessment results" },
+    { k: "notes",      t: "Notes from Nearwork", d: "When Nearwork leaves a note on a candidate" },
+    { k: "requests",   t: "Your requests", d: "When Nearwork acts on a request you raised" },
+    { k: "kickoff",    t: "Kickoff briefs", d: "When a brief is ready for your approval" },
+    { k: "team",       t: "Team & hires", d: "New hires and team updates" },
+    { k: "billing",    t: "Billing", d: "Invoices and payment updates" },
+    { k: "weekly",     t: "Weekly summary", d: "A Monday email digest" },
   ];
 
   return (
@@ -208,11 +254,14 @@ export function SettingsScreen({ client, data, density = "regular", onNav }: {
 
               {/* Notifications */}
               <SettingsCard icon="bell" title="Notifications">
-                <p style={{ fontSize: 12.5, color: NW.gray500, margin: "2px 0 6px" }}>Choose what we email you about.</p>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, margin: "2px 0 6px" }}>
+                  <p style={{ fontSize: 12.5, color: NW.gray500, margin: 0 }}>Choose how we notify you. In-app is the default.</p>
+                  {notifSaved && <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11.5, fontWeight: 600, color: NW.teal700, background: NW.teal50, padding: "4px 10px", borderRadius: 999, flexShrink: 0 }}><Icon name="check" size={12} color={NW.teal600} strokeWidth={2.5} /> Saved</span>}
+                </div>
                 <div>
                   {notifRows.map((r, i) => (
                     <SettingsRow key={r.k} title={r.t} desc={r.d} last={i === notifRows.length - 1}>
-                      <Toggle on={notif[r.k]} onClick={() => flip(r.k)} />
+                      <NotifSegment value={notif[r.k]} onChange={(v) => setNotifState(r.k, v)} />
                     </SettingsRow>
                   ))}
                 </div>
