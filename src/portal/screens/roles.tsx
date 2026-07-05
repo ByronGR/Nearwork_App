@@ -5,9 +5,10 @@
 // globals; this takes a `data` object + `client` as PROPS so real Firebase data
 // drops in later. Inline styles preserved verbatim for fidelity.
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { NW, Icon, Avatar } from "../primitives";
 import { PortalSidebar, PortalTopBar, EmptyBlock, type PortalClient } from "../shell";
+import { auth, followEntity, unfollowEntity, subscribeMyFollows } from "@/lib/firebase-client";
 
 // ── Typed data prop shapes ────────────────────────────────────────────────────
 export type RoleOpening = {
@@ -64,11 +65,37 @@ const ROLE_STAGES = [
   { key: "Offer", color: NW.rose500, idx: 5 },
 ];
 
-function RoleCard({ opening, candidates, dense, onOpen }: {
+// ── Follow / Following toggle (personal — any client, incl. viewers) ──────────
+function FollowButton({ following, onToggle }: { following: boolean; onToggle: () => void }) {
+  const [hover, setHover] = useState(false);
+  return (
+    <button
+      onClick={(e) => { e.stopPropagation(); onToggle(); }}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      title={following ? "Following this role — you'll get updates on its candidates" : "Follow this role to get updates on its candidates"}
+      style={{
+        display: "inline-flex", alignItems: "center", gap: 6,
+        height: 28, padding: "0 11px", borderRadius: 999,
+        fontFamily: "inherit", fontSize: 12, fontWeight: 600, letterSpacing: "-0.01em",
+        cursor: "pointer", transition: "background 150ms, border-color 150ms, color 150ms",
+        border: `1px solid ${following ? "transparent" : NW.gray200}`,
+        background: following ? (hover ? NW.teal700 : NW.teal600) : (hover ? NW.gray50 : NW.white),
+        color: following ? NW.white : NW.gray700,
+      }}>
+      <Icon name={following ? "bell" : "bell-off"} size={13} color={following ? NW.white : NW.gray500} />
+      {following ? "Following" : "Follow"}
+    </button>
+  );
+}
+
+function RoleCard({ opening, candidates, dense, onOpen, following, onToggleFollow }: {
   opening: RoleOpening;
   candidates: RoleCandidate[];
   dense?: boolean;
   onOpen?: (opening: RoleOpening) => void;
+  following?: boolean;
+  onToggleFollow?: (openingId: string) => void;
 }) {
   const [hover, setHover] = useState(false);
   const mine = candidates.filter((c) => c.openingId === opening.id);
@@ -114,7 +141,10 @@ function RoleCard({ opening, candidates, dense, onOpen }: {
           <span style={{ width: 6, height: 6, borderRadius: "50%", background: active ? NW.teal500 : NW.gray400 }} />
           {active ? "Active" : "Sourcing"}
         </span>
-        <span style={{ fontSize: 12, color: NW.gray400, fontWeight: 500 }}>{opening.daysOpen}d open</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          {onToggleFollow && <FollowButton following={!!following} onToggle={() => onToggleFollow(opening.id)} />}
+          <span style={{ fontSize: 12, color: NW.gray400, fontWeight: 500 }}>{opening.daysOpen}d open</span>
+        </div>
       </div>
 
       {/* Title block */}
@@ -229,13 +259,39 @@ function KickoffCard({ kf, dense, onReview }: {
 }
 
 // ── Open roles screen ─────────────────────────────────────────────────────────
-export function OpenRolesScreen({ client, data, density = "regular", onNav }: {
+export function OpenRolesScreen({ client, data, orgId = "", density = "regular", onNav }: {
   client: PortalClient;
   data: RolesData;
+  orgId?: string;
   density?: "regular" | "compact";
   onNav?: NavHandler;
 }) {
   const dense = density === "compact";
+
+  // Personal role follows. Self-contained: subscribe to the signed-in user's
+  // follows and keep a Set of `opening:${openingId}` keys. Best-effort — a
+  // follow never blocks or breaks the screen. Viewers may follow too (personal).
+  const [follows, setFollows] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    const uid = auth.currentUser?.uid;
+    if (!uid) return;
+    return subscribeMyFollows(uid, setFollows);
+  }, []);
+  const toggleFollow = (openingId: string) => {
+    const uid = auth.currentUser?.uid;
+    if (!uid) return;
+    const key = `opening:${openingId}`;
+    const isFollowing = follows.has(key);
+    // Optimistic local flip so the button reacts immediately; the snapshot
+    // subscription reconciles to the server truth shortly after.
+    setFollows((prev) => {
+      const next = new Set(prev);
+      if (isFollowing) next.delete(key); else next.add(key);
+      return next;
+    });
+    if (isFollowing) void unfollowEntity(uid, "opening", openingId);
+    else void followEntity(uid, "opening", openingId, orgId);
+  };
   const pad = dense ? 32 : 44;
   const openings = data.openings;
   const candidates = data.candidates;
@@ -355,7 +411,7 @@ export function OpenRolesScreen({ client, data, density = "regular", onNav }: {
               </div>
               {filteredOpenings.length > 0 ? (
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: dense ? 16 : 22 }}>
-                  {filteredOpenings.map((o) => <RoleCard key={o.id} opening={o} candidates={candidates} dense={dense} onOpen={(op) => onNav && onNav("kanban", op.id)} />)}
+                  {filteredOpenings.map((o) => <RoleCard key={o.id} opening={o} candidates={candidates} dense={dense} onOpen={(op) => onNav && onNav("kanban", op.id)} following={follows.has(`opening:${o.id}`)} onToggleFollow={toggleFollow} />)}
                 </div>
               ) : (
                 <div style={{ padding: "40px 20px", textAlign: "center", background: NW.white, border: `1px solid ${NW.gray100}`, borderRadius: 18 }}>

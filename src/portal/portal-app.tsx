@@ -187,7 +187,7 @@ export function PortalApp() {
   if (route === "pipeline") {
     return (
       <div style={{ position: "fixed", inset: 0 }}>
-        <OpenRolesScreen client={client} data={toRolesData(openings, pipelines)} onNav={go} />
+        <OpenRolesScreen client={client} data={toRolesData(openings, pipelines)} orgId={org?.orgId || org?.id || ""} onNav={go} />
       </div>
     );
   }
