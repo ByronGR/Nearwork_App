@@ -6,8 +6,53 @@
 // wire real Firebase data in later without touching the look. Inline styles kept
 // verbatim for fidelity.
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { NW, Icon, Avatar, Button } from "./primitives";
+import { auth, subscribeNotifications, markNotificationRead, type PortalNotification } from "@/lib/firebase-client";
+
+// Category → icon + colour for a notification marker.
+const NOTIF_ICON: Record<string, { icon: string; color: string; bg: string }> = {
+  Pipeline: { icon: "git-branch", color: NW.teal600, bg: NW.teal50 },
+  Kickoff: { icon: "clipboard-check", color: NW.violet500, bg: NW.violet50 },
+  Note: { icon: "message-square-text", color: NW.violet500, bg: NW.violet50 },
+  Team: { icon: "users", color: NW.teal600, bg: NW.teal50 },
+  Access: { icon: "user-plus", color: NW.teal600, bg: NW.teal50 },
+  Billing: { icon: "wallet", color: "#A16207", bg: NW.yellow50 },
+};
+function notifIcon(n: PortalNotification) {
+  return NOTIF_ICON[n.category || ""] || { icon: "bell", color: NW.gray600, bg: NW.gray50 };
+}
+export function notifRelTime(v: unknown): string {
+  const secs = v && typeof v === "object" && "seconds" in (v as Record<string, unknown>) ? Number((v as { seconds?: number }).seconds) : 0;
+  if (!secs) return "";
+  const diff = Date.now() - secs * 1000;
+  if (diff < 60_000) return "Just now";
+  if (diff < 3_600_000) return `${Math.floor(diff / 60_000)}m ago`;
+  if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)}h ago`;
+  return new Date(secs * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+// Where a notification takes you when clicked.
+export function notifTarget(n: PortalNotification, onNav?: NavHandler) {
+  if (!onNav) return;
+  if (n.candidateCode) onNav("candidate", n.candidateCode);
+  else if (n.pipelineCode) onNav("kanban", n.pipelineCode);
+  else onNav("notifications");
+}
+const notifSecs = (v: unknown) => (v && typeof v === "object" && "seconds" in (v as Record<string, unknown>) ? Number((v as { seconds?: number }).seconds) : 0);
+
+// Live notifications for the signed-in user (self-contained so the top bar and
+// the notifications page both work without threading props through every screen).
+export function usePortalNotifications(): PortalNotification[] {
+  const [items, setItems] = useState<PortalNotification[]>([]);
+  useEffect(() => {
+    const user = auth.currentUser;
+    if (!user) return;
+    return subscribeNotifications(user, (list) => {
+      setItems([...list].sort((a, b) => notifSecs(b.createdAt) - notifSecs(a.createdAt)));
+    });
+  }, []);
+  return items;
+}
 
 export type PortalUser = { name: string; initials: string; role?: string };
 export type AccountManager = { name: string; email: string; initials: string };
@@ -21,6 +66,7 @@ export type PortalClient = { company: string; user: PortalUser; accountManager?:
 const VIEWER_NAV = ["overview", "pipeline", "team"];
 const MEMBER_NAV = ["overview", "pipeline", "team", "settings"];
 export function allowedNav(access: PortalAccess | undefined, id: string): boolean {
+  if (id === "notifications") return true; // everyone sees their own inbox
   if (access === "viewer") return VIEWER_NAV.includes(id);
   if (access === "member") return MEMBER_NAV.includes(id);
   return true; // admin (and staff)
@@ -36,7 +82,7 @@ export type PortalActivity = {
 };
 
 type Density = "regular" | "compact";
-type NavHandler = (id: string) => void;
+export type NavHandler = (id: string, arg?: string | number) => void;
 
 const NAV_SECTIONS: { label: string; items: { id: string; label: string; icon: string }[] }[] = [
   { label: "Hiring", items: [
@@ -217,15 +263,21 @@ export function PortalSidebar({ active = "overview", density = "regular", onNav,
   );
 }
 
-export function PortalTopBar({ dense = false, onNav, activity = [] }: {
+export function PortalTopBar({ dense = false, onNav }: {
   dense?: boolean;
   onNav?: NavHandler;
   activity?: PortalActivity[];
 }) {
   const [bellOpen, setBellOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const notifs = activity.slice(0, 5);
-  const unread = Math.min(3, notifs.length);
+  const all = usePortalNotifications();
+  const notifs = all.slice(0, 6);
+  const unread = all.filter((n) => !n.read).length;
+  const openNotif = (n: PortalNotification) => {
+    if (!n.read) markNotificationRead(n.id).catch(() => {});
+    setBellOpen(false);
+    notifTarget(n, onNav);
+  };
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: dense ? "18px 32px" : "24px 40px", borderBottom: `1px solid ${NW.gray100}`, background: NW.white, gap: 24, position: "relative", zIndex: 30 }}>
       <div style={{ flex: 1, position: "relative", maxWidth: 460 }}>
@@ -255,22 +307,26 @@ export function PortalTopBar({ dense = false, onNav, activity = [] }: {
                 <span style={{ fontSize: 13, fontWeight: 700, color: NW.black }}>Notifications</span>
                 {unread > 0 && <span style={{ fontSize: 11, fontWeight: 600, color: NW.rose600, background: NW.rose50, padding: "3px 9px", borderRadius: 999 }}>{unread} new</span>}
               </div>
-              <div style={{ maxHeight: 320, overflow: "auto" }}>
+              <div style={{ maxHeight: 340, overflow: "auto" }}>
                 {notifs.length === 0 ? (
                   <div style={{ padding: "22px 16px", textAlign: "center", fontSize: 12.5, color: NW.gray400 }}>Nothing new right now.</div>
-                ) : notifs.map((a, i) => (
-                  <div key={a.id} style={{ display: "flex", gap: 11, padding: "12px 16px", borderBottom: i === notifs.length - 1 ? "none" : `1px solid ${NW.gray100}`, cursor: "pointer" }}>
-                    <Avatar initials={a.initials} size={30} bg={a.avatarBg} />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 12.5, color: NW.gray700, lineHeight: 1.4 }}><span style={{ fontWeight: 600, color: NW.black }}>{a.who}</span> {a.what}</div>
-                      <div style={{ fontSize: 10.5, color: NW.gray400, marginTop: 2 }}>{a.when}</div>
+                ) : notifs.map((n, i) => {
+                  const ic = notifIcon(n);
+                  return (
+                    <div key={n.id} onClick={() => openNotif(n)} style={{ display: "flex", gap: 11, padding: "12px 16px", borderBottom: i === notifs.length - 1 ? "none" : `1px solid ${NW.gray100}`, cursor: "pointer", background: n.read ? NW.white : NW.teal50 }}>
+                      <span style={{ width: 30, height: 30, borderRadius: 9, background: ic.bg, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icon name={ic.icon} size={15} color={ic.color} /></span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 12.5, fontWeight: 600, color: NW.black, lineHeight: 1.35 }}>{n.title || "Update"}</div>
+                        {(n.message || n.body) && <div style={{ fontSize: 12, color: NW.gray600, marginTop: 1, lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{n.message || n.body}</div>}
+                        <div style={{ fontSize: 10.5, color: NW.gray400, marginTop: 2 }}>{notifRelTime(n.createdAt)}</div>
+                      </div>
+                      {!n.read && <span style={{ width: 7, height: 7, borderRadius: "50%", background: NW.rose500, flexShrink: 0, marginTop: 5 }} />}
                     </div>
-                    {i < unread && <span style={{ width: 7, height: 7, borderRadius: "50%", background: NW.rose500, flexShrink: 0, marginTop: 5 }} />}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
-              <button onClick={() => { setBellOpen(false); onNav && onNav("overview"); }} style={{ width: "100%", border: "none", borderTop: `1px solid ${NW.gray100}`, background: NW.white, padding: "11px", fontFamily: "inherit", fontSize: 12.5, fontWeight: 600, color: NW.teal600, cursor: "pointer" }}>
-                View all activity
+              <button onClick={() => { setBellOpen(false); onNav && onNav("notifications"); }} style={{ width: "100%", border: "none", borderTop: `1px solid ${NW.gray100}`, background: NW.white, padding: "11px", fontFamily: "inherit", fontSize: 12.5, fontWeight: 600, color: NW.teal600, cursor: "pointer" }}>
+                View all notifications
               </button>
             </div>
           </>

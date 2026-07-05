@@ -325,10 +325,18 @@ export type PortalNotification = {
   id: string;
   title?: string;
   message?: string;
+  body?: string;        // Admin-written mirror of message
   read?: boolean;
+  readAt?: unknown;
   createdAt?: unknown;
+  type?: string;        // event type (for icon/colour)
+  category?: string;    // "Pipeline" | "Kickoff" | "Note" | ...
+  link?: string;
   candidateCode?: string;
+  candidateName?: string;
   pipelineCode?: string;
+  actorName?: string;
+  orgId?: string;
   channel?: string;
 };
 
@@ -834,6 +842,10 @@ export function subscribeNotifications(user: User, callback: (items: PortalNotif
 
 export async function markNotificationRead(id: string) {
   await setDoc(doc(db, "notifications", id), { read: true, readAt: serverTimestamp() }, { merge: true });
+}
+
+export async function markNotificationUnread(id: string) {
+  await setDoc(doc(db, "notifications", id), { read: false, readAt: null }, { merge: true });
 }
 
 export async function addClientNote(input: {
