@@ -32,7 +32,7 @@ import { toSettingsData } from "./map-settings";
 import { toSppData } from "./map-spp";
 import { LoginScreen, StaffOrgPicker } from "@/components/client-portal";
 import { KickoffBriefPage } from "@/components/kickoff-brief";
-import { isNearworkEmail, logoutClient, addClientNote, createPipelineRequest, sendOrgInvite } from "@/lib/firebase-client";
+import { isNearworkEmail, logoutClient, addClientNote, createPipelineRequest, sendOrgInvite, removeOrgMember } from "@/lib/firebase-client";
 import { useState } from "react";
 
 // Screens not yet ported from the design source. They render inside the real
@@ -127,6 +127,12 @@ export function PortalApp() {
     }
   };
 
+  // Revoke a teammate's access (client admins only). Reversible — re-invite restores.
+  const removeTeammate = async (member: { email?: string; uid?: string }): Promise<{ ok: boolean; error?: string }> => {
+    if (!org) return { ok: false, error: "No workspace is loaded yet." };
+    return await removeOrgMember(org.orgId || org.id, member);
+  };
+
   // Staff = any @nearwork.co account. Use the login email (always present) so a
   // staff user-doc that happens not to store an email still resolves as staff.
   const isStaff = isNearworkEmail(user?.email || profile?.email);
@@ -204,7 +210,7 @@ export function PortalApp() {
   if (route === "users") {
     return (
       <div style={{ position: "fixed", inset: 0 }}>
-        <UsersScreen client={client} data={toUsersData(org, user?.email ?? undefined)} onNav={go} onInvite={inviteTeammate} />
+        <UsersScreen client={client} data={toUsersData(org, user?.email ?? undefined)} onNav={go} onInvite={inviteTeammate} onRemove={removeTeammate} />
       </div>
     );
   }

@@ -159,12 +159,13 @@ function InviteModal({ roles, onClose, onInvite, error }: {
 }
 
 // ── Users screen ──────────────────────────────────────────────────────────────
-export function UsersScreen({ client, data, density = "regular", onNav, onInvite }: {
+export function UsersScreen({ client, data, density = "regular", onNav, onInvite, onRemove }: {
   client: PortalClient;
   data: UsersData;
   density?: "regular" | "compact";
   onNav?: NavHandler;
   onInvite?: (email: string, role: string) => Promise<{ ok: boolean; error?: string }>;
+  onRemove?: (member: { email?: string; uid?: string }) => Promise<{ ok: boolean; error?: string }>;
 }) {
   const dense = density === "compact";
   const pad = dense ? 32 : 44;
@@ -173,6 +174,20 @@ export function UsersScreen({ client, data, density = "regular", onNav, onInvite
   const [inviting, setInviting] = useState(false);
   const [resent, setResent] = useState<Record<string, boolean>>({});
   const [inviteErr, setInviteErr] = useState<string | null>(null);
+  const [removing, setRemoving] = useState<PortalUserRow | null>(null);
+  const [removeBusy, setRemoveBusy] = useState(false);
+  const [removeErr, setRemoveErr] = useState<string | null>(null);
+  const confirmRemove = async () => {
+    if (!removing || !onRemove || removeBusy) return;
+    setRemoveBusy(true);
+    setRemoveErr(null);
+    try {
+      const res = await onRemove({ email: removing.email, uid: String(removing.id) });
+      if (!res.ok) { setRemoveErr(res.error || "Couldn't remove access. Please try again."); return; }
+      setMembers((ms) => ms.filter((m) => m.id !== removing.id));
+      setRemoving(null);
+    } finally { setRemoveBusy(false); }
+  };
 
   const populated = members.length > 0;
 
@@ -261,11 +276,14 @@ export function UsersScreen({ client, data, density = "regular", onNav, onInvite
                               <span style={{ width: 6, height: 6, borderRadius: "50%", background: ust.dot }} /> {ust.label}
                             </span>
                           </div>
-                          <div style={{ textAlign: "right", fontSize: 12, color: NW.gray500 }}>
-                            {m.status === "invited" ? (resent[m.id]
+                          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3, fontSize: 12, color: NW.gray500 }}>
+                            <span>{m.status === "invited" ? (resent[m.id]
                               ? <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 600, color: NW.teal700 }}><Icon name="check" size={13} color={NW.teal600} strokeWidth={2.5} /> Sent</span>
                               : <button onClick={() => resend(m.id)} style={{ border: "none", background: "transparent", color: NW.teal600, fontFamily: "inherit", fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>Resend</button>
-                            ) : m.lastActive}
+                            ) : m.lastActive}</span>
+                            {!m.you && onRemove && (
+                              <button onClick={() => { setRemoving(m); setRemoveErr(null); }} style={{ border: "none", background: "transparent", color: NW.gray400, fontFamily: "inherit", fontSize: 11.5, fontWeight: 600, cursor: "pointer", padding: 0 }}>Remove access</button>
+                            )}
                           </div>
                         </div>
                       );
@@ -280,6 +298,25 @@ export function UsersScreen({ client, data, density = "regular", onNav, onInvite
           </div>
         </div>
         {inviting && <InviteModal roles={roles} onClose={() => { setInviting(false); setInviteErr(null); }} onInvite={invite} error={inviteErr} />}
+        {removing && (
+          <ModalShell onClose={() => { if (!removeBusy) { setRemoving(null); setRemoveErr(null); } }} width={440}>
+            <div style={{ padding: "24px 28px" }}>
+              <h2 style={{ fontSize: 19, fontWeight: 700, color: NW.black, letterSpacing: "-0.02em", margin: "0 0 8px" }}>Remove {removing.name.split(" ")[0]}?</h2>
+              <p style={{ fontSize: 13.5, color: NW.gray500, lineHeight: 1.55, margin: 0 }}>
+                <strong style={{ color: NW.black }}>{removing.name}</strong> ({removing.email}) will lose access to this workspace. Their account stays — you can re-invite them any time.
+              </p>
+              {removeErr && (
+                <div style={{ marginTop: 14, padding: "10px 13px", background: NW.rose50, border: `1px solid ${NW.rose500}22`, borderRadius: 10, fontSize: 12.5, color: NW.rose600 }}>{removeErr}</div>
+              )}
+            </div>
+            <div style={{ padding: "16px 28px", borderTop: `1px solid ${NW.gray100}`, display: "flex", justifyContent: "flex-end", gap: 10 }}>
+              <Button variant="ghost" size="md" onClick={() => { setRemoving(null); setRemoveErr(null); }} disabled={removeBusy}>Cancel</Button>
+              <button onClick={confirmRemove} disabled={removeBusy} style={{ display: "inline-flex", alignItems: "center", gap: 7, border: "none", background: NW.rose500, color: NW.white, borderRadius: 10, padding: "10px 16px", fontFamily: "inherit", fontSize: 13.5, fontWeight: 600, cursor: removeBusy ? "wait" : "pointer", opacity: removeBusy ? 0.7 : 1 }}>
+                <Icon name="user-x" size={15} color={NW.white} /> {removeBusy ? "Removing…" : "Remove access"}
+              </button>
+            </div>
+          </ModalShell>
+        )}
       </main>
     </div>
   );

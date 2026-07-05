@@ -496,6 +496,29 @@ export async function sendOrgInvite(
   }
 }
 
+// Revoke a teammate's access to a workspace (client admins). Goes through the
+// server (Admin SDK) since clients can't edit org membership directly. Reversible
+// — the person's account stays; re-inviting restores access.
+export async function removeOrgMember(
+  orgId: string,
+  member: { email?: string; uid?: string },
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const res = await fetch("/api/remove-member", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ orgId, email: (member.email || "").trim().toLowerCase(), uid: member.uid || "" }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || data?.ok === false) {
+      return { ok: false, error: data?.error || `Remove failed (${res.status})` };
+    }
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: (e as Error).message || "Network error" };
+  }
+}
+
 export async function sendClientPasswordReset(email: string) {
   const normalizedEmail = email.trim().toLowerCase();
   // Send the branded Nearwork reset email via the Admin API, which generates the
