@@ -15,6 +15,10 @@ import { PipelineScreen } from "./screens/pipeline";
 import { CandidateDetailScreen } from "./screens/candidate";
 import { TeamScreen } from "./screens/team";
 import { HireDetailScreen } from "./screens/hire";
+import { BillingScreen } from "./screens/billing";
+import { UsersScreen } from "./screens/users";
+import { SettingsScreen } from "./screens/settings";
+import { SppScreen } from "./screens/spp";
 import { usePortalData } from "./use-portal-data";
 import { toPortalClient, toOverviewData } from "./map-overview";
 import { toRolesData } from "./map-roles";
@@ -22,18 +26,19 @@ import { toPipelineData } from "./map-pipeline";
 import { toCandidateData } from "./map-candidate";
 import { toTeamData } from "./map-team";
 import { toHireData } from "./map-hire";
+import { toBillingData } from "./map-billing";
+import { toUsersData } from "./map-users";
+import { toSettingsData } from "./map-settings";
+import { toSppData } from "./map-spp";
 import { LoginScreen, StaffOrgPicker } from "@/components/client-portal";
 import { isNearworkEmail } from "@/lib/firebase-client";
 import { useState } from "react";
 
 // Screens not yet ported from the design source. They render inside the real
 // shell with a short "porting now" note — temporary, replaced as each lands.
-const PENDING: Record<string, { title: string; desc: string; icon: string }> = {
-  spp: { title: "SPP", desc: "Porting this screen from your design now.", icon: "git-merge" },
-  billing: { title: "Billing", desc: "Porting this screen from your design now.", icon: "wallet" },
-  users: { title: "Users", desc: "Porting this screen from your design now.", icon: "users" },
-  settings: { title: "Settings", desc: "Porting this screen from your design now.", icon: "settings" },
-};
+// Every left-menu screen is a real ported screen now. This only catches deep
+// drill-downs (team detail, sub-client) that aren't reachable without data yet.
+const PENDING: Record<string, { title: string; desc: string; icon: string }> = {};
 
 function Centered({ children }: { children: React.ReactNode }) {
   return (
@@ -44,7 +49,7 @@ function Centered({ children }: { children: React.ReactNode }) {
 }
 
 export function PortalApp() {
-  const { status, user, profile, org, pipelines, openings, assessments, hires, timeOff, reviews } = usePortalData();
+  const { status, user, profile, org, pipelines, openings, assessments, hires, timeOff, reviews, billing } = usePortalData();
   const [route, setRoute] = useState("overview");
   const [navArg, setNavArg] = useState<string | number | undefined>(undefined);
   // Remember which role's board we came from, so the candidate detail shows that
@@ -106,6 +111,38 @@ export function PortalApp() {
     );
   }
 
+  if (route === "billing") {
+    return (
+      <div style={{ position: "fixed", inset: 0 }}>
+        <BillingScreen client={client} data={toBillingData(billing)} onNav={go} />
+      </div>
+    );
+  }
+
+  if (route === "users") {
+    return (
+      <div style={{ position: "fixed", inset: 0 }}>
+        <UsersScreen client={client} data={toUsersData(org, user?.email ?? undefined)} onNav={go} />
+      </div>
+    );
+  }
+
+  if (route === "settings") {
+    return (
+      <div style={{ position: "fixed", inset: 0 }}>
+        <SettingsScreen client={client} data={toSettingsData(profile)} onNav={go} />
+      </div>
+    );
+  }
+
+  if (route === "spp") {
+    return (
+      <div style={{ position: "fixed", inset: 0 }}>
+        <SppScreen client={client} data={toSppData()} onNav={go} />
+      </div>
+    );
+  }
+
   if (route === "hire") {
     const hdata = toHireData(hires, timeOff, reviews, navArg != null ? String(navArg) : null);
     if (hdata) {
@@ -148,7 +185,7 @@ export function PortalApp() {
     );
   }
 
-  const pending = PENDING[route] || { title: "Coming soon", desc: "Porting this screen now.", icon: "hammer" };
+  const pending = PENDING[route] || { title: "Not available", desc: "This view opens from a record that doesn't exist yet. Head back to the menu.", icon: "compass" };
   return (
     <div style={{ position: "fixed", inset: 0 }}>
       <PortalComingSoon active={route} title={pending.title} desc={pending.desc} icon={pending.icon} onNav={go} client={client} />
