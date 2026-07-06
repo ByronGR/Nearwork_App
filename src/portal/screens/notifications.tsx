@@ -4,7 +4,7 @@
 // Self-subscribes (via usePortalNotifications) so it needs no data props. Each
 // row can be opened (marks read + navigates), and toggled read/unread.
 
-import React from "react";
+import React, { useState } from "react";
 import { NW, Icon } from "../primitives";
 import {
   PortalSidebar,
@@ -12,6 +12,7 @@ import {
   usePortalNotifications,
   notifRelTime,
   notifTarget,
+  NotificationDetailModal,
   type PortalClient,
   type NavHandler,
 } from "../shell";
@@ -36,7 +37,8 @@ export function NotificationsScreen({ client, density = "regular", onNav }: {
   const pad = dense ? 32 : 44;
   const items = usePortalNotifications();
   const unread = items.filter((n) => !n.read).length;
-  const open = (n: PortalNotification) => { if (!n.read) markNotificationRead(n.id).catch(() => {}); notifTarget(n, onNav); };
+  const [detail, setDetail] = useState<PortalNotification | null>(null);
+  const open = (n: PortalNotification) => { if (!n.read) markNotificationRead(n.id).catch(() => {}); setDetail(n); };
   const markAll = () => items.filter((n) => !n.read).forEach((n) => markNotificationRead(n.id).catch(() => {}));
 
   return (
@@ -96,6 +98,13 @@ export function NotificationsScreen({ client, density = "regular", onNav }: {
           </div>
         </div>
       </main>
+      {detail && (
+        <NotificationDetailModal
+          notif={detail}
+          onClose={() => setDetail(null)}
+          onGo={() => { notifTarget(detail, onNav); setDetail(null); }}
+        />
+      )}
     </div>
   );
 }

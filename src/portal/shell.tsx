@@ -38,6 +38,48 @@ export function notifTarget(n: PortalNotification, onNav?: NavHandler) {
   else if (n.pipelineCode) onNav("kanban", n.pipelineCode);
   else onNav("notifications");
 }
+export function notifHasTarget(n: PortalNotification) {
+  return !!(n.candidateCode || n.pipelineCode);
+}
+// Full, human date-time for the detail popup: "Sat, Jul 5, 2026 at 2:34 PM".
+export function notifFullTime(v: unknown): string {
+  const secs = v && typeof v === "object" && "seconds" in (v as Record<string, unknown>) ? Number((v as { seconds?: number }).seconds) : 0;
+  if (!secs) return "";
+  return new Date(secs * 1000).toLocaleString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
+}
+
+// Detail popup shown when a notification is clicked — what happened, exactly when,
+// and a button to jump to the item to act on it.
+export function NotificationDetailModal({ notif, onClose, onGo }: { notif: PortalNotification; onClose: () => void; onGo?: () => void }) {
+  const ic = NOTIF_ICON[notif.category || ""] || { icon: "bell", color: NW.gray600, bg: NW.gray50 };
+  const target = notifHasTarget(notif);
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 70, padding: 20 }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: NW.white, borderRadius: 18, width: "100%", maxWidth: 440, padding: 24, boxShadow: "0 24px 60px rgba(0,0,0,0.24)", fontFamily: "Poppins, sans-serif" }}>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 13 }}>
+          <span style={{ width: 40, height: 40, borderRadius: 12, background: ic.bg, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icon name={ic.icon} size={19} color={ic.color} /></span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            {notif.category && <div style={{ fontSize: 10, fontWeight: 700, color: ic.color, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 4 }}>{notif.category}</div>}
+            <div style={{ fontSize: 16, fontWeight: 700, color: NW.black, lineHeight: 1.3 }}>{notif.title || "Update"}</div>
+          </div>
+          <button onClick={onClose} style={{ background: NW.gray50, border: `1px solid ${NW.gray100}`, borderRadius: 999, width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}><Icon name="x" size={14} color={NW.gray600} /></button>
+        </div>
+        {(notif.message || notif.body) && <p style={{ fontSize: 14, color: NW.gray700, lineHeight: 1.6, margin: "16px 0 0" }}>{notif.message || notif.body}</p>}
+        <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 16, fontSize: 12.5, color: NW.gray500 }}>
+          <Icon name="clock" size={14} color={NW.gray400} /> {notifFullTime(notif.createdAt) || "Just now"}
+        </div>
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 22 }}>
+          <button onClick={onClose} style={{ border: `1px solid ${NW.gray200}`, background: NW.white, borderRadius: 10, padding: "10px 16px", fontFamily: "inherit", fontSize: 13.5, fontWeight: 600, color: NW.gray700, cursor: "pointer" }}>Close</button>
+          {target && onGo && (
+            <button onClick={onGo} style={{ display: "inline-flex", alignItems: "center", gap: 7, border: "none", background: NW.teal500, color: NW.white, borderRadius: 10, padding: "10px 18px", fontFamily: "inherit", fontSize: 13.5, fontWeight: 600, cursor: "pointer" }}>
+              Take action <Icon name="arrow-right" size={15} color={NW.white} />
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 const notifSecs = (v: unknown) => (v && typeof v === "object" && "seconds" in (v as Record<string, unknown>) ? Number((v as { seconds?: number }).seconds) : 0);
 
 // Live notifications for the signed-in user (self-contained so the top bar and
@@ -270,13 +312,14 @@ export function PortalTopBar({ dense = false, onNav }: {
 }) {
   const [bellOpen, setBellOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [detail, setDetail] = useState<PortalNotification | null>(null);
   const all = usePortalNotifications();
   const notifs = all.slice(0, 6);
   const unread = all.filter((n) => !n.read).length;
   const openNotif = (n: PortalNotification) => {
     if (!n.read) markNotificationRead(n.id).catch(() => {});
     setBellOpen(false);
-    notifTarget(n, onNav);
+    setDetail(n); // show the detail popup; "Take action" navigates
   };
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: dense ? "18px 32px" : "24px 40px", borderBottom: `1px solid ${NW.gray100}`, background: NW.white, gap: 24, position: "relative", zIndex: 30 }}>
@@ -332,6 +375,13 @@ export function PortalTopBar({ dense = false, onNav }: {
           </>
         )}
       </div>
+      {detail && (
+        <NotificationDetailModal
+          notif={detail}
+          onClose={() => setDetail(null)}
+          onGo={() => { notifTarget(detail, onNav); setDetail(null); }}
+        />
+      )}
     </div>
   );
 }
