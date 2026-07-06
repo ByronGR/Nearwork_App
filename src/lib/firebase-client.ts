@@ -843,6 +843,8 @@ export function subscribeNotifications(user: User, callback: (items: PortalNotif
 
 export async function markNotificationRead(id: string) {
   await setDoc(doc(db, "notifications", id), { read: true, readAt: serverTimestamp() }, { merge: true });
+  // If it was already seen in-app, drop it from any pending email digest.
+  void notifyEvent({ event: "notification_read", notifId: id });
 }
 
 export async function markNotificationUnread(id: string) {
