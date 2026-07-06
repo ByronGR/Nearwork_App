@@ -21,12 +21,14 @@ export type SettingsProfile = {
 export type NotifState = "off" | "app" | "both";
 
 export type SettingsNotificationPrefs = {
-  candidates: NotifState; // new candidates, stage changes, assessment results
+  newCandidate: NotifState; // when Nearwork adds a candidate to your role
+  stageMove: NotifState; // when a candidate advances a stage
+  assessmentReady: NotifState; // when a candidate's Nearwork Score is ready
+  declined: NotifState; // when a candidate isn't moved forward
   notes: NotifState; // when Nearwork leaves a note on a candidate
   requests: NotifState; // when Nearwork acts on a request you raised
-  kickoff: NotifState; // when a brief is ready for your approval
-  team: NotifState; // new hires and team updates
-  billing: NotifState; // invoices and payment updates
+  kickoff: NotifState; // when a brief is ready or updated
+  newHire: NotifState; // when someone joins your team
   weekly: NotifState; // a Monday email digest
 };
 
@@ -214,13 +216,15 @@ export function SettingsScreen({ client, data, density = "regular", onNav }: {
   };
 
   const notifRows: { k: keyof SettingsNotificationPrefs; t: string; d: string }[] = [
-    { k: "candidates", t: "Candidate updates", d: "New candidates, stage changes, and assessment results" },
-    { k: "notes",      t: "Notes from Nearwork", d: "When Nearwork leaves a note on a candidate" },
-    { k: "requests",   t: "Your requests", d: "When Nearwork acts on a request you raised" },
-    { k: "kickoff",    t: "Kickoff briefs", d: "When a brief is ready for your approval" },
-    { k: "team",       t: "Team & hires", d: "New hires and team updates" },
-    { k: "billing",    t: "Billing", d: "Invoices and payment updates" },
-    { k: "weekly",     t: "Weekly summary", d: "A Monday email digest" },
+    { k: "newCandidate",    t: "New candidates", d: "When Nearwork adds a candidate to your role" },
+    { k: "stageMove",       t: "Stage updates", d: "When a candidate advances a stage" },
+    { k: "assessmentReady", t: "Assessment ready", d: "When a candidate's Nearwork Score is ready" },
+    { k: "declined",        t: "Candidate declined", d: "When a candidate isn't moved forward" },
+    { k: "notes",           t: "Notes from Nearwork", d: "When Nearwork leaves a note on a candidate" },
+    { k: "requests",        t: "Your requests", d: "When Nearwork acts on a request you raised" },
+    { k: "kickoff",         t: "Kickoff briefs", d: "When a brief is ready or updated" },
+    { k: "newHire",         t: "New hires", d: "When someone joins your team" },
+    { k: "weekly",          t: "Weekly summary", d: "A Monday email digest" },
   ];
 
   return (
