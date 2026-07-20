@@ -176,6 +176,10 @@ export function toCandidateData(
   const base: CandidateData = {
     candidate: header,
     openingId: pipe.code,
+    pipelineType: pipe.pipelineType === "sourcing" ? "sourcing" : "full",
+    pipelineCode: pipe.code,
+    candidateRealId: realId,
+    rawStage: strOr(c.stage),
     discColors: DISC_COLORS,
     discDims: DISC_DIMS,
     stageOrder: STAGE_ORDER,

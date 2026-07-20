@@ -33,7 +33,7 @@ import { toSettingsData } from "./map-settings";
 import { toSppData } from "./map-spp";
 import { LoginScreen, StaffOrgPicker } from "@/components/client-portal";
 import { KickoffBriefPage } from "@/components/kickoff-brief";
-import { isNearworkEmail, logoutClient, addClientNote, createPipelineRequest, sendOrgInvite, removeOrgMember } from "@/lib/firebase-client";
+import { isNearworkEmail, logoutClient, addClientNote, createPipelineRequest, clientMoveSourcing, sendOrgInvite, removeOrgMember } from "@/lib/firebase-client";
 import { useState } from "react";
 
 // Screens not yet ported from the design source. They render inside the real
@@ -51,7 +51,7 @@ function Centered({ children }: { children: React.ReactNode }) {
 }
 
 export function PortalApp() {
-  const { status, user, profile, org, pipelines, openings, assessments, notes, requests, hires, timeOff, reviews, billing } = usePortalData();
+  const { status, user, profile, org, pipelines, openings, assessments, notes, requests, hires, timeOff, reviews, billing, orgs, switchOrg } = usePortalData();
   const [route, setRoute] = useState("overview");
   const [navArg, setNavArg] = useState<string | number | undefined>(undefined);
   // Remember which role's board we came from, so the candidate detail shows that
@@ -116,6 +116,24 @@ export function PortalApp() {
     });
   };
 
+  // Sourcing pipelines: the client moves the candidate directly (In Progress /
+  // Hired / Not Selected). Goes through the Admin server route, which verifies
+  // ownership + the transition and notifies Nearwork.
+  const moveSourcingCandidate = async (
+    toStage: "in-progress" | "hired" | "not-selected",
+    comment?: string,
+  ): Promise<{ ok: boolean; error?: string }> => {
+    const found = findPipelineCandidate(pipelines, navArg != null ? String(navArg) : null, pipelineCtx);
+    if (!found) return { ok: false, error: "Candidate not found." };
+    const { c, pipe } = found;
+    return clientMoveSourcing({
+      pipelineCode: pipe.code,
+      candidateId: String(c.candidateId || c.candidateCode || c.code || ""),
+      toStage,
+      comment,
+    });
+  };
+
   // Invite a teammate to this workspace (client admins only — the Users screen is
   // already admin-gated). Goes through the existing server invite (email + record).
   const inviteTeammate = async (email: string, role: string): Promise<{ ok: boolean; error?: string }> => {
@@ -158,7 +176,13 @@ export function PortalApp() {
     );
   }
 
-  const client = toPortalClient(profile, org);
+  const client = {
+    ...toPortalClient(profile, org),
+    // Staff can hop between client workspaces without logging out; clients can't.
+    orgSwitcher: isStaff
+      ? { orgs: orgs.map((o) => ({ id: o.id, name: o.name })), activeOrgId: org?.id, onSwitch: switchOrg }
+      : undefined,
+  };
 
   // Enforce role access on the route (belt-and-suspenders with the nav filter).
   // Deep routes map to their parent menu item; anything not allowed for this
@@ -284,7 +308,7 @@ export function PortalApp() {
     if (cdata) {
       return (
         <div style={{ position: "fixed", inset: 0 }}>
-          <CandidateDetailScreen client={client} data={cdata} onNav={go} onAddNote={addNote} onRequest={requestOnCandidate} />
+          <CandidateDetailScreen client={client} data={cdata} onNav={go} onAddNote={addNote} onRequest={requestOnCandidate} onSourcingMove={moveSourcingCandidate} />
         </div>
       );
     }
