@@ -48,33 +48,92 @@ service cloud.firestore {
         : '';
     }
 
+    // ─── Access model ───────────────────────────────────────────────────────
+    // Mirrors Admin's src/lib/access.ts. Nearwork is the legal employer for the
+    // people it places with clients, so those staff can hold an @nearwork.co
+    // mailbox — an email-domain check is NOT sufficient to grant access.
+    //
+    // 'placed' is only ever set explicitly (Team screen, or synced from Entra's
+    // employeeType). It is never inferred from `role`, because every new
+    // @nearwork.co account is created with role 'employee' by default, which
+    // carries no signal about placement. Inferring would lock out real staff.
+
+    function employmentType() {
+      return hasUserDoc() && userDoc().data.employmentType != null
+        ? userDoc().data.employmentType
+        : 'internal';
+    }
+
+    function isPlaced() {
+      return employmentType() == 'placed';
+    }
+
+    function isSuspended() {
+      return hasUserDoc()
+        && userDoc().data.status != null
+        && userDoc().data.status in ['suspended', 'inactive'];
+    }
+
+    function accessLevel() {
+      return hasUserDoc() && userDoc().data.level != null
+        ? userDoc().data.level
+        : (role() in ['super_admin', 'admin'] ? 'admin' : 'member');
+    }
+
+    // Admin level — salary, payroll and team administration. Independent of
+    // department: seniority deepens rights, it never widens them.
+    function isNwAdmin() {
+      return isAuth()
+        && (
+          isHardcodedSuperAdminEmail()
+          || (
+            !isPlaced()
+            && !isSuspended()
+            && (accessLevel() == 'admin' || role() in ['super_admin', 'admin'])
+          )
+        );
+    }
+
     function isAdmin() {
       return isAuth()
         && (
           isHardcodedSuperAdminEmail()
-          || role() in [
-            'super_admin',
-            'admin',
-            'sr_recruiter',
-            'recruiter'
-          ]
+          || (
+            !isPlaced()
+            && !isSuspended()
+            && role() in [
+              'super_admin',
+              'admin',
+              'sr_recruiter',
+              'recruiter'
+            ]
+          )
         );
     }
 
+    // The gate. Everything staff-facing keys off this, so blocking placed and
+    // suspended accounts here closes them out of every internal collection.
+    // The hardcoded super-admin check stays first as a break-glass so the
+    // owners can never lock themselves out.
     function isStaff() {
       return isAuth()
         && (
           isHardcodedSuperAdminEmail()
-          || role() in [
-            'super_admin',
-            'admin',
-            'sr_recruiter',
-            'recruiter',
-            'account_manager',
-            'hr',
-            'employee',
-            'user'
-          ]
+          || (
+            !isPlaced()
+            && !isSuspended()
+            && role() in [
+              'super_admin',
+              'admin',
+              'sr_recruiter',
+              'recruiter',
+              'account_manager',
+              'sales',            // account managers are stored as 'sales' (client normalizes account_manager → sales)
+              'hr',
+              'employee',
+              'user'
+            ]
+          )
         );
     }
 
@@ -299,9 +358,10 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
+    // Payroll is compensation data — Admin level only, whatever the department.
     match /payrollRuns/{runId} {
-      allow read: if isStaff();
-      allow create, update, delete: if isAdmin();
+      allow read: if isNwAdmin();
+      allow create, update, delete: if isNwAdmin();
     }
 
     match /performanceReviews/{reviewId} {
@@ -326,9 +386,10 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
+    // Rate cards feed pricing and margin — Admin level only.
     match /fxRates/{rateId} {
-      allow read: if isStaff();
-      allow create, update, delete: if isAdmin();
+      allow read: if isNwAdmin();
+      allow create, update, delete: if isNwAdmin();
     }
 
     match /timeOffRequests/{requestId} {
