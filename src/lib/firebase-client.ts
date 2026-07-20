@@ -151,6 +151,7 @@ export type PortalPipeline = {
   recruiter?: string;
   accountManager?: string;
   status?: string;
+  pipelineType?: "full" | "sourcing"; // sourcing → the client moves candidates directly
   briefStatus?: string; // synced from kickoffBriefs by the admin API on every status change
   candidates?: PipelineCandidate[];
 };
@@ -864,6 +865,30 @@ export async function notifyEvent(payload: Record<string, unknown>) {
     });
   } catch {
     /* ignore — best-effort */
+  }
+}
+
+// Sourcing pipelines only: the client moves a candidate directly (In Progress /
+// Hired / Not Selected). Unlike notifyEvent this MUST surface success/failure, so
+// the UI can confirm or show an error. The Admin route verifies + performs the move.
+export async function clientMoveSourcing(input: {
+  pipelineCode: string;
+  candidateId: string;
+  toStage: "in-progress" | "hired" | "not-selected";
+  comment?: string;
+}): Promise<{ ok: boolean; error?: string }> {
+  const token = await auth.currentUser?.getIdToken();
+  if (!token) return { ok: false, error: "Please sign in again." };
+  try {
+    const res = await fetch("/api/client-move", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify(input),
+    });
+    const data = await res.json().catch(() => ({}));
+    return res.ok && data.ok ? { ok: true } : { ok: false, error: data.error || "Move failed." };
+  } catch {
+    return { ok: false, error: "Couldn't reach the server." };
   }
 }
 

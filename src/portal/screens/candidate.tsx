@@ -166,6 +166,12 @@ export type CandidateData = {
   notes?: CandidateNote[]; // additional persisted notes (recruiter note seeds from candidate.note)
   request?: CandidateRequest; // the client's latest pending request on this candidate
 
+  // ── Sourcing pipelines: the client moves candidates directly (no request flow) ──
+  pipelineType?: "full" | "sourcing";
+  pipelineCode?: string;   // raw pipeline code, for the client-move call
+  candidateRealId?: string; // raw candidate id, for the client-move call
+  rawStage?: string;       // the actual stage key (submitted / in-progress / hired / not-selected)
+
   // ── OPTIONAL / RICH (assessment) — absent → pending state ────────────────
   // `completed` false (or `assessment` undefined) renders the pending empty state.
   completed?: boolean;
@@ -669,13 +675,15 @@ function AssessmentPending({ c }: { c: CandidateHeader }) {
 }
 
 // ── Screen ───────────────────────────────────────────────────────────────────
-export function CandidateDetailScreen({ client, data, density = "regular", onNav, onAddNote, onRequest }: {
+export function CandidateDetailScreen({ client, data, density = "regular", onNav, onAddNote, onRequest, onSourcingMove }: {
   client: PortalClient;
   data: CandidateData;
   density?: "regular" | "compact";
   onNav?: NavHandler;
   onAddNote?: (text: string, scope: 'client_visible' | 'client_internal') => Promise<void> | void;
   onRequest?: (type: 'advance' | 'hire' | 'reject' | 'interview', opts?: { toStage?: string; reason?: string; fromStage?: string }) => Promise<void> | void;
+  // Sourcing pipelines: the client moves the candidate directly. Returns an error string on failure.
+  onSourcingMove?: (toStage: 'in-progress' | 'hired' | 'not-selected', comment?: string) => Promise<{ ok: boolean; error?: string }>;
 }) {
   const dense = density === 'compact';
   const pad = dense ? 28 : 40;
@@ -717,6 +725,27 @@ export function CandidateDetailScreen({ client, data, density = "regular", onNav
         setFlash('Interview requested — the Nearwork team has been notified.');
       } else {
         setJustRequested({ type, toStage: opts?.toStage, reason: opts?.reason, status: 'pending', date: 'Just now', by: client.user.name });
+      }
+    } finally { setBusy(false); }
+  };
+  // ── Sourcing pipelines: direct client moves (no request flow) ──────────────
+  const isSourcing = data.pipelineType === 'sourcing';
+  const rawStage = (data.rawStage || '').toLowerCase();
+  const sourcingDone = rawStage === 'hired' || rawStage === 'not-selected';
+  const canStartProcess = isSourcing && rawStage === 'submitted';
+  const canDecide = isSourcing && (rawStage === 'submitted' || rawStage === 'in-progress');
+  const doSourcingMove = async (toStage: 'in-progress' | 'hired' | 'not-selected', comment?: string) => {
+    if (!onSourcingMove || busy) return;
+    setBusy(true);
+    try {
+      const res = await onSourcingMove(toStage, comment);
+      if (res.ok) {
+        const msg = toStage === 'hired' ? 'Marked as hired 🎉'
+          : toStage === 'not-selected' ? 'Marked as not selected — the Nearwork team has been notified.'
+          : 'Moved to In Progress — the Nearwork team has been notified.';
+        setFlash(msg);
+      } else {
+        setFlash(res.error || 'That didn’t go through — please try again.');
       }
     } finally { setBusy(false); }
   };
@@ -774,7 +803,22 @@ export function CandidateDetailScreen({ client, data, density = "regular", onNav
               {/* Action bar — the client asks Nearwork to act; it never moves a
                   candidate itself. A pending request takes over the bar. */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 20, paddingTop: 18, borderTop: `1px solid ${NW.gray100}`, flexWrap: 'wrap' }}>
-                {pending ? (
+                {isSourcing ? (
+                  // Sourcing: you run the process from here — move the candidate directly.
+                  sourcingDone ? (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 12.5, fontWeight: 600, color: rawStage === 'hired' ? NW.teal700 : NW.gray500, background: rawStage === 'hired' ? NW.teal50 : NW.gray50, padding: '8px 14px', borderRadius: 999 }}>
+                      <Icon name={rawStage === 'hired' ? 'party-popper' : 'circle-slash'} size={14} color={rawStage === 'hired' ? NW.teal600 : NW.gray400} /> {rawStage === 'hired' ? 'Hired' : 'Not selected'}
+                    </span>
+                  ) : canDecide ? (
+                    <>
+                      {canStartProcess && <Button variant="primary" size="sm" icon="arrow-right" disabled={busy} onClick={() => doSourcingMove('in-progress')}>Move to In Progress</Button>}
+                      <Button variant="secondary" size="sm" icon="badge-check" disabled={busy} onClick={() => doSourcingMove('hired')}>Mark Hired</Button>
+                      <Button variant="secondary" size="sm" icon="x" disabled={busy} onClick={() => setRejectOpen(true)}>Not Selected</Button>
+                    </>
+                  ) : (
+                    <span style={{ fontSize: 12.5, color: NW.gray400 }}>Nearwork is still preparing this candidate.</span>
+                  )
+                ) : pending ? (
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 12.5, fontWeight: 600, color: NW.violet500, background: NW.violet50, padding: '8px 14px', borderRadius: 999 }}>
                     <Icon name="clock" size={14} color={NW.violet500} /> You asked Nearwork to {requestLabel(pending)} · pending
                   </span>
@@ -788,7 +832,7 @@ export function CandidateDetailScreen({ client, data, density = "regular", onNav
                   </>
                 )}
                 <Button variant="secondary" size="sm" icon="message-square-text" onClick={scrollNotes}>Add note</Button>
-                {!readOnly && <Button variant="secondary" size="sm" icon="calendar-plus" disabled={busy} onClick={() => submitRequest('interview')}>Request interview</Button>}
+                {!isSourcing && !readOnly && <Button variant="secondary" size="sm" icon="calendar-plus" disabled={busy} onClick={() => submitRequest('interview')}>Request interview</Button>}
                 <span style={{ flex: 1 }} />
                 <Button variant="ghost" size="sm" icon="columns-3" onClick={() => onNav && onNav('kanban', c.openingId)}>Compare</Button>
               </div>
@@ -900,8 +944,14 @@ export function CandidateDetailScreen({ client, data, density = "regular", onNav
         <RejectModal
           name={c.name}
           busy={busy}
+          optional={isSourcing}
+          confirmLabel={isSourcing ? 'Mark Not Selected' : 'Send to Nearwork'}
           onClose={() => setRejectOpen(false)}
-          onSubmit={async (reason) => { await submitRequest('reject', { toStage: 'Not selected', reason }); setRejectOpen(false); }}
+          onSubmit={async (reason) => {
+            if (isSourcing) { await doSourcingMove('not-selected', reason); }
+            else { await submitRequest('reject', { toStage: 'Not selected', reason }); }
+            setRejectOpen(false);
+          }}
         />
       )}
     </div>
@@ -909,9 +959,11 @@ export function CandidateDetailScreen({ client, data, density = "regular", onNav
 }
 
 // Reject a candidate — Nearwork needs to know WHY, so the reason is required.
-function RejectModal({ name, busy, onClose, onSubmit }: {
+function RejectModal({ name, busy, optional, confirmLabel, onClose, onSubmit }: {
   name: string;
   busy?: boolean;
+  optional?: boolean;      // sourcing: the comment is optional
+  confirmLabel?: string;
   onClose: () => void;
   onSubmit: (reason: string) => void | Promise<void>;
 }) {
@@ -921,16 +973,18 @@ function RejectModal({ name, busy, onClose, onSubmit }: {
       <div onClick={e => e.stopPropagation()} style={{ background: NW.white, borderRadius: 18, width: '100%', maxWidth: 460, padding: 24, boxShadow: '0 20px 50px rgba(0,0,0,0.2)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
           <div style={{ width: 34, height: 34, borderRadius: 10, background: NW.rose50, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="x" size={17} color={NW.rose600} strokeWidth={2.5} /></div>
-          <div style={{ fontSize: 16, fontWeight: 700, color: NW.black }}>Reject {name.split(' ')[0]}?</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: NW.black }}>{optional ? 'Mark' : 'Reject'} {name.split(' ')[0]}{optional ? ' as not selected?' : '?'}</div>
         </div>
         <p style={{ fontSize: 13, color: NW.gray500, lineHeight: 1.55, margin: '0 0 14px' }}>
-          Tell the Nearwork team why — they’ll see this, so they can adjust and, if it makes sense, put someone stronger forward.
+          {optional
+            ? 'Optionally, let the Nearwork team know why — it helps them source better next time.'
+            : 'Tell the Nearwork team why — they’ll see this, so they can adjust and, if it makes sense, put someone stronger forward.'}
         </p>
-        <textarea value={reason} onChange={e => setReason(e.target.value)} autoFocus placeholder="e.g. Not enough backend depth for this role…"
+        <textarea value={reason} onChange={e => setReason(e.target.value)} autoFocus placeholder={optional ? 'Optional — e.g. Went with a candidate with more industry experience…' : 'e.g. Not enough backend depth for this role…'}
           style={{ width: '100%', minHeight: 96, resize: 'vertical', boxSizing: 'border-box', border: `1px solid ${NW.gray200}`, borderRadius: 11, padding: '11px 13px', fontFamily: 'inherit', fontSize: 13, color: NW.black, lineHeight: 1.5, outline: 'none', background: NW.offWhite }} />
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 16 }}>
           <Button variant="ghost" size="sm" onClick={onClose}>Cancel</Button>
-          <Button variant="primary" size="sm" icon="send" disabled={!reason.trim() || !!busy} onClick={() => onSubmit(reason.trim())}>{busy ? 'Sending…' : 'Send to Nearwork'}</Button>
+          <Button variant="primary" size="sm" icon="send" disabled={(!optional && !reason.trim()) || !!busy} onClick={() => onSubmit(reason.trim())}>{busy ? 'Saving…' : (confirmLabel ?? 'Send to Nearwork')}</Button>
         </div>
       </div>
     </div>

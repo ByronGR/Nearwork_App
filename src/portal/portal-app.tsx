@@ -33,7 +33,7 @@ import { toSettingsData } from "./map-settings";
 import { toSppData } from "./map-spp";
 import { LoginScreen, StaffOrgPicker } from "@/components/client-portal";
 import { KickoffBriefPage } from "@/components/kickoff-brief";
-import { isNearworkEmail, logoutClient, addClientNote, createPipelineRequest, sendOrgInvite, removeOrgMember } from "@/lib/firebase-client";
+import { isNearworkEmail, logoutClient, addClientNote, createPipelineRequest, clientMoveSourcing, sendOrgInvite, removeOrgMember } from "@/lib/firebase-client";
 import { useState } from "react";
 
 // Screens not yet ported from the design source. They render inside the real
@@ -113,6 +113,24 @@ export function PortalApp() {
       fromStage: opts?.fromStage,
       toStage: opts?.toStage,
       reason: opts?.reason,
+    });
+  };
+
+  // Sourcing pipelines: the client moves the candidate directly (In Progress /
+  // Hired / Not Selected). Goes through the Admin server route, which verifies
+  // ownership + the transition and notifies Nearwork.
+  const moveSourcingCandidate = async (
+    toStage: "in-progress" | "hired" | "not-selected",
+    comment?: string,
+  ): Promise<{ ok: boolean; error?: string }> => {
+    const found = findPipelineCandidate(pipelines, navArg != null ? String(navArg) : null, pipelineCtx);
+    if (!found) return { ok: false, error: "Candidate not found." };
+    const { c, pipe } = found;
+    return clientMoveSourcing({
+      pipelineCode: pipe.code,
+      candidateId: String(c.candidateId || c.candidateCode || c.code || ""),
+      toStage,
+      comment,
     });
   };
 
@@ -284,7 +302,7 @@ export function PortalApp() {
     if (cdata) {
       return (
         <div style={{ position: "fixed", inset: 0 }}>
-          <CandidateDetailScreen client={client} data={cdata} onNav={go} onAddNote={addNote} onRequest={requestOnCandidate} />
+          <CandidateDetailScreen client={client} data={cdata} onNav={go} onAddNote={addNote} onRequest={requestOnCandidate} onSourcingMove={moveSourcingCandidate} />
         </div>
       );
     }
