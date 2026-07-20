@@ -4,7 +4,6 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
   BriefcaseBusiness,
-  MessageCircle,
   Users,
 } from "lucide-react";
 import { onAuthStateChanged, type User } from "firebase/auth";
@@ -24,7 +23,6 @@ import {
   type PipelineCandidate,
   readableRole,
 } from "@/lib/firebase-client";
-import { PipelineChatPanel } from "@/components/pipeline-chat-panel";
 
 // ─── helpers ───────────────────────────────────────────────────────────────
 
@@ -280,7 +278,6 @@ export function PipelinePage({ code }: { code: string }) {
   const [candidates, setCandidates] = useState<PortalCandidate[]>([]);
   const [assessments, setAssessments] = useState<PortalAssessment[]>([]);
   const [selected, setSelected] = useState<PipelineCandidate | null>(null);
-  const [tab, setTab] = useState<"pipeline" | "chat">("pipeline");
 
   // Auth
   useEffect(() => onAuthStateChanged(auth, async (nextUser) => {
@@ -445,24 +442,7 @@ export function PipelinePage({ code }: { code: string }) {
                 </div>
               </div>
 
-              {/* Tab bar */}
-              <div className="flex gap-1">
-                <button
-                  onClick={() => setTab("pipeline")}
-                  className={cx("flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition", tab === "pipeline" ? "bg-[#111] text-white" : "border border-[#E5E4E0] bg-white text-[#555] hover:border-[#111]")}
-                >
-                  <Users className="size-3.5" /> Candidates
-                </button>
-                <button
-                  onClick={() => setTab("chat")}
-                  className={cx("flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition", tab === "chat" ? "bg-[#111] text-white" : "border border-[#E5E4E0] bg-white text-[#555] hover:border-[#111]")}
-                >
-                  <MessageCircle className="size-3.5" /> Chat
-                </button>
-              </div>
-
-              {tab === "pipeline" ? (
-                <div className="overflow-x-auto pb-2">
+              <div className="overflow-x-auto pb-2">
                   <div className="grid min-w-[1080px] grid-cols-6 gap-3">
                     {clientStages.map((stage) => {
                       const stageItems = pipelineItems.filter(c => clientStageKey(c.stage) === stage.key);
@@ -490,17 +470,6 @@ export function PipelinePage({ code }: { code: string }) {
                     })}
                   </div>
                 </div>
-              ) : (
-                <div className="h-[560px] rounded-xl border border-[#E5E4E0] bg-white overflow-hidden">
-                  <PipelineChatPanel
-                    pipeline={pipeline}
-                    org={org}
-                    candidates={pipelineItems}
-                    profile={profile}
-                    onOpenCandidate={(c) => { setSelected(c); setTab("pipeline"); }}
-                  />
-                </div>
-              )}
             </div>
 
             {/* Right: quick stats */}
