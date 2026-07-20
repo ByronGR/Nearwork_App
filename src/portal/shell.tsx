@@ -99,7 +99,14 @@ export function usePortalNotifications(): PortalNotification[] {
 export type PortalUser = { name: string; initials: string; role?: string };
 export type AccountManager = { name: string; email: string; initials: string };
 export type PortalAccess = "admin" | "member" | "viewer";
-export type PortalClient = { company: string; user: PortalUser; accountManager?: AccountManager; access?: PortalAccess };
+export type PortalClient = {
+  company: string;
+  user: PortalUser;
+  accountManager?: AccountManager;
+  access?: PortalAccess;
+  // Nearwork staff only — switch which org's workspace is shown. Clients never get this.
+  orgSwitcher?: { orgs: { id: string; name: string }[]; activeOrgId?: string; onSwitch: (orgId: string) => void };
+};
 
 // Which nav items each access level may see.
 //  • viewer  — read-only: Overview, Pipeline, Team
@@ -240,7 +247,25 @@ export function PortalSidebar({ active = "overview", density = "regular", onNav,
             N
             <div style={{ position: "absolute", bottom: 6, left: 7, right: 14, height: 2, background: NW.teal500, borderRadius: 1 }} />
           </div>
-          {expanded && (
+          {expanded && client.orgSwitcher ? (
+            // Nearwork staff: pick which client's workspace to view.
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div style={{ position: "relative" }}>
+                <select
+                  value={client.orgSwitcher.activeOrgId ?? ""}
+                  onChange={(e) => client.orgSwitcher?.onSwitch(e.target.value)}
+                  title="Switch workspace"
+                  style={{ appearance: "none", WebkitAppearance: "none", width: "100%", font: "inherit", fontSize: 13, fontWeight: 600, color: NW.black, letterSpacing: "-0.01em", background: "transparent", border: "none", outline: "none", cursor: "pointer", padding: "0 18px 0 0", textOverflow: "ellipsis", whiteSpace: "nowrap", overflow: "hidden" }}
+                >
+                  {client.orgSwitcher.orgs.map((o) => (
+                    <option key={o.id} value={o.id}>{o.name}</option>
+                  ))}
+                </select>
+                <Icon name="chevrons-up-down" size={13} color={NW.gray400} style={{ position: "absolute", right: 0, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
+              </div>
+              <div style={{ fontSize: 11, color: NW.teal600, lineHeight: 1.2, marginTop: 1, fontWeight: 600 }}>Nearwork · switch workspace</div>
+            </div>
+          ) : expanded && (
             <div onClick={() => go("overview")} style={{ minWidth: 0, flex: 1, cursor: onNav ? "pointer" : "default" }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: NW.black, letterSpacing: "-0.01em", lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{client.company}</div>
               <div style={{ fontSize: 11, color: NW.gray500, lineHeight: 1.2, marginTop: 1 }}>Client portal</div>

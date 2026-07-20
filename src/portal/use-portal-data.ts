@@ -14,6 +14,10 @@ import {
   auth,
   getClientUser,
   getOrganization,
+  getOrganizationById,
+  listAllOrganizations,
+  setStaffActiveOrg,
+  isNearworkEmail,
   subscribeOrgCollection,
   type ClientUser,
   type Organization,
@@ -44,12 +48,17 @@ export type PortalData = {
   timeOff: TimeOffRequest[];
   reviews: Row[];
   billing: Row[];
+  // Nearwork staff only: switch which org's workspace is being viewed.
+  isStaff: boolean;
+  orgs: Organization[];
+  switchOrg: (orgId: string) => Promise<void>;
 };
 
 export function usePortalData(): PortalData {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<ClientUser | null>(null);
   const [org, setOrg] = useState<Organization | null>(null);
+  const [orgs, setOrgs] = useState<Organization[]>([]);
   const [openings, setOpenings] = useState<PortalOpening[]>([]);
   const [pipelines, setPipelines] = useState<PortalPipeline[]>([]);
   const [hires, setHires] = useState<PortalHire[]>([]);
@@ -69,6 +78,7 @@ export function usePortalData(): PortalData {
           setUser(null);
           setProfile(null);
           setOrg(null);
+          setOrgs([]);
           setOpenings([]);
           setPipelines([]);
           setHires([]);
@@ -98,7 +108,15 @@ export function usePortalData(): PortalData {
             return;
           }
           setProfile(nextProfile);
-          const nextOrg = await getOrganization(nextProfile);
+          const staff = isNearworkEmail(nextProfile.email || nextUser.email);
+          let nextOrg = await getOrganization(nextProfile);
+          // Nearwork staff have no fixed org — load every org for the switcher and
+          // default to their last-viewed (activeOrgId) or the first one.
+          if (staff) {
+            const all = await listAllOrganizations().catch(() => [] as Organization[]);
+            setOrgs(all);
+            if (!nextOrg && all.length) nextOrg = all[0];
+          }
           if (!nextOrg) {
             setOrg(null);
             setStatus("no-org");
@@ -131,5 +149,19 @@ export function usePortalData(): PortalData {
     return () => unsubscribers.forEach((unsub) => unsub());
   }, [org]);
 
-  return { status, user, profile, org, openings, pipelines, hires, assessments, notes, requests, timeOff, reviews, billing };
+  const isStaff = isNearworkEmail(user?.email || profile?.email);
+
+  // Staff switch which org's workspace they're viewing — swaps `org`, which
+  // re-runs the subscriptions above, and remembers the choice on their profile.
+  const switchOrg = async (orgId: string) => {
+    if (!isStaff || !orgId || orgId === org?.id) return;
+    const next = await getOrganizationById(orgId);
+    if (!next) return;
+    setOrg(next);
+    setStatus("ready");
+    const uid = auth.currentUser?.uid;
+    if (uid) setStaffActiveOrg(uid, orgId).catch(() => {});
+  };
+
+  return { status, user, profile, org, openings, pipelines, hires, assessments, notes, requests, timeOff, reviews, billing, isStaff, orgs, switchOrg };
 }

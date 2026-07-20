@@ -51,7 +51,7 @@ function Centered({ children }: { children: React.ReactNode }) {
 }
 
 export function PortalApp() {
-  const { status, user, profile, org, pipelines, openings, assessments, notes, requests, hires, timeOff, reviews, billing } = usePortalData();
+  const { status, user, profile, org, pipelines, openings, assessments, notes, requests, hires, timeOff, reviews, billing, orgs, switchOrg } = usePortalData();
   const [route, setRoute] = useState("overview");
   const [navArg, setNavArg] = useState<string | number | undefined>(undefined);
   // Remember which role's board we came from, so the candidate detail shows that
@@ -176,7 +176,13 @@ export function PortalApp() {
     );
   }
 
-  const client = toPortalClient(profile, org);
+  const client = {
+    ...toPortalClient(profile, org),
+    // Staff can hop between client workspaces without logging out; clients can't.
+    orgSwitcher: isStaff
+      ? { orgs: orgs.map((o) => ({ id: o.id, name: o.name })), activeOrgId: org?.id, onSwitch: switchOrg }
+      : undefined,
+  };
 
   // Enforce role access on the route (belt-and-suspenders with the nav filter).
   // Deep routes map to their parent menu item; anything not allowed for this

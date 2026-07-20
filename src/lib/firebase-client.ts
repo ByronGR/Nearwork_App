@@ -733,6 +733,19 @@ export async function getOrganization(profile: ClientUser): Promise<Organization
   }
 }
 
+// Load a single organization by id (used by the staff org switcher).
+export async function getOrganizationById(orgId: string): Promise<Organization | null> {
+  if (!orgId) return null;
+  try {
+    const snap = await getDoc(doc(db, "organizations", orgId));
+    if (!snap.exists()) return null;
+    const data = snap.data();
+    return { id: snap.id, orgId: data.orgId || snap.id, name: data.name || "Client organization", ...data };
+  } catch {
+    return null;
+  }
+}
+
 function withId<T>(id: string, data: DocumentData): T {
   return { id, ...data } as T;
 }
