@@ -128,6 +128,7 @@ service cloud.firestore {
               'sr_recruiter',
               'recruiter',
               'account_manager',
+              'sales',            // account managers are stored as 'sales' (client normalizes account_manager → sales)
               'hr',
               'employee',
               'user'
