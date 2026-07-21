@@ -171,6 +171,9 @@ export type CandidateData = {
   pipelineCode?: string;   // raw pipeline code, for the client-move call
   candidateRealId?: string; // raw candidate id, for the client-move call
   rawStage?: string;       // the actual stage key (submitted / in-progress / hired / not-selected)
+  // Sourcing profile — what we actually provide (no assessment / DISC).
+  workHistory?: Array<{ company?: string; title?: string; from?: string; to?: string }>;
+  resumeUrl?: string;      // resume / CV download URL
 
   // ── OPTIONAL / RICH (assessment) — absent → pending state ────────────────
   // `completed` false (or `assessment` undefined) renders the pending empty state.
@@ -706,6 +709,8 @@ export function CandidateDetailScreen({ client, data, density = "regular", onNav
   const radar = completed ? data.radar : undefined;
   const highlights = completed ? data.highlights : undefined;
   const x: CandidateSnapshot = data.snapshot || {};
+  const workHistory = data.workHistory || [];
+  const resumeUrl = data.resumeUrl;
 
   const stageColors: Record<number, string> = { 1: NW.gray400, 2: NW.violet500, 3: NW.teal500, 4: NW.teal600, 5: NW.rose500, 6: '#94A3B8' };
   const stageCol = stageColors[c.stageIdx] || NW.gray400;
@@ -843,7 +848,58 @@ export function CandidateDetailScreen({ client, data, density = "regular", onNav
               )}
             </div>
 
-            {!completed || !english || !assessment || !disc ? (
+            {isSourcing ? (
+              // Sourcing: only the profile we actually provide — no assessment / DISC.
+              <>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: 12, color: NW.gray500, display: 'inline-flex', alignItems: 'center', gap: 6 }}><Icon name="user-check" size={13} color={NW.gray400} /> Sourced &amp; screened by Nearwork</span>
+                  <span style={{ width: 3, height: 3, borderRadius: '50%', background: NW.gray300 }} />
+                  <span style={{ fontSize: 12, color: NW.gray500 }}>You run the interviews, assessment and hiring from here.</span>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: dense ? '1fr' : '1.55fr 1fr', gap: 20, alignItems: 'start' }}>
+                  {/* Left — work experience + notes */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                    <CardPanel title="Work experience" icon="briefcase">
+                      {workHistory.length ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                          {workHistory.map((w, i) => {
+                            const period = [w.from, w.to].filter(Boolean).join(' — ');
+                            const sub = [w.company, period].filter(Boolean).join(' · ');
+                            return (
+                              <div key={i} style={{ display: 'flex', gap: 13 }}>
+                                <div style={{ width: 8, height: 8, borderRadius: '50%', background: NW.teal500, marginTop: 6, flexShrink: 0 }} />
+                                <div style={{ minWidth: 0 }}>
+                                  <div style={{ fontSize: 13.5, fontWeight: 600, color: NW.black }}>{w.title || w.company}</div>
+                                  {sub && <div style={{ fontSize: 12.5, color: NW.gray500, marginTop: 1 }}>{sub}</div>}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <p style={{ fontSize: 12.5, color: NW.gray400, margin: 0 }}>No work history on file yet.</p>
+                      )}
+                    </CardPanel>
+                    <NotesPanel c={c} user={{ name: client.user.name, initials: client.user.initials }} notes={data.notes} onAddNote={onAddNote} readOnly={client.access === 'viewer'} />
+                  </div>
+                  {/* Right — snapshot + english + resume */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                    <SnapshotPanel c={c} x={x} />
+                    {english && <EnglishPanel eng={english} />}
+                    <CardPanel title="Resume" icon="file-text">
+                      <p style={{ fontSize: 12.5, color: NW.gray500, margin: '0 0 12px', lineHeight: 1.5 }}>The candidate&rsquo;s full CV, as submitted to Nearwork.</p>
+                      {resumeUrl ? (
+                        <a href={resumeUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, height: 36, padding: '0 16px', fontSize: 13, fontWeight: 600, color: NW.gray800, background: NW.white, border: `1px solid ${NW.gray200}`, borderRadius: 999, textDecoration: 'none' }}>
+                          <Icon name="download" size={14} color={NW.gray600} /> View resume (PDF)
+                        </a>
+                      ) : (
+                        <p style={{ fontSize: 12.5, color: NW.gray400, margin: 0 }}>No resume uploaded yet.</p>
+                      )}
+                    </CardPanel>
+                  </div>
+                </div>
+              </>
+            ) : !completed || !english || !assessment || !disc ? (
               <AssessmentPending c={c} />
             ) : (
               <>

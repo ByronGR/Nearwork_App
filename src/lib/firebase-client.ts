@@ -126,6 +126,7 @@ export type PortalOpening = {
 export type PipelineCandidate = {
   code?: string;
   candidateCode?: string;
+  candidateId?: string;
   name?: string;
   email?: string;
   role?: string;
@@ -139,6 +140,13 @@ export type PipelineCandidate = {
   english?: string;
   location?: string;
   skills?: string[];
+  // Client-facing profile snapshot embedded by Admin (see client-candidate-snapshot.ts)
+  experience?: number;
+  availability?: string;
+  timezone?: string;
+  workHistory?: Array<{ company?: string; title?: string; from?: string; to?: string }>;
+  resumeUrl?: string;
+  cvUrl?: string;
 };
 
 export type PortalPipeline = {

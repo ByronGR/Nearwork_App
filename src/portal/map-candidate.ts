@@ -173,6 +173,23 @@ export function toCandidateData(
     ? { mustHave: openingSkills }
     : (typeof openingSkills === "string" && openingSkills ? { mustHave: [openingSkills] } : undefined);
 
+  // Snapshot from the embedded profile — shown for sourcing without an assessment.
+  const snap: Record<string, unknown> = {};
+  if (salaryExp) snap.salaryExp = salaryExp;
+  if (typeof c.experience === "number") snap.experience = c.experience;
+  const availability = strOr(c.availability);
+  if (availability) snap.availability = availability;
+  const timezone = strOr(c.timezone);
+  if (timezone) snap.timezone = timezone;
+
+  // Work history + resume come straight from the embedded snapshot.
+  const workHistory = Array.isArray(c.workHistory)
+    ? (c.workHistory as Array<Record<string, unknown>>)
+        .map((w) => ({ company: strOr(w.company), title: strOr(w.title), from: strOr(w.from), to: strOr(w.to) }))
+        .filter((w) => w.company || w.title)
+    : undefined;
+  const resumeUrl = strOr(c.resumeUrl) || strOr(c.cvUrl) || undefined;
+
   const base: CandidateData = {
     candidate: header,
     openingId: pipe.code,
@@ -183,12 +200,23 @@ export function toCandidateData(
     discColors: DISC_COLORS,
     discDims: DISC_DIMS,
     stageOrder: STAGE_ORDER,
-    snapshot: salaryExp ? { salaryExp } : undefined,
+    snapshot: Object.keys(snap).length ? snap : undefined,
+    workHistory: workHistory && workHistory.length ? workHistory : undefined,
+    resumeUrl,
     fitForRole,
     completed: false,
     notes: toCandidateNotes(notes, c, realId),
     request: toCandidateRequest(requests, c, realId),
   };
+
+  // English level embedded on the entry (sourcing has no assessment English). The
+  // rich-report block below overrides this with the graded result when present.
+  const embeddedEnglish = strOr(c.english).toUpperCase();
+  if (embeddedEnglish) {
+    const CEFR_PCT: Record<string, number> = { A1: 20, A2: 35, B1: 55, B2: 72, C1: 88, C2: 98 };
+    const lvl = (["A1", "A2", "B1", "B2", "C1", "C2"].includes(embeddedEnglish) ? embeddedEnglish : "B2") as "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
+    base.english = { level: lvl, score: CEFR_PCT[lvl] ?? 0, summary: "" };
+  }
 
   // ── Rich report (once the assessment PDF has been parsed) ──────────────────
   const rawQuestions = Array.isArray(A.questions) ? (A.questions as Rec[]) : [];
