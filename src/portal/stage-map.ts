@@ -34,6 +34,39 @@ export function stageIdxOf(key: ClientStageKey): number {
   return i >= 0 ? i + 1 : 1;
 }
 
+// ── Sourcing openings: a different 6-stage pipeline ────────────────────────────
+// Sourced → Screening → Submitted → In progress → Hired → Not selected.
+// Nearwork owns Sourced + Screening; the client takes over once Submitted.
+// Mirrors Admin's SOURCING_STAGES (lib/pipeline-stages.ts).
+export const SOURCING_STAGES = ["sourced", "screening", "submitted", "in-progress", "hired"] as const;
+export type SourcingStageKey = (typeof SOURCING_STAGES)[number] | "not-selected";
+
+export const SOURCING_STAGE_LABELS: Record<string, string> = {
+  sourced: "Sourced",
+  screening: "Screening",
+  submitted: "Submitted",
+  "in-progress": "In progress",
+  hired: "Hired",
+  "not-selected": "Not selected",
+};
+
+// Raw Admin stage → canonical sourcing key (normalizes variants).
+export function sourcingStageKey(stage?: string): SourcingStageKey {
+  const s = String(stage || "").toLowerCase().replace(/[_\s]+/g, "-").replace(/-+/g, "-").trim();
+  if (s.includes("reject") || s.includes("declin") || s.includes("withdraw") || s.includes("notselect") || s === "not-selected") return "not-selected";
+  if (s.includes("hired")) return "hired";
+  if (s.includes("in-progress") || s.includes("inprogress") || s.includes("progress") || s.includes("interview")) return "in-progress";
+  if (s.includes("submit") || s === "new") return "submitted";
+  if (s.includes("screen")) return "screening";
+  return "sourced"; // sourced / applied / unknown
+}
+
+export function sourcingStageIdx(key: SourcingStageKey): number {
+  if (key === "not-selected") return 6;
+  const i = SOURCING_STAGES.indexOf(key as (typeof SOURCING_STAGES)[number]);
+  return i >= 0 ? i + 1 : 1;
+}
+
 const AVATAR_BGS = ["#16A085", "#E74C7C", "#AF7AC5", "#12866E", "#EAB308", "#3B82F6", "#F97316", "#8B5CF6"];
 
 export function avatarColor(seed: string): string {

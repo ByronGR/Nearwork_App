@@ -19,6 +19,7 @@
 import React, { useState } from "react";
 import { NW, Icon, Avatar, Button, MatchScore } from "../primitives";
 import { PortalSidebar, PortalTopBar, type PortalClient } from "../shell";
+import { sourcingStageKey } from "../stage-map";
 
 // ── Typed data prop shapes ────────────────────────────────────────────────────
 
@@ -735,7 +736,9 @@ export function CandidateDetailScreen({ client, data, density = "regular", onNav
   };
   // ── Sourcing pipelines: direct client moves (no request flow) ──────────────
   const isSourcing = data.pipelineType === 'sourcing';
-  const rawStage = (data.rawStage || '').toLowerCase();
+  // Normalize the raw Admin stage to a canonical sourcing key so the client can
+  // only act from Submitted / In progress (Nearwork owns Sourced + Screening).
+  const rawStage = isSourcing ? sourcingStageKey(data.rawStage) : (data.rawStage || '').toLowerCase();
   const sourcingDone = rawStage === 'hired' || rawStage === 'not-selected';
   const canStartProcess = isSourcing && rawStage === 'submitted';
   const canDecide = isSourcing && (rawStage === 'submitted' || rawStage === 'in-progress');

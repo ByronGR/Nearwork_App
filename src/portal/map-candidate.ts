@@ -5,7 +5,7 @@
 
 import { isNearworkEmail, type PortalOpening, type PortalPipeline, type PortalAssessment, type PortalNote, type PortalRequest } from "@/lib/firebase-client";
 import type { CandidateData, CandidateHeader, CandidateDiscDim, CandidateNote, CandidateRequest } from "./screens/candidate";
-import { clientStageKey, stageIdxOf, STAGE_LABELS, avatarColor, initialsOf } from "./stage-map";
+import { clientStageKey, stageIdxOf, STAGE_LABELS, sourcingStageKey, sourcingStageIdx, SOURCING_STAGE_LABELS, avatarColor, initialsOf } from "./stage-map";
 import { yearsFromWorkHistory, tzFromLocation } from "./candidate-derive";
 
 const DISC_COLORS: Record<string, string> = { D: "#E74C7C", I: "#EAB308", S: "#16A085", C: "#3B82F6" };
@@ -133,7 +133,9 @@ export function toCandidateData(
   if (!found || !pipe) return null;
   const c = found;
 
+  const isSourcingPipe = pipe.pipelineType === "sourcing";
   const key = clientStageKey(c.stage as string | undefined);
+  const sKey = isSourcingPipe ? sourcingStageKey(c.stage as string | undefined) : null;
   const realId = (c.candidateId as string) || (c.candidateCode as string) || (c.code as string);
   // Assessments are per (candidate, role/pipeline) — match this role's result only.
   const A = asRec(
@@ -159,8 +161,8 @@ export function toCandidateData(
     avatarBg: avatarColor((c.candidateCode as string) || (c.code as string) || name),
     role: (c.role as string) || pipe.openingTitle || opening?.title || "",
     location: (c.location as string) || "",
-    stage: STAGE_LABELS[key] || "Screening",
-    stageIdx: stageIdxOf(key),
+    stage: isSourcingPipe ? (SOURCING_STAGE_LABELS[sKey!] || "Sourced") : (STAGE_LABELS[key] || "Screening"),
+    stageIdx: isSourcingPipe ? sourcingStageIdx(sKey!) : stageIdxOf(key),
     score,
     openingId: pipe.code,
     match: Array.isArray(c.skills) ? (c.skills as string[]) : [],

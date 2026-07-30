@@ -76,6 +76,7 @@ export type PipelineData = {
   openingTitle: string; // display label for the active role
   opening?: PipelineOpening; // the active opening (carries the brief)
   totalOpenRoles: number; // how many open roles exist (for the "all" heading)
+  pipelineType?: "full" | "sourcing"; // sourcing → the sourcing stage set + no score
   candidates: PipelineCand[]; // candidates in this opening's pipeline
 };
 
@@ -88,6 +89,16 @@ const PIPELINE_STAGES: { key: string; idx: number; color: string }[] = [
   { key: "Technical", idx: 3, color: NW.teal500 },
   { key: "Final round", idx: 4, color: NW.teal600 },
   { key: "Offer", idx: 5, color: NW.rose500 },
+  { key: "Not selected", idx: 6, color: "#94A3B8" },
+];
+
+// Sourcing openings use their own 6 stages (Nearwork owns Sourced + Screening).
+const SOURCING_STAGE_COLS: { key: string; idx: number; color: string }[] = [
+  { key: "Sourced", idx: 1, color: NW.gray300 },
+  { key: "Screening", idx: 2, color: NW.violet500 },
+  { key: "Submitted", idx: 3, color: NW.teal500 },
+  { key: "In progress", idx: 4, color: NW.teal600 },
+  { key: "Hired", idx: 5, color: NW.green600 },
   { key: "Not selected", idx: 6, color: "#94A3B8" },
 ];
 
@@ -135,15 +146,22 @@ function KanbanCard({ c, dense, compareMode, selected, onToggleSelect, onOpen }:
         </span>
       )}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <CandidateAvatar c={c} size={32} />
+        <CandidateAvatar c={c} size={34} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 13, fontWeight: 600, color: NW.black, letterSpacing: '-0.01em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</div>
+          {c.location && <div style={{ fontSize: 11.5, color: NW.gray500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.location}</div>}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
           {urgent && <span title="Awaiting your review" style={{ width: 6, height: 6, borderRadius: '50%', background: NW.rose500 }} />}
           {!c.sourcing && <span style={{ fontFamily: 'Poppins, sans-serif', fontVariantNumeric: 'tabular-nums', fontSize: 15, fontWeight: 700, color: NW.black, letterSpacing: '-0.02em' }}>{c.score}</span>}
         </div>
       </div>
+      {c.match && c.match.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+          {c.match.slice(0, 2).map(s => <span key={s} style={{ fontSize: 10.5, fontWeight: 500, color: NW.gray700, background: NW.gray50, border: `1px solid ${NW.gray100}`, padding: '2px 8px', borderRadius: 6, whiteSpace: 'nowrap' }}>{s}</span>)}
+          {c.match.length > 2 && <span style={{ fontSize: 10.5, color: NW.gray400, padding: '2px 4px' }}>+{c.match.length - 2}</span>}
+        </div>
+      )}
     </div>
   );
 }
@@ -504,7 +522,7 @@ export function PipelineScreen({ client, data, density = "regular", onNav }: {
   const populated = candidates.length > 0;
   const activeRole = data.openingId || 'all';
   const [view, setView] = useState<'kanban' | 'list'>('kanban');
-  const stages = PIPELINE_STAGES;
+  const stages = data.pipelineType === 'sourcing' ? SOURCING_STAGE_COLS : PIPELINE_STAGES;
   const activeRoleLabel = data.openingTitle;
   const stageOf = (c: PipelineCand) => stages.find(s => s.idx === c.stageIdx);
   const activeCount = candidates.filter(c => c.stageIdx < 6).length;
