@@ -34,7 +34,7 @@ import { toSppData } from "./map-spp";
 import { LoginScreen, StaffOrgPicker } from "@/components/client-portal";
 import { KickoffBriefPage } from "@/components/kickoff-brief";
 import { isNearworkEmail, logoutClient, addClientNote, createPipelineRequest, clientMoveSourcing, sendOrgInvite, removeOrgMember } from "@/lib/firebase-client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 // Screens not yet ported from the design source. They render inside the real
 // shell with a short "porting now" note — temporary, replaced as each lands.
@@ -50,6 +50,26 @@ function Centered({ children }: { children: React.ReactNode }) {
   );
 }
 
+// ── Deep-linking: mirror the current view (+ ids) into the URL query so a refresh
+// or a shared link lands on the same page instead of the home screen. ───────────
+function parsePortalUrl(): { v: string; id?: string; ctx?: string } | null {
+  if (typeof window === "undefined") return null;
+  const p = new URLSearchParams(window.location.search);
+  const v = p.get("v") || "overview";
+  const id = p.get("id") || undefined;
+  const ctx = p.get("ctx") || (v === "kanban" ? id : undefined);
+  return { v, id, ctx };
+}
+function buildPortalUrl(route: string, arg?: string | number, ctx?: string): string {
+  const path = typeof window !== "undefined" ? window.location.pathname : "/";
+  const p = new URLSearchParams();
+  if (route && route !== "overview") p.set("v", route);
+  if (arg != null && arg !== "") p.set("id", String(arg));
+  if (ctx) p.set("ctx", ctx);
+  const qs = p.toString();
+  return qs ? `${path}?${qs}` : path;
+}
+
 export function PortalApp() {
   const { status, user, profile, org, pipelines, openings, assessments, notes, requests, hires, timeOff, reviews, billing, orgs, switchOrg } = usePortalData();
   const [route, setRoute] = useState("overview");
@@ -62,10 +82,33 @@ export function PortalApp() {
       logoutClient().finally(() => { if (typeof window !== "undefined") window.location.reload(); });
       return;
     }
+    // Which board this candidate came from — kept in the URL so a refreshed /
+    // shared candidate link still resolves the right pipeline.
+    const nextCtx = id === "kanban"
+      ? (arg != null ? String(arg) : undefined)
+      : (id === "candidate" ? pipelineCtx : undefined);
     setRoute(id);
     setNavArg(arg);
     if (id === "kanban") setPipelineCtx(arg != null ? String(arg) : undefined);
+    if (typeof window !== "undefined") {
+      window.history.pushState(null, "", buildPortalUrl(id, arg, nextCtx));
+    }
   };
+
+  // Deep linking: restore the view from the URL on first load, and follow the
+  // browser Back/Forward buttons. Runs client-side only (no SSR hydration risk).
+  useEffect(() => {
+    const restore = () => {
+      const u = parsePortalUrl();
+      if (!u) return;
+      setRoute(u.v);
+      setNavArg(u.id);
+      setPipelineCtx(u.ctx);
+    };
+    restore();
+    window.addEventListener("popstate", restore);
+    return () => window.removeEventListener("popstate", restore);
+  }, []);
 
   // Post a note from the client side. Resolves the same raw candidate + pipeline
   // the detail screen is showing, then writes to the shared candidateNotes.
