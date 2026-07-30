@@ -465,10 +465,10 @@ function DiscProfileCard({ title, note, values, primary, discDims }: {
 }
 
 // ── Right-column panels ──────────────────────────────────────────────────────
-function SnapshotPanel({ c, x, sourcing }: { c: CandidateHeader; x: CandidateSnapshot; sourcing?: boolean }) {
+function SnapshotPanel({ c, x, showPhone }: { c: CandidateHeader; x: CandidateSnapshot; showPhone?: boolean }) {
   const rows = [
     { icon: 'briefcase', l: 'Experience', v: x.experience != null ? `${x.experience} yrs` : '—' },
-    ...(sourcing ? [{ icon: 'phone', l: 'Phone', v: x.phone || '—' }] : []),
+    ...(showPhone ? [{ icon: 'phone', l: 'Phone', v: x.phone || '—' }] : []),
     { icon: 'wallet', l: 'Salary expectation', v: x.salaryExp || '—' },
     { icon: 'calendar-clock', l: 'Availability', v: x.availability || '—' },
     { icon: 'clock', l: 'Timezone', v: x.timezone || '—' },
@@ -741,6 +741,8 @@ export function CandidateDetailScreen({ client, data, density = "regular", onNav
   // Normalize the raw Admin stage to a canonical sourcing key so the client can
   // only act from Submitted / In progress (Nearwork owns Sourced + Screening).
   const rawStage = isSourcing ? sourcingStageKey(data.rawStage) : (data.rawStage || '').toLowerCase();
+  // Phone is shown to the client only once the candidate has passed screening.
+  const showPhone = isSourcing && (rawStage === 'submitted' || rawStage === 'in-progress' || rawStage === 'hired');
   const sourcingDone = rawStage === 'hired' || rawStage === 'not-selected';
   const canStartProcess = isSourcing && rawStage === 'submitted';
   const canDecide = isSourcing && (rawStage === 'submitted' || rawStage === 'in-progress');
@@ -898,7 +900,7 @@ export function CandidateDetailScreen({ client, data, density = "regular", onNav
                         <p style={{ fontSize: 12.5, color: NW.gray400, margin: 0 }}>No resume uploaded yet.</p>
                       )}
                     </CardPanel>
-                    <SnapshotPanel c={c} x={x} sourcing />
+                    <SnapshotPanel c={c} x={x} showPhone={showPhone} />
                     {english && <EnglishPanel eng={english} />}
                   </div>
                 </div>
