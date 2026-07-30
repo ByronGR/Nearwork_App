@@ -42,6 +42,7 @@ export function toPipelineData(
         openingId: p.code,
         awaitingDays: key === "final-round" ? 1 : 0,
         match: Array.isArray(c.skills) ? c.skills : [],
+        sourcing: p.pipelineType === "sourcing",
         compare: {
           experience: (typeof c.experience === "number" && c.experience > 0) ? c.experience : (yearsFromWorkHistory(c.workHistory) ?? null),
           english: c.english ? { level: c.english, score: engLevelScore(c.english) } : null,

@@ -44,6 +44,7 @@ export type PipelineCand = {
   match: string[]; // skill / match tags shown on the card footer
   note?: string; // recruiter note, shown in the compare drawer
   compare?: PipelineCompare; // extended profile for the compare drawer
+  sourcing?: boolean; // sourcing opening → no Nearwork score shown
 };
 
 // The (optional) approved kickoff brief attached to this opening.
@@ -140,7 +141,7 @@ function KanbanCard({ c, dense, compareMode, selected, onToggleSelect, onOpen }:
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
           {urgent && <span title="Awaiting your review" style={{ width: 6, height: 6, borderRadius: '50%', background: NW.rose500 }} />}
-          <span style={{ fontFamily: 'Poppins, sans-serif', fontVariantNumeric: 'tabular-nums', fontSize: 15, fontWeight: 700, color: NW.black, letterSpacing: '-0.02em' }}>{c.score}</span>
+          {!c.sourcing && <span style={{ fontFamily: 'Poppins, sans-serif', fontVariantNumeric: 'tabular-nums', fontSize: 15, fontWeight: 700, color: NW.black, letterSpacing: '-0.02em' }}>{c.score}</span>}
         </div>
       </div>
     </div>
@@ -244,10 +245,16 @@ function PipelineListRow({ c, stage, dense, last, compareMode, selected, onToggl
         </span>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <div style={{ flex: 1, height: 5, background: NW.gray100, borderRadius: 3, overflow: 'hidden' }}>
-          <div style={{ width: `${c.score}%`, height: '100%', background: c.score >= 90 ? NW.teal600 : c.score >= 80 ? NW.teal500 : NW.yellow500 }} />
-        </div>
-        <span style={{ fontFamily: 'Poppins, sans-serif', fontVariantNumeric: 'tabular-nums', fontSize: 12, color: NW.black, minWidth: 22, textAlign: 'right' }}>{c.score}</span>
+        {c.sourcing ? (
+          <span style={{ fontSize: 12, color: NW.gray400 }}>—</span>
+        ) : (
+          <>
+            <div style={{ flex: 1, height: 5, background: NW.gray100, borderRadius: 3, overflow: 'hidden' }}>
+              <div style={{ width: `${c.score}%`, height: '100%', background: c.score >= 90 ? NW.teal600 : c.score >= 80 ? NW.teal500 : NW.yellow500 }} />
+            </div>
+            <span style={{ fontFamily: 'Poppins, sans-serif', fontVariantNumeric: 'tabular-nums', fontSize: 12, color: NW.black, minWidth: 22, textAlign: 'right' }}>{c.score}</span>
+          </>
+        )}
       </div>
       <div style={{ textAlign: 'right' }}>
         {c.awaitingDays === 0
