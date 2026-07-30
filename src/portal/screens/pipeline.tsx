@@ -115,6 +115,14 @@ function getCandidateCompare(c: PipelineCand): PipelineCompare & { nearwork: num
   return { ...e, nearwork: c.score, skills: c.match || [] };
 }
 
+// One compact salary figure from a range/string, e.g. "$2,000–$2,300 USD/mo" → "$2K".
+function compactSalary(s?: string): string {
+  const m = String(s || '').replace(/,/g, '').match(/\d{3,}/);
+  if (!m) return '';
+  const k = parseInt(m[0], 10) / 1000;
+  return '$' + (Number.isInteger(k) ? k : k.toFixed(1)) + 'K';
+}
+
 // ── Kanban card ────────────────────────────────────────────────────────────
 function KanbanCard({ c, dense, compareMode, selected, onToggleSelect, onOpen }: {
   c: PipelineCand;
@@ -135,9 +143,9 @@ function KanbanCard({ c, dense, compareMode, selected, onToggleSelect, onOpen }:
         border: `1px solid ${selected ? NW.teal500 : (hover ? NW.gray200 : NW.gray100)}`,
         boxShadow: selected ? `0 0 0 3px ${NW.teal500}22` : (hover ? '0 4px 12px rgba(0,0,0,0.06), 0 2px 4px rgba(0,0,0,0.04)' : '0 1px 2px rgba(0,0,0,0.03)'),
         borderRadius: 12,
-        padding: dense ? 12 : 14,
+        padding: dense ? 14 : 16,
         cursor: 'pointer', position: 'relative',
-        display: 'flex', flexDirection: 'column', gap: 10,
+        display: 'flex', flexDirection: 'column', gap: 11,
         transition: 'border-color 150ms, box-shadow 150ms',
       }}>
       {compareMode && (
@@ -156,11 +164,20 @@ function KanbanCard({ c, dense, compareMode, selected, onToggleSelect, onOpen }:
           {!c.sourcing && <span style={{ fontFamily: 'Poppins, sans-serif', fontVariantNumeric: 'tabular-nums', fontSize: 15, fontWeight: 700, color: NW.black, letterSpacing: '-0.02em' }}>{c.score}</span>}
         </div>
       </div>
-      {c.match && c.match.length > 0 && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-          {c.match.slice(0, 2).map(s => <span key={s} style={{ fontSize: 10.5, fontWeight: 500, color: NW.gray700, background: NW.gray50, border: `1px solid ${NW.gray100}`, padding: '2px 8px', borderRadius: 6, whiteSpace: 'nowrap' }}>{s}</span>)}
-          {c.match.length > 2 && <span style={{ fontSize: 10.5, color: NW.gray400, padding: '2px 4px' }}>+{c.match.length - 2}</span>}
-        </div>
+      {c.sourcing ? (
+        (c.compare?.english?.level || compactSalary(c.compare?.salaryExp)) ? (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {c.compare?.english?.level && <span style={{ fontSize: 12, fontWeight: 600, color: NW.gray700, background: NW.gray50, border: `1px solid ${NW.gray100}`, padding: '3px 10px', borderRadius: 7, whiteSpace: 'nowrap' }}>{c.compare.english.level} English</span>}
+            {compactSalary(c.compare?.salaryExp) && <span style={{ fontSize: 12, fontWeight: 700, color: NW.teal700, background: NW.teal50, border: `1px solid ${NW.teal500}33`, padding: '3px 10px', borderRadius: 7, whiteSpace: 'nowrap' }}>{compactSalary(c.compare?.salaryExp)}</span>}
+          </div>
+        ) : null
+      ) : (
+        c.match && c.match.length > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {c.match.slice(0, 2).map(s => <span key={s} style={{ fontSize: 10.5, fontWeight: 500, color: NW.gray700, background: NW.gray50, border: `1px solid ${NW.gray100}`, padding: '2px 8px', borderRadius: 6, whiteSpace: 'nowrap' }}>{s}</span>)}
+            {c.match.length > 2 && <span style={{ fontSize: 10.5, color: NW.gray400, padding: '2px 4px' }}>+{c.match.length - 2}</span>}
+          </div>
+        )
       )}
     </div>
   );
@@ -178,7 +195,7 @@ function KanbanColumn({ stage, candidates, dense, compareMode, selectedIds, onTo
 }) {
   return (
     <div style={{
-      flex: 1, minWidth: 0,
+      width: dense ? 244 : 276, flexShrink: 0,
       background: NW.offWhite,
       border: `1px solid ${NW.gray100}`,
       borderRadius: 14,
@@ -595,7 +612,7 @@ export function PipelineScreen({ client, data, density = "regular", onNav }: {
           {/* Board / list */}
           {populated ? (
             view === 'kanban' ? (
-              <div style={{ flex: 1, display: 'flex', gap: dense ? 12 : 14, minHeight: 0 }}>
+              <div style={{ flex: 1, display: 'flex', gap: dense ? 12 : 14, minHeight: 0, overflowX: 'auto' }}>
                 {stages.map(s => (
                   <KanbanColumn
                     key={s.key} stage={s}
