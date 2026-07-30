@@ -52,22 +52,38 @@ function Centered({ children }: { children: React.ReactNode }) {
 
 // ── Deep-linking: mirror the current view (+ ids) into the URL query so a refresh
 // or a shared link lands on the same page instead of the home screen. ───────────
+// Opening boards and candidate profiles get clean, shareable paths that mirror
+// the Admin codes (/opening/NW-7823, /opening/NW-7823/candidate/<id>). The other
+// portal views (team, billing, settings…) have no id and no clean path of their
+// own, so they ride a ?v= query on the root to avoid colliding with legacy routes.
 function parsePortalUrl(): { v: string; id?: string; ctx?: string } | null {
   if (typeof window === "undefined") return null;
+  const seg = window.location.pathname.split("/").filter(Boolean).map((s) => {
+    try { return decodeURIComponent(s); } catch { return s; }
+  });
+  if (seg[0] === "opening" && seg[2] === "candidate" && seg[3]) {
+    return { v: "candidate", id: seg[3], ctx: seg[1] };
+  }
+  if (seg[0] === "opening" && seg[1]) {
+    return { v: "kanban", id: seg[1], ctx: seg[1] };
+  }
+  if (seg[0] === "candidate" && seg[1]) {
+    return { v: "candidate", id: seg[1], ctx: undefined };
+  }
   const p = new URLSearchParams(window.location.search);
-  const v = p.get("v") || "overview";
-  const id = p.get("id") || undefined;
-  const ctx = p.get("ctx") || (v === "kanban" ? id : undefined);
-  return { v, id, ctx };
+  return { v: p.get("v") || "overview", id: p.get("id") || undefined, ctx: p.get("ctx") || undefined };
 }
 function buildPortalUrl(route: string, arg?: string | number, ctx?: string): string {
-  const path = typeof window !== "undefined" ? window.location.pathname : "/";
+  const a = arg != null && arg !== "" ? encodeURIComponent(String(arg)) : "";
+  if (route === "overview") return "/";
+  if (route === "kanban" && a) return `/opening/${a}`;
+  if (route === "candidate" && a) {
+    return ctx ? `/opening/${encodeURIComponent(ctx)}/candidate/${a}` : `/candidate/${a}`;
+  }
   const p = new URLSearchParams();
-  if (route && route !== "overview") p.set("v", route);
+  p.set("v", route);
   if (arg != null && arg !== "") p.set("id", String(arg));
-  if (ctx) p.set("ctx", ctx);
-  const qs = p.toString();
-  return qs ? `${path}?${qs}` : path;
+  return `/?${p.toString()}`;
 }
 
 export function PortalApp() {
