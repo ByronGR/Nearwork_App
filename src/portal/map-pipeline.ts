@@ -5,6 +5,7 @@
 import type { PortalOpening, PortalPipeline } from "@/lib/firebase-client";
 import type { PipelineData, PipelineCand, PipelineOpening } from "./screens/pipeline";
 import { clientStageKey, stageIdxOf, STAGE_LABELS, avatarColor, initialsOf } from "./stage-map";
+import { yearsFromWorkHistory, tzFromLocation, engLevelScore } from "./candidate-derive";
 
 function isActive(o: PortalOpening): boolean {
   const s = String(o.status || "").toLowerCase();
@@ -41,6 +42,14 @@ export function toPipelineData(
         openingId: p.code,
         awaitingDays: key === "final-round" ? 1 : 0,
         match: Array.isArray(c.skills) ? c.skills : [],
+        compare: {
+          experience: (typeof c.experience === "number" && c.experience > 0) ? c.experience : (yearsFromWorkHistory(c.workHistory) ?? null),
+          english: c.english ? { level: c.english, score: engLevelScore(c.english) } : null,
+          disc: null, // sourcing pipeline candidates have no DISC assessment
+          salaryExp: (c.expectedSalary as string) || (typeof c.expectedSalaryAmount === "number" ? `$${c.expectedSalaryAmount.toLocaleString()}` : "—"),
+          availability: c.availability || "—",
+          timezone: c.timezone || tzFromLocation(c.location),
+        },
       });
     }
   }

@@ -20,9 +20,9 @@ import { PortalSidebar, PortalTopBar, EmptyBlock, type PortalClient } from "../s
 // Per-candidate comparison profile (experience, English, DISC, salary, …).
 // Optional — the compare drawer falls back to sensible defaults when absent.
 export type PipelineCompare = {
-  experience: number;
-  english: { level: string; score: number };
-  disc: { type: string; label: string };
+  experience: number | null;
+  english: { level: string; score: number } | null;
+  disc: { type: string; label: string } | null;
   salaryExp: string;
   availability: string;
   timezone?: string;
@@ -99,14 +99,7 @@ function CandidateAvatar({ c, size = 36 }: { c: PipelineCand; size?: number }) {
 
 // Resolve the compare profile for a candidate, filling deterministic defaults.
 function getCandidateCompare(c: PipelineCand): PipelineCompare & { nearwork: number; skills: string[] } {
-  const e: PipelineCompare = c.compare || {
-    experience: 5,
-    english: { level: "B2", score: 80 },
-    disc: { type: "C", label: "Conscientious" },
-    salaryExp: "$5,000",
-    availability: "2 weeks",
-    timezone: "GMT-5",
-  };
+  const e: PipelineCompare = c.compare || { experience: null, english: null, disc: null, salaryExp: "—", availability: "—" };
   return { ...e, nearwork: c.score, skills: c.match || [] };
 }
 
@@ -365,9 +358,12 @@ function KickoffBriefDrawer({ opening, brief, onClose }: {
 // prototype's own null-safe fallback.
 function CompareModal({ candidates, onClose }: { candidates: PipelineCand[]; onClose: () => void }) {
   const cols = candidates.map(c => ({ c, x: getCandidateCompare(c), a: null as null }));
-  const maxNW = Math.max(...cols.map(o => o.x.nearwork));
-  const maxExp = Math.max(...cols.map(o => o.x.experience));
-  const maxEng = Math.max(...cols.map(o => o.x.english.score));
+  const maxNW = Math.max(0, ...cols.map(o => o.x.nearwork));
+  const showNearwork = maxNW > 0; // hide the score row when nobody is scored (sourcing)
+  const expVals = cols.map(o => o.x.experience).filter((n): n is number => n != null);
+  const maxExp = expVals.length ? Math.max(...expVals) : null;
+  const engVals = cols.map(o => o.x.english?.score).filter((n): n is number => n != null);
+  const maxEng = engVals.length ? Math.max(...engVals) : null;
   const availRank: Record<string, number> = { 'Immediate': 0, '2 weeks': 1, '3 weeks': 2, '1 month': 3 };
   const bestAvail = Math.min(...cols.map(o => availRank[o.x.availability] ?? 9));
 
@@ -413,7 +409,8 @@ function CompareModal({ candidates, onClose }: { candidates: PipelineCand[]; onC
         </div>
 
         <div style={{ padding: '4px 8px 8px' }}>
-          {/* Nearwork score */}
+          {/* Nearwork score — hidden when nobody is scored (sourcing) */}
+          {showNearwork && (
           <Row label="Nearwork score" render={(o) => (
             <div style={{ margin: 8, padding: '14px 16px', borderRadius: 12, background: o.x.nearwork === maxNW ? NW.teal50 : 'transparent', textAlign: 'center' }}>
               <span style={{ fontFamily: 'Poppins', fontSize: 26, fontWeight: 700, color: o.x.nearwork === maxNW ? NW.teal700 : NW.black, letterSpacing: '-0.03em' }}>{o.x.nearwork}</span>
@@ -421,31 +418,32 @@ function CompareModal({ candidates, onClose }: { candidates: PipelineCand[]; onC
               {o.x.nearwork === maxNW && <div style={{ fontSize: 10.5, fontWeight: 700, color: NW.teal600, marginTop: 2 }}>BEST</div>}
             </div>
           )} />
+          )}
           {/* Experience */}
           <Row label="Experience" render={(o) => (
-            <div style={{ margin: 8, padding: '14px 16px', borderRadius: 12, background: o.x.experience === maxExp ? NW.teal50 : 'transparent', textAlign: 'center' }}>
-              <span style={{ fontFamily: 'Poppins', fontSize: 22, fontWeight: 700, color: NW.black, letterSpacing: '-0.03em' }}>{o.x.experience}</span>
-              <span style={{ fontSize: 12.5, color: NW.gray500 }}> yrs</span>
+            <div style={{ margin: 8, padding: '14px 16px', borderRadius: 12, background: (o.x.experience != null && o.x.experience === maxExp) ? NW.teal50 : 'transparent', textAlign: 'center' }}>
+              {o.x.experience != null ? (<><span style={{ fontFamily: 'Poppins', fontSize: 22, fontWeight: 700, color: NW.black, letterSpacing: '-0.03em' }}>{o.x.experience}</span><span style={{ fontSize: 12.5, color: NW.gray500 }}> yrs</span></>) : <span style={{ fontSize: 14, color: NW.gray400 }}>—</span>}
             </div>
           )} />
           {/* English */}
           <Row label="English" render={(o) => (
-            <div style={{ margin: 8, padding: '14px 16px', borderRadius: 12, background: o.x.english.score === maxEng ? NW.teal50 : 'transparent', textAlign: 'center' }}>
-              <div style={{ fontSize: 15, fontWeight: 700, color: NW.black }}>{o.x.english.level}</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginTop: 7 }}>
-                <div style={{ flex: 1, height: 5, background: NW.gray100, borderRadius: 3, overflow: 'hidden' }}>
-                  <div style={{ width: `${o.x.english.score}%`, height: '100%', background: NW.teal500 }} />
-                </div>
-                <span style={{ fontFamily: 'Poppins, sans-serif', fontVariantNumeric: 'tabular-nums', fontSize: 11, color: NW.gray600 }}>{o.x.english.score}</span>
-              </div>
+            <div style={{ margin: 8, padding: '14px 16px', borderRadius: 12, background: (o.x.english && o.x.english.score === maxEng) ? NW.teal50 : 'transparent', textAlign: 'center' }}>
+              {o.x.english ? (
+                <>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: NW.black }}>{o.x.english.level}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginTop: 7 }}>
+                    <div style={{ flex: 1, height: 5, background: NW.gray100, borderRadius: 3, overflow: 'hidden' }}>
+                      <div style={{ width: `${o.x.english.score}%`, height: '100%', background: NW.teal500 }} />
+                    </div>
+                    <span style={{ fontFamily: 'Poppins, sans-serif', fontVariantNumeric: 'tabular-nums', fontSize: 11, color: NW.gray600 }}>{o.x.english.score}</span>
+                  </div>
+                </>
+              ) : <span style={{ fontSize: 14, color: NW.gray400 }}>—</span>}
             </div>
-          )} />
-          {/* Assessment */}
-          <Row label="Assessment" render={() => (
-            <div style={{ margin: 8, padding: '14px 16px', textAlign: 'center', fontSize: 12, color: NW.gray400 }}>Pending</div>
           )} />
           {/* DISC */}
           <Row label="DISC assessment" render={(o) => {
+            if (!o.x.disc) return <div style={{ margin: 8, padding: '14px 16px', textAlign: 'center', fontSize: 12, color: NW.gray400 }}>—</div>;
             const col = DISC_COLORS[o.x.disc.type] || NW.gray500;
             return (
               <div style={{ margin: 8, padding: '14px 16px', textAlign: 'center' }}>
@@ -460,7 +458,6 @@ function CompareModal({ candidates, onClose }: { candidates: PipelineCand[]; onC
           <Row label="Salary expectation" render={(o) => (
             <div style={{ margin: 8, padding: '14px 16px', textAlign: 'center' }}>
               <span style={{ fontSize: 15, fontWeight: 700, color: NW.black }}>{o.x.salaryExp}</span>
-              <span style={{ fontSize: 12, color: NW.gray400 }}> /mo</span>
             </div>
           )} />
           {/* Availability */}

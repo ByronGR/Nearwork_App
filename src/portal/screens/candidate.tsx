@@ -466,7 +466,7 @@ function DiscProfileCard({ title, note, values, primary, discDims }: {
 function SnapshotPanel({ c, x }: { c: CandidateHeader; x: CandidateSnapshot }) {
   const rows = [
     { icon: 'briefcase', l: 'Experience', v: x.experience != null ? `${x.experience} yrs` : '—' },
-    { icon: 'wallet', l: 'Salary expectation', v: x.salaryExp ? `${x.salaryExp} / mo` : '—' },
+    { icon: 'wallet', l: 'Salary expectation', v: x.salaryExp || '—' },
     { icon: 'calendar-clock', l: 'Availability', v: x.availability || '—' },
     { icon: 'clock', l: 'Timezone', v: x.timezone || '—' },
     { icon: 'inbox', l: 'Applied', v: c.submittedDays === 0 ? 'Today' : `${c.submittedDays}d ago` },
@@ -792,18 +792,17 @@ export function CandidateDetailScreen({ client, data, density = "regular", onNav
                       <span style={{ fontSize: 13, color: NW.gray500, display: 'inline-flex', alignItems: 'center', gap: 5 }}><Icon name="map-pin" size={13} color={NW.gray400} /> {c.location}</span>
                       {x.experience != null && <><span style={{ width: 3, height: 3, borderRadius: '50%', background: NW.gray300 }} /><span style={{ fontSize: 13, color: NW.gray500 }}>{x.experience} yrs exp</span></>}
                     </div>
-                    <div style={{ display: 'flex', gap: 6, marginTop: 12, flexWrap: 'wrap' }}>
-                      {(c.match || []).map(s => <span key={s} style={{ fontSize: 11, fontWeight: 500, color: NW.gray700, background: NW.gray50, border: `1px solid ${NW.gray100}`, padding: '3px 9px', borderRadius: 7 }}>{s}</span>)}
+                  </div>
+                </div>
+                {!isSourcing && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexShrink: 0 }}>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: NW.gray400, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Nearwork match</div>
+                      <div style={{ fontSize: 12, color: NW.gray500, marginTop: 2 }}>Overall fit score</div>
                     </div>
+                    <MatchScore value={c.score} size={58} strokeWidth={4.5} />
                   </div>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexShrink: 0 }}>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: NW.gray400, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Nearwork match</div>
-                    <div style={{ fontSize: 12, color: NW.gray500, marginTop: 2 }}>Overall fit score</div>
-                  </div>
-                  <MatchScore value={c.score} size={58} strokeWidth={4.5} />
-                </div>
+                )}
               </div>
               {/* Action bar — the client asks Nearwork to act; it never moves a
                   candidate itself. A pending request takes over the bar. */}
@@ -882,10 +881,8 @@ export function CandidateDetailScreen({ client, data, density = "regular", onNav
                     </CardPanel>
                     <NotesPanel c={c} user={{ name: client.user.name, initials: client.user.initials }} notes={data.notes} onAddNote={onAddNote} readOnly={client.access === 'viewer'} />
                   </div>
-                  {/* Right — snapshot + english + resume */}
+                  {/* Right — resume (top) + snapshot + english */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                    <SnapshotPanel c={c} x={x} />
-                    {english && <EnglishPanel eng={english} />}
                     <CardPanel title="Resume" icon="file-text">
                       <p style={{ fontSize: 12.5, color: NW.gray500, margin: '0 0 12px', lineHeight: 1.5 }}>The candidate&rsquo;s full CV, as submitted to Nearwork.</p>
                       {resumeUrl ? (
@@ -896,6 +893,8 @@ export function CandidateDetailScreen({ client, data, density = "regular", onNav
                         <p style={{ fontSize: 12.5, color: NW.gray400, margin: 0 }}>No resume uploaded yet.</p>
                       )}
                     </CardPanel>
+                    <SnapshotPanel c={c} x={x} />
+                    {english && <EnglishPanel eng={english} />}
                   </div>
                 </div>
               </>

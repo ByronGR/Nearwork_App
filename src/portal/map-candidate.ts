@@ -6,6 +6,7 @@
 import { isNearworkEmail, type PortalOpening, type PortalPipeline, type PortalAssessment, type PortalNote, type PortalRequest } from "@/lib/firebase-client";
 import type { CandidateData, CandidateHeader, CandidateDiscDim, CandidateNote, CandidateRequest } from "./screens/candidate";
 import { clientStageKey, stageIdxOf, STAGE_LABELS, avatarColor, initialsOf } from "./stage-map";
+import { yearsFromWorkHistory, tzFromLocation } from "./candidate-derive";
 
 const DISC_COLORS: Record<string, string> = { D: "#E74C7C", I: "#EAB308", S: "#16A085", C: "#3B82F6" };
 const DISC_DIMS: Record<string, CandidateDiscDim> = {
@@ -176,10 +177,9 @@ export function toCandidateData(
   // Snapshot from the embedded profile — shown for sourcing without an assessment.
   const snap: Record<string, unknown> = {};
   if (salaryExp) snap.salaryExp = salaryExp;
-  if (typeof c.experience === "number") snap.experience = c.experience;
   const availability = strOr(c.availability);
   if (availability) snap.availability = availability;
-  const timezone = strOr(c.timezone);
+  const timezone = strOr(c.timezone) || tzFromLocation(header.location);
   if (timezone) snap.timezone = timezone;
 
   // Work history + resume come straight from the embedded snapshot.
@@ -189,6 +189,11 @@ export function toCandidateData(
         .filter((w) => w.company || w.title)
     : undefined;
   const resumeUrl = strOr(c.resumeUrl) || strOr(c.cvUrl) || undefined;
+
+  // Experience: prefer the stored number, else compute the span from work history
+  // (so "0 yrs" from a missing field becomes a real number, or "—" when unknown).
+  const expYears = (typeof c.experience === "number" && c.experience > 0) ? c.experience : yearsFromWorkHistory(workHistory);
+  if (expYears != null) snap.experience = expYears;
 
   const base: CandidateData = {
     candidate: header,
