@@ -741,8 +741,8 @@ export function CandidateDetailScreen({ client, data, density = "regular", onNav
   // Normalize the raw Admin stage to a canonical sourcing key so the client can
   // only act from Submitted / In progress (Nearwork owns Sourced + Screening).
   const rawStage = isSourcing ? sourcingStageKey(data.rawStage) : (data.rawStage || '').toLowerCase();
-  // Phone is shown to the client only once the candidate has passed screening.
-  const showPhone = isSourcing && (rawStage === 'submitted' || rawStage === 'in-progress' || rawStage === 'hired');
+  // Phone shows on sourcing openings at every stage (the client sources directly).
+  const showPhone = isSourcing;
   const sourcingDone = rawStage === 'hired' || rawStage === 'not-selected';
   const canStartProcess = isSourcing && rawStage === 'submitted';
   const canDecide = isSourcing && (rawStage === 'submitted' || rawStage === 'in-progress');
