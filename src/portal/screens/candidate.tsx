@@ -52,6 +52,7 @@ export type CandidateHeader = {
 // years-exp when `experience` is present.
 export type CandidateSnapshot = {
   experience?: number;
+  phone?: string;
   salaryExp?: string;
   availability?: string;
   timezone?: string;
@@ -464,9 +465,10 @@ function DiscProfileCard({ title, note, values, primary, discDims }: {
 }
 
 // ── Right-column panels ──────────────────────────────────────────────────────
-function SnapshotPanel({ c, x }: { c: CandidateHeader; x: CandidateSnapshot }) {
+function SnapshotPanel({ c, x, sourcing }: { c: CandidateHeader; x: CandidateSnapshot; sourcing?: boolean }) {
   const rows = [
     { icon: 'briefcase', l: 'Experience', v: x.experience != null ? `${x.experience} yrs` : '—' },
+    ...(sourcing ? [{ icon: 'phone', l: 'Phone', v: x.phone || '—' }] : []),
     { icon: 'wallet', l: 'Salary expectation', v: x.salaryExp || '—' },
     { icon: 'calendar-clock', l: 'Availability', v: x.availability || '—' },
     { icon: 'clock', l: 'Timezone', v: x.timezone || '—' },
@@ -896,7 +898,7 @@ export function CandidateDetailScreen({ client, data, density = "regular", onNav
                         <p style={{ fontSize: 12.5, color: NW.gray400, margin: 0 }}>No resume uploaded yet.</p>
                       )}
                     </CardPanel>
-                    <SnapshotPanel c={c} x={x} />
+                    <SnapshotPanel c={c} x={x} sourcing />
                     {english && <EnglishPanel eng={english} />}
                   </div>
                 </div>

@@ -181,6 +181,8 @@ export function toCandidateData(
   if (salaryExp) snap.salaryExp = salaryExp;
   const availability = strOr(c.availability);
   if (availability) snap.availability = availability;
+  const phone = strOr(c.phone);
+  if (phone) snap.phone = phone;
   const timezone = strOr(c.timezone) || tzFromLocation(header.location);
   if (timezone) snap.timezone = timezone;
 

@@ -142,6 +142,7 @@ export type PipelineCandidate = {
   skills?: string[];
   // Client-facing profile snapshot embedded by Admin (see client-candidate-snapshot.ts)
   experience?: number;
+  phone?: string;
   availability?: string;
   timezone?: string;
   workHistory?: Array<{ company?: string; title?: string; from?: string; to?: string }>;
