@@ -1,37 +1,52 @@
 "use client";
 
-// Shows a "new version available" bar when we deploy an update while a client has
-// the app open. Web apps don't push new code to an already-open tab — this nudges
-// the user to reload so they're never stranded on stale code.
-import { useEffect, useState } from "react";
+// Keeps open tabs from running stale code after we deploy. Web apps don't push new
+// code into an already-open tab, so we detect a new deploy and:
+//   1) auto-reload when the user returns to the tab (the safe moment — they're not
+//      mid-typing), so most people silently land on the current version, and
+//   2) show a "refresh" bar as a visible fallback for anyone staring at the page.
+import { useEffect, useRef, useState } from "react";
+
+// Don't yank the page out from under someone who's typing (a note, a reason…).
+function isTyping(): boolean {
+  const el = document.activeElement;
+  if (!el) return false;
+  const tag = el.tagName;
+  return tag === "INPUT" || tag === "TEXTAREA" || (el as HTMLElement).isContentEditable === true;
+}
 
 export function VersionBanner() {
   const [show, setShow] = useState(false);
+  const stale = useRef(false);
 
   useEffect(() => {
     let baseline: string | null = null;
     let stopped = false;
 
-    const check = async () => {
+    const check = async (): Promise<boolean> => {
       try {
         const res = await fetch("/api/version", { cache: "no-store" });
-        if (!res.ok) return;
+        if (!res.ok) return false;
         const { v } = (await res.json()) as { v?: string };
-        if (!v) return;
-        if (baseline === null) {
-          baseline = v; // record the version this tab loaded with
-          return;
-        }
-        if (v !== baseline) setShow(true);
+        if (!v) return false;
+        if (baseline === null) { baseline = v; return false; } // record load-time version
+        if (v !== baseline) { stale.current = true; setShow(true); return true; }
+        return false;
       } catch {
-        /* offline / transient — try again next tick */
+        return false; // offline / transient — try again next tick
       }
     };
 
     check();
     const id = setInterval(() => { if (!stopped) check(); }, 60_000);
-    // Re-check the moment they come back to the tab, so it catches quickly.
-    const onVisible = () => { if (document.visibilityState === "visible") check(); };
+
+    // When they come back to the tab, refresh the check and — if a new version is
+    // live and they aren't typing — silently reload onto it.
+    const onVisible = async () => {
+      if (document.visibilityState !== "visible") return;
+      await check();
+      if (stale.current && !isTyping()) window.location.reload();
+    };
     document.addEventListener("visibilitychange", onVisible);
 
     return () => {
