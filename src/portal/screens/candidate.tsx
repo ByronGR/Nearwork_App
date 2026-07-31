@@ -914,7 +914,13 @@ export function CandidateDetailScreen({ client, data, density = "regular", onNav
                 </div>
               </>
             ) : !completed || !english || !assessment || !disc ? (
-              <AssessmentPending c={c} />
+              <div style={{ display: 'grid', gridTemplateColumns: dense ? '1fr' : '1.55fr 1fr', gap: 20, alignItems: 'start' }}>
+                <AssessmentPending c={c} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                  <ResumePanel resumeUrl={resumeUrl} />
+                  <SnapshotPanel c={c} x={x} />
+                </div>
+              </div>
             ) : (
               <>
                 {/* Submitted meta */}
