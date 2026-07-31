@@ -39,7 +39,10 @@ export function toPipelineData(
       const sKey = sourcing ? sourcingStageKey(c.stage) : null;
       const key = clientStageKey(c.stage);
       candidates.push({
-        id: c.candidateCode || c.code || `pc${seq++}`,
+        // Must stay resolvable by map-candidate's matchCandIn (which also matches on
+        // candidateId) — otherwise a candidate with only a candidateId gets a synthetic
+        // id here and opening the card shows "candidate not found".
+        id: c.candidateCode || c.code || c.candidateId || `pc${seq++}`,
         name,
         initials: initialsOf(name),
         avatarBg: avatarColor(seed),

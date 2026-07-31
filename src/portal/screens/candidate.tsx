@@ -488,6 +488,23 @@ function SnapshotPanel({ c, x, showPhone }: { c: CandidateHeader; x: CandidateSn
   );
 }
 
+// The candidate's CV — shown at the top of the right rail in EVERY view (sourcing
+// and full), so the resume is always one click away regardless of engagement type.
+function ResumePanel({ resumeUrl }: { resumeUrl?: string }) {
+  return (
+    <CardPanel title="Resume" icon="file-text">
+      <p style={{ fontSize: 12.5, color: NW.gray500, margin: '0 0 12px', lineHeight: 1.5 }}>The candidate&rsquo;s full CV, as submitted to Nearwork.</p>
+      {resumeUrl ? (
+        <a href={resumeUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, height: 36, padding: '0 16px', fontSize: 13, fontWeight: 600, color: NW.gray800, background: NW.white, border: `1px solid ${NW.gray200}`, borderRadius: 999, textDecoration: 'none' }}>
+          <Icon name="download" size={14} color={NW.gray600} /> View resume (PDF)
+        </a>
+      ) : (
+        <p style={{ fontSize: 12.5, color: NW.gray400, margin: 0 }}>No resume uploaded yet.</p>
+      )}
+    </CardPanel>
+  );
+}
+
 function SkillsMatchPanel({ c, fit }: { c: CandidateHeader; fit?: CandidateFitForRole }) {
   if (!fit) return null;
   const has = (skill: string) => (c.match || []).some(m => m.toLowerCase() === skill.toLowerCase());
@@ -890,16 +907,7 @@ export function CandidateDetailScreen({ client, data, density = "regular", onNav
                   </div>
                   {/* Right — resume (top) + snapshot + english */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                    <CardPanel title="Resume" icon="file-text">
-                      <p style={{ fontSize: 12.5, color: NW.gray500, margin: '0 0 12px', lineHeight: 1.5 }}>The candidate&rsquo;s full CV, as submitted to Nearwork.</p>
-                      {resumeUrl ? (
-                        <a href={resumeUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, height: 36, padding: '0 16px', fontSize: 13, fontWeight: 600, color: NW.gray800, background: NW.white, border: `1px solid ${NW.gray200}`, borderRadius: 999, textDecoration: 'none' }}>
-                          <Icon name="download" size={14} color={NW.gray600} /> View resume (PDF)
-                        </a>
-                      ) : (
-                        <p style={{ fontSize: 12.5, color: NW.gray400, margin: 0 }}>No resume uploaded yet.</p>
-                      )}
-                    </CardPanel>
+                    <ResumePanel resumeUrl={resumeUrl} />
                     <SnapshotPanel c={c} x={x} showPhone={showPhone} />
                     {english && <EnglishPanel eng={english} />}
                   </div>
@@ -967,8 +975,9 @@ export function CandidateDetailScreen({ client, data, density = "regular", onNav
                     </div>
                   </div>
 
-                  {/* Right — context rail */}
+                  {/* Right — context rail (CV first, same as the sourcing view) */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                    <ResumePanel resumeUrl={resumeUrl} />
                     <SnapshotPanel c={c} x={x} />
                     <SkillsMatchPanel c={c} fit={data.fitForRole} />
                     {highlights && <HighlightsPanel h={highlights} />}
