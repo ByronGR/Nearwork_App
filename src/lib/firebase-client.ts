@@ -121,6 +121,7 @@ export type PortalOpening = {
   skills?: string[] | string;
   roleLibraryDepartment?: string;
   roleLibrarySeniority?: string;
+  pipelineType?: "full" | "sourcing"; // authoritative sourcing flag; pipeline doc may lag
 };
 
 export type PipelineCandidate = {

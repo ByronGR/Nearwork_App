@@ -22,10 +22,17 @@ export function toPipelineData(
   const opening = activeId ? (openings || []).find((o) => o.code === activeId) : undefined;
   const relevant = (pipelines || []).filter((p) => !activeId || p.code === activeId);
 
+  // A pipeline counts as sourcing if EITHER its own flag or the matching opening's
+  // flag says so — the pipeline doc's pipelineType can be missing if the opening was
+  // switched to Sourcing before the pipeline doc existed, so the opening is the
+  // authoritative fallback.
+  const sourcingCodes = new Set((openings || []).filter((o) => o.pipelineType === "sourcing").map((o) => o.code));
+  const isSourcing = (p: PortalPipeline) => p.pipelineType === "sourcing" || sourcingCodes.has(p.code);
+
   const candidates: PipelineCand[] = [];
   let seq = 0;
   for (const p of relevant) {
-    const sourcing = p.pipelineType === "sourcing";
+    const sourcing = isSourcing(p);
     for (const c of p.candidates || []) {
       const name = c.name || "Candidate";
       const seed = c.candidateCode || c.code || `${name}-${seq}`;
@@ -72,7 +79,7 @@ export function toPipelineData(
     openingTitle: opening?.title || "All roles",
     opening: pipelineOpening,
     totalOpenRoles: (openings || []).filter(isActive).length,
-    pipelineType: relevant.length && relevant.every((p) => p.pipelineType === "sourcing") ? "sourcing" : "full",
+    pipelineType: relevant.length && relevant.every(isSourcing) ? "sourcing" : "full",
     candidates,
   };
 }

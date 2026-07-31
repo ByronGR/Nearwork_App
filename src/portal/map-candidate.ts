@@ -133,7 +133,10 @@ export function toCandidateData(
   if (!found || !pipe) return null;
   const c = found;
 
-  const isSourcingPipe = pipe.pipelineType === "sourcing";
+  // Fall back to the opening's flag: the pipeline doc's pipelineType can be missing
+  // if the opening was switched to Sourcing before the pipeline doc existed.
+  const openingForPipe = (openings || []).find((o) => o.code === pipe!.code);
+  const isSourcingPipe = pipe.pipelineType === "sourcing" || openingForPipe?.pipelineType === "sourcing";
   const key = clientStageKey(c.stage as string | undefined);
   const sKey = isSourcingPipe ? sourcingStageKey(c.stage as string | undefined) : null;
   const realId = (c.candidateId as string) || (c.candidateCode as string) || (c.code as string);
