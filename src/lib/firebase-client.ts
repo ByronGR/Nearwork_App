@@ -146,7 +146,13 @@ export type PipelineCandidate = {
   phone?: string;
   availability?: string;
   timezone?: string;
-  workHistory?: Array<{ company?: string; title?: string; from?: string; to?: string }>;
+  workHistory?: Array<{
+    company?: string; title?: string; from?: string; to?: string;
+    location?: string; isCurrent?: boolean;
+    responsibilities?: string[];
+    accomplishments?: string[];   // quantified outcomes — the selling material
+  }>;
+  tools?: string[];               // named platforms the candidate has used
   resumeUrl?: string;
   cvUrl?: string;
 };
@@ -244,7 +250,13 @@ export type PortalCandidate = {
   cvUrl?: string;
   photoUrl?: string;
   linkedin?: string;
-  workHistory?: Array<{ company?: string; title?: string; from?: string; to?: string }>;
+  workHistory?: Array<{
+    company?: string; title?: string; from?: string; to?: string;
+    location?: string; isCurrent?: boolean;
+    responsibilities?: string[];
+    accomplishments?: string[];   // quantified outcomes — the selling material
+  }>;
+  tools?: string[];               // named platforms the candidate has used
   certifications?: Array<{ name?: string; issuer?: string; date?: string }>;
   languages?: Array<string | { language?: string; level?: string }>;
   discProfile?: { label?: string; high?: string; low?: string; summary?: string };

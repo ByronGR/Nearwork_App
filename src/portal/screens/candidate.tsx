@@ -174,7 +174,11 @@ export type CandidateData = {
   candidateRealId?: string; // raw candidate id, for the client-move call
   rawStage?: string;       // the actual stage key (submitted / in-progress / hired / not-selected)
   // Sourcing profile — what we actually provide (no assessment / DISC).
-  workHistory?: Array<{ company?: string; title?: string; from?: string; to?: string }>;
+  workHistory?: Array<{
+    company?: string; title?: string; from?: string; to?: string;
+    location?: string; responsibilities?: string[]; accomplishments?: string[];
+  }>;
+  tools?: string[];
   resumeUrl?: string;      // resume / CV download URL
 
   // ── OPTIONAL / RICH (assessment) — absent → pending state ────────────────
@@ -501,6 +505,21 @@ function ResumePanel({ resumeUrl }: { resumeUrl?: string }) {
       ) : (
         <p style={{ fontSize: 12.5, color: NW.gray400, margin: 0 }}>No resume uploaded yet.</p>
       )}
+    </CardPanel>
+  );
+}
+
+// Named platforms the candidate has actually used. Separate from skills because
+// clients ask for tools by name ("do they know HubSpot?"). Hidden when empty.
+function ToolsPanel({ tools }: { tools?: string[] }) {
+  if (!tools?.length) return null;
+  return (
+    <CardPanel title="Tools & applications" icon="wrench">
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+        {tools.map((t) => (
+          <span key={t} style={{ display: 'inline-flex', alignItems: 'center', fontSize: 11.5, fontWeight: 500, color: NW.teal700, background: NW.teal50, border: '1px solid #16A08522', padding: '4px 10px', borderRadius: 999 }}>{t}</span>
+        ))}
+      </div>
     </CardPanel>
   );
 }
@@ -894,6 +913,23 @@ export function CandidateDetailScreen({ client, data, density = "regular", onNav
                                 <div style={{ minWidth: 0 }}>
                                   <div style={{ fontSize: 13.5, fontWeight: 600, color: NW.black }}>{w.title || w.company}</div>
                                   {sub && <div style={{ fontSize: 12.5, color: NW.gray500, marginTop: 1 }}>{sub}</div>}
+                                  {/* Quantified outcomes — the reason a client
+                                      shortlists someone. Shown above duties. */}
+                                  {!!w.accomplishments?.length && (
+                                    <div style={{ marginTop: 7, display: 'flex', flexDirection: 'column', gap: 5 }}>
+                                      {w.accomplishments.map((a, j) => (
+                                        <div key={j} style={{ display: 'flex', gap: 7, fontSize: 12.5, color: NW.teal700, lineHeight: 1.5 }}>
+                                          <Icon name="check" size={13} color={NW.teal600} strokeWidth={2.5} />
+                                          <span>{a}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                  {!!w.responsibilities?.length && (
+                                    <ul style={{ margin: '7px 0 0 15px', padding: 0, fontSize: 12.5, color: NW.gray600, lineHeight: 1.55 }}>
+                                      {w.responsibilities.slice(0, 4).map((r, j) => <li key={j}>{r}</li>)}
+                                    </ul>
+                                  )}
                                 </div>
                               </div>
                             );
@@ -909,6 +945,7 @@ export function CandidateDetailScreen({ client, data, density = "regular", onNav
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                     <ResumePanel resumeUrl={resumeUrl} />
                     <SnapshotPanel c={c} x={x} showPhone={showPhone} />
+                    <ToolsPanel tools={data.tools} />
                     {english && <EnglishPanel eng={english} />}
                   </div>
                 </div>
@@ -919,6 +956,7 @@ export function CandidateDetailScreen({ client, data, density = "regular", onNav
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                   <ResumePanel resumeUrl={resumeUrl} />
                   <SnapshotPanel c={c} x={x} />
+                  <ToolsPanel tools={data.tools} />
                 </div>
               </div>
             ) : (
@@ -985,6 +1023,7 @@ export function CandidateDetailScreen({ client, data, density = "regular", onNav
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                     <ResumePanel resumeUrl={resumeUrl} />
                     <SnapshotPanel c={c} x={x} />
+                    <ToolsPanel tools={data.tools} />
                     <SkillsMatchPanel c={c} fit={data.fitForRole} />
                     {highlights && <HighlightsPanel h={highlights} />}
                     <NotesPanel c={c} user={{ name: client.user.name, initials: client.user.initials }} notes={data.notes} onAddNote={onAddNote} readOnly={client.access === 'viewer'} />

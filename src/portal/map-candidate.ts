@@ -190,11 +190,24 @@ export function toCandidateData(
   if (timezone) snap.timezone = timezone;
 
   // Work history + resume come straight from the embedded snapshot.
+  const strList = (v: unknown): string[] =>
+    Array.isArray(v) ? v.map((x) => strOr(x)).filter(Boolean) : [];
   const workHistory = Array.isArray(c.workHistory)
     ? (c.workHistory as Array<Record<string, unknown>>)
-        .map((w) => ({ company: strOr(w.company), title: strOr(w.title), from: strOr(w.from), to: strOr(w.to) }))
+        .map((w) => ({
+          company: strOr(w.company),
+          title: strOr(w.title),
+          from: strOr(w.from),
+          to: strOr(w.to),
+          location: strOr(w.location),
+          // Accomplishments are the reason a client shortlists someone — carry
+          // them through rather than showing job titles alone.
+          accomplishments: strList(w.accomplishments),
+          responsibilities: strList(w.responsibilities),
+        }))
         .filter((w) => w.company || w.title)
     : undefined;
+  const tools = strList(c.tools);
   const resumeUrl = strOr(c.resumeUrl) || strOr(c.cvUrl) || undefined;
 
   // Experience: prefer the stored number, else compute the span from work history
@@ -214,6 +227,7 @@ export function toCandidateData(
     stageOrder: STAGE_ORDER,
     snapshot: Object.keys(snap).length ? snap : undefined,
     workHistory: workHistory && workHistory.length ? workHistory : undefined,
+    tools: tools.length ? tools : undefined,
     resumeUrl,
     fitForRole,
     completed: false,
