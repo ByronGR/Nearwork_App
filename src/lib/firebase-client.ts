@@ -153,6 +153,7 @@ export type PipelineCandidate = {
     accomplishments?: string[];   // quantified outcomes — the selling material
   }>;
   tools?: string[];               // named platforms the candidate has used
+  education?: Array<{ degree?: string; field?: string; institution?: string; endYear?: number }>;
   resumeUrl?: string;
   cvUrl?: string;
 };
@@ -257,6 +258,7 @@ export type PortalCandidate = {
     accomplishments?: string[];   // quantified outcomes — the selling material
   }>;
   tools?: string[];               // named platforms the candidate has used
+  education?: Array<{ degree?: string; field?: string; institution?: string; endYear?: number }>;
   certifications?: Array<{ name?: string; issuer?: string; date?: string }>;
   languages?: Array<string | { language?: string; level?: string }>;
   discProfile?: { label?: string; high?: string; low?: string; summary?: string };

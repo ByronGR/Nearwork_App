@@ -208,6 +208,16 @@ export function toCandidateData(
         .filter((w) => w.company || w.title)
     : undefined;
   const tools = strList(c.tools);
+  const education = Array.isArray(c.education)
+    ? (c.education as Array<Record<string, unknown>>)
+        .map((e) => ({
+          degree: strOr(e.degree),
+          field: strOr(e.field),
+          institution: strOr(e.institution),
+          endYear: typeof e.endYear === "number" ? e.endYear : undefined,
+        }))
+        .filter((e) => e.degree || e.institution)
+    : [];
   const resumeUrl = strOr(c.resumeUrl) || strOr(c.cvUrl) || undefined;
 
   // Experience: prefer the stored number, else compute the span from work history
@@ -228,6 +238,7 @@ export function toCandidateData(
     snapshot: Object.keys(snap).length ? snap : undefined,
     workHistory: workHistory && workHistory.length ? workHistory : undefined,
     tools: tools.length ? tools : undefined,
+    education: education.length ? education : undefined,
     resumeUrl,
     fitForRole,
     completed: false,

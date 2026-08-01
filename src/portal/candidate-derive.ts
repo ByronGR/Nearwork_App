@@ -44,3 +44,25 @@ const ENG_LEVEL_SCORE: Record<string, number> = { a1: 20, a2: 35, b1: 55, b2: 75
 export function engLevelScore(level?: string): number {
   return ENG_LEVEL_SCORE[String(level || '').trim().toLowerCase()] ?? 0;
 }
+
+// Candidates write English on their CVs in wildly different ways — "B2",
+// "Advanced (C1)", "Native", or "Speaking 70%, Reading 90%, Writing 90%". The
+// pipeline card has room for a level, not a sentence, so reduce it to something
+// short or return "" and let the caller hide the pill entirely.
+export function shortEnglish(raw?: string | null): string {
+  const t = (raw || "").trim();
+  if (!t) return "";
+
+  const cefr = t.match(/\b([ABC][12])\b/i);
+  if (cefr) return cefr[1].toUpperCase();
+
+  if (/native|bilingual|mother\s*tongue/i.test(t)) return "Native";
+  if (/fluent/i.test(t)) return "Fluent";
+  if (/proficient|advanced/i.test(t)) return "Advanced";
+  if (/upper[-\s]?intermediate/i.test(t)) return "Upper-int.";
+  if (/intermediate/i.test(t)) return "Intermediate";
+  if (/basic|beginner|elementary/i.test(t)) return "Basic";
+
+  // Anything else that's still short enough to read on a card.
+  return t.length <= 14 ? t : "";
+}

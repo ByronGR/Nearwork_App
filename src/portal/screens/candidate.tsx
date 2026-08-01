@@ -179,6 +179,7 @@ export type CandidateData = {
     location?: string; responsibilities?: string[]; accomplishments?: string[];
   }>;
   tools?: string[];
+  education?: Array<{ degree?: string; field?: string; institution?: string; endYear?: number }>;
   resumeUrl?: string;      // resume / CV download URL
 
   // ── OPTIONAL / RICH (assessment) — absent → pending state ────────────────
@@ -518,6 +519,33 @@ function ToolsPanel({ tools }: { tools?: string[] }) {
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
         {tools.map((t) => (
           <span key={t} style={{ display: 'inline-flex', alignItems: 'center', fontSize: 11.5, fontWeight: 500, color: NW.teal700, background: NW.teal50, border: '1px solid #16A08522', padding: '4px 10px', borderRadius: 999 }}>{t}</span>
+        ))}
+      </div>
+    </CardPanel>
+  );
+}
+
+// Degrees and schooling. Clients ask about qualifications for some roles and
+// never for others, so this sits below the working history rather than above it.
+function EducationPanel({ education }: { education?: Array<{ degree?: string; field?: string; institution?: string; endYear?: number }> }) {
+  if (!education?.length) return null;
+  return (
+    <CardPanel title="Education" icon="graduation-cap">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {education.map((e, i) => (
+          <div key={i}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: NW.black }}>
+              {e.degree}
+              {e.field && e.field !== e.degree && (
+                <span style={{ fontWeight: 400, color: NW.gray700 }}> — {e.field}</span>
+              )}
+            </div>
+            {(e.institution || e.endYear) && (
+              <div style={{ fontSize: 12, color: NW.gray500, marginTop: 1 }}>
+                {[e.institution, e.endYear].filter(Boolean).join(' · ')}
+              </div>
+            )}
+          </div>
         ))}
       </div>
     </CardPanel>
@@ -946,6 +974,7 @@ export function CandidateDetailScreen({ client, data, density = "regular", onNav
                     <ResumePanel resumeUrl={resumeUrl} />
                     <SnapshotPanel c={c} x={x} showPhone={showPhone} />
                     <ToolsPanel tools={data.tools} />
+                    <EducationPanel education={data.education} />
                     {english && <EnglishPanel eng={english} />}
                   </div>
                 </div>
@@ -957,6 +986,7 @@ export function CandidateDetailScreen({ client, data, density = "regular", onNav
                   <ResumePanel resumeUrl={resumeUrl} />
                   <SnapshotPanel c={c} x={x} />
                   <ToolsPanel tools={data.tools} />
+                    <EducationPanel education={data.education} />
                 </div>
               </div>
             ) : (
@@ -1024,6 +1054,7 @@ export function CandidateDetailScreen({ client, data, density = "regular", onNav
                     <ResumePanel resumeUrl={resumeUrl} />
                     <SnapshotPanel c={c} x={x} />
                     <ToolsPanel tools={data.tools} />
+                    <EducationPanel education={data.education} />
                     <SkillsMatchPanel c={c} fit={data.fitForRole} />
                     {highlights && <HighlightsPanel h={highlights} />}
                     <NotesPanel c={c} user={{ name: client.user.name, initials: client.user.initials }} notes={data.notes} onAddNote={onAddNote} readOnly={client.access === 'viewer'} />
