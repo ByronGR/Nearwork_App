@@ -906,6 +906,18 @@ export function CandidateDetailScreen({ client, data, density = "regular", onNav
                     {canReject && <Button variant="secondary" size="sm" icon="x" disabled={busy} onClick={() => setRejectOpen(true)}>Reject</Button>}
                   </>
                 )}
+                {/* The CV is the first thing a client wants — put it in the
+                    action bar, not only in the right rail below the fold. */}
+                {resumeUrl && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    icon="file-text"
+                    onClick={() => window.open(resumeUrl, '_blank', 'noopener,noreferrer')}
+                  >
+                    View CV
+                  </Button>
+                )}
                 <Button variant="secondary" size="sm" icon="message-square-text" onClick={scrollNotes}>Add note</Button>
                 {!isSourcing && !readOnly && <Button variant="secondary" size="sm" icon="calendar-plus" disabled={busy} onClick={() => submitRequest('interview')}>Request interview</Button>}
                 <span style={{ flex: 1 }} />
