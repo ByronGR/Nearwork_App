@@ -14,7 +14,6 @@
 import React, { useState } from "react";
 import { NW, Icon, Avatar, Button } from "../primitives";
 import { PortalSidebar, PortalTopBar, EmptyBlock, type PortalClient } from "../shell";
-import { shortEnglish } from "../candidate-derive";
 
 // ── Typed data prop shapes ────────────────────────────────────────────────────
 
@@ -166,9 +165,8 @@ function KanbanCard({ c, dense, compareMode, selected, onToggleSelect, onOpen }:
         </div>
       </div>
       {c.sourcing ? (
-        (shortEnglish(c.compare?.english?.level) || compactSalary(c.compare?.salaryExp)) ? (
+        compactSalary(c.compare?.salaryExp) ? (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-            {shortEnglish(c.compare?.english?.level) && <span style={{ fontSize: 12, fontWeight: 600, color: NW.gray700, background: NW.gray50, border: `1px solid ${NW.gray100}`, padding: '3px 10px', borderRadius: 7, whiteSpace: 'nowrap' }}>{shortEnglish(c.compare?.english?.level)} English</span>}
             {compactSalary(c.compare?.salaryExp) && <span style={{ fontSize: 12, fontWeight: 700, color: NW.teal700, background: NW.teal50, border: `1px solid ${NW.teal500}33`, padding: '3px 10px', borderRadius: 7, whiteSpace: 'nowrap' }}>{compactSalary(c.compare?.salaryExp)}</span>}
           </div>
         ) : null
