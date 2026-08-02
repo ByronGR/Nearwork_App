@@ -10,9 +10,18 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'orgId is required' }, { status: 400 });
   }
 
+  const auth = req.headers.get('authorization');
+  if (!auth) {
+    return NextResponse.json({ error: 'Unauthorized: Missing Authorization header' }, { status: 401 });
+  }
+
   try {
     const adminUrl = process.env.ADMIN_API_URL || 'https://admin.nearwork.co';
-    const res = await fetch(`${adminUrl}/api/org-invites?orgId=${encodeURIComponent(orgId)}`);
+    const res = await fetch(`${adminUrl}/api/org-invites?orgId=${encodeURIComponent(orgId)}`, {
+      headers: {
+        'Authorization': auth,
+      },
+    });
     const data = await res.json().catch(() => ({}));
     return NextResponse.json(data, { status: res.status });
   } catch (e) {

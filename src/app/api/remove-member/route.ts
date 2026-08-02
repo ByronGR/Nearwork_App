@@ -13,11 +13,19 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
+  const auth = req.headers.get('authorization');
+  if (!auth) {
+    return NextResponse.json({ error: 'Unauthorized: Missing Authorization header' }, { status: 401 });
+  }
+
   try {
     const adminUrl = process.env.ADMIN_API_URL || 'https://admin.nearwork.co';
     const res = await fetch(`${adminUrl}/api/remove-member`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': auth,
+      },
       body: JSON.stringify(body),
     });
     const data = await res.json().catch(() => ({}));

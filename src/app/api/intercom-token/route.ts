@@ -7,6 +7,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'INTERCOM_SECRET not configured' }, { status: 500 });
   }
 
+  const auth = req.headers.get('authorization');
+  if (!auth) {
+    return NextResponse.json({ error: 'Unauthorized: Missing Authorization header' }, { status: 401 });
+  }
+
   const { userId, email } = await req.json().catch(() => ({} as Record<string, string>));
   if (!userId) {
     return NextResponse.json({ error: 'userId is required' }, { status: 400 });
