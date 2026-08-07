@@ -825,11 +825,18 @@ export function StaffOrgPicker({ profile, onSelect }: { profile: ClientUser; onS
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
+  // A blocked read and a genuinely empty list both used to render "No
+  // organizations found", which makes a permissions problem indistinguishable
+  // from a search that simply matched nothing.
+  const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
     let alive = true;
     listAllOrganizations()
       .then((list) => { if (alive) setOrgs(list); })
+      .catch((e: unknown) => {
+        if (alive) setLoadError(e instanceof Error ? e.message : String(e));
+      })
       .finally(() => { if (alive) setLoading(false); });
     return () => { alive = false; };
   }, []);
@@ -884,7 +891,17 @@ export function StaffOrgPicker({ profile, onSelect }: { profile: ClientUser; onS
               </span>
               {busyId === o.id ? <div className="size-4 shrink-0 animate-spin rounded-full border-2 border-[#E5E4E0] border-t-[#12866E]" /> : null}
             </button>
-          )) : (
+          )) : loadError ? (
+            <div className="rounded-md border border-[#FECACA] bg-[#FEF2F2] p-3 text-sm text-[#B91C1C]">
+              <p className="font-medium">Couldn&rsquo;t load organizations.</p>
+              <p className="mt-1 text-xs">Your account may not have access yet — send this to Nearwork: {loadError}</p>
+            </div>
+          ) : orgs.length && search.trim() ? (
+            // Distinguish "your search matched nothing" from "there's nothing here".
+            <p className="p-4 text-center text-sm text-[#888]">
+              No organization matches &ldquo;{search.trim()}&rdquo;. Clear the search to see all {orgs.length}.
+            </p>
+          ) : (
             <p className="p-4 text-center text-sm text-[#888]">No organizations found.</p>
           )}
         </div>
