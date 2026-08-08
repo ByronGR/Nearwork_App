@@ -1,4 +1,5 @@
 "use client";
+import { workPeriod } from "@/portal/candidate-derive";
 
 import {
   ArrowLeft,
@@ -3261,7 +3262,7 @@ function CandidateFullPage({
                 <div>
                   <p className="font-semibold text-[#111]">{job.title || "—"}</p>
                   <p className="text-sm text-[#555]">{job.company || "—"}</p>
-                  <p className="mt-1 text-xs text-[#888]">{job.from || "?"} → {job.to === "present" ? "Present" : (job.to || "?")}</p>
+                  <p className="mt-1 text-xs text-[#888]">{workPeriod(job)}</p>
                 </div>
               </div>
             ))}
@@ -3474,7 +3475,7 @@ function HireFullPage({
                     <div>
                       <p className="font-semibold text-[#111]">{job.title || "—"}</p>
                       <p className="text-sm text-[#555]">{job.company || "—"}</p>
-                      <p className="mt-1 text-xs text-[#888]">{job.from || "?"} → {job.to === "present" ? "Present" : (job.to || "?")}</p>
+                      <p className="mt-1 text-xs text-[#888]">{workPeriod(job)}</p>
                     </div>
                   </div>
                 ))}

@@ -66,3 +66,31 @@ export function shortEnglish(raw?: string | null): string {
   // Anything else that's still short enough to read on a card.
   return t.length <= 14 ? t : "";
 }
+
+
+/**
+ * "2024-06 – Present" for a work-history entry.
+ *
+ * Current-ness arrives three different ways depending on who wrote the record:
+ * the AI CV parser sets `isCurrent` with an empty end date, the Talent
+ * onboarding writes the literal string "present", and older records use
+ * `current`. Reading only one of them is why an ongoing role rendered as "?".
+ *
+ * A role with no end date and no current flag shows just its start date rather
+ * than being assumed ongoing — inventing "Present" for someone who has left is
+ * worse than saying less.
+ */
+export function workPeriod(w: {
+  from?: string; to?: string; startDate?: string; endDate?: string;
+  isCurrent?: boolean; current?: boolean;
+} | null | undefined): string {
+  if (!w) return "";
+  const s = (v: unknown) => (typeof v === "string" ? v.trim() : "");
+  const from = s(w.from) || s(w.startDate);
+  const rawTo = s(w.to) || s(w.endDate);
+  const ongoing = w.isCurrent === true || w.current === true
+    || /^(present|current|actual|ongoing|now|presente|hoy)$/i.test(rawTo);
+  const to = ongoing ? "Present" : rawTo;
+  if (from && to) return `${from} – ${to}`;
+  return from || to || "";
+}

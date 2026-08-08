@@ -1,4 +1,5 @@
 "use client";
+import { workPeriod } from "@/portal/candidate-derive";
 
 // ── New client-portal design — Candidate assessment detail screen ─────────────
 // Ported from portal-v3-candidate.jsx (CandidateDetailScreen). The prototype read
@@ -945,7 +946,7 @@ export function CandidateDetailScreen({ client, data, density = "regular", onNav
                       {workHistory.length ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                           {workHistory.map((w, i) => {
-                            const period = [w.from, w.to].filter(Boolean).join(' — ');
+                            const period = workPeriod(w);
                             const sub = [w.company, period].filter(Boolean).join(' · ');
                             return (
                               <div key={i} style={{ display: 'flex', gap: 13 }}>
