@@ -142,7 +142,20 @@ service cloud.firestore {
     }
 
     function isHardcodedSuperAdminEmail() {
-      return email() in ['byron.giraldo@nearwork.co', 'stephany.picos@nearwork.co'];
+      // Break-glass. Checked FIRST and reads only the token, so these accounts
+      // never trigger a users/{uid} lookup — which is also why they were the
+      // only ones unaffected while ordinary staff were locked out, and why the
+      // fault went unnoticed.
+      //
+      // daniela.jessurum@ is here as a deliberate, temporary unblock while the
+      // underlying cause is found. It is not a fix: this list ignores placed
+      // and suspended status, so anyone on it keeps full access until the rules
+      // are edited and redeployed. Remove her once isStaff() is trusted again.
+      return email() in [
+        'byron.giraldo@nearwork.co',
+        'stephany.picos@nearwork.co',
+        'daniela.jessurum@nearwork.co'
+      ];
     }
 
     function isClient() {
