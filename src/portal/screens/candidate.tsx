@@ -476,9 +476,9 @@ function SnapshotPanel({ c, x, showContact }: { c: CandidateHeader; x: Candidate
   const rows: { icon: string; l: string; v: string; href?: string }[] = [
     { icon: 'briefcase', l: 'Experience', v: x.experience != null ? `${x.experience} yrs` : '—' },
     ...(showContact ? [{ icon: 'phone', l: 'Phone', v: x.phone || '—' }] : []),
-    // Only when there is one. A "LinkedIn —" row says nothing except that we
-    // looked, and makes the panel longer without making it truer.
-    ...(showContact && x.linkedin
+    // Shown on both engagement types, unlike the phone. Only when there is one:
+    // a "LinkedIn —" row says nothing except that we looked.
+    ...(x.linkedin
       ? [{ icon: 'linkedin', l: 'LinkedIn', v: 'View profile', href: x.linkedin }]
       : []),
     { icon: 'wallet', l: 'Salary expectation', v: x.salaryExp || '—' },
@@ -824,10 +824,9 @@ export function CandidateDetailScreen({ client, data, density = "regular", onNav
   // Normalize the raw Admin stage to a canonical sourcing key so the client can
   // only act from Submitted / In progress (Nearwork owns Sourced + Screening).
   const rawStage = isSourcing ? sourcingStageKey(data.rawStage) : (data.rawStage || '').toLowerCase();
-  // On sourcing openings the client does the contacting, so contact details show
-  // at every stage. On full recruitment Nearwork runs the process and they stay
-  // hidden — LinkedIn is a way to reach someone just as a phone number is, so it
-  // follows the same rule rather than quietly opening a second channel.
+  // Phone shows on sourcing openings only, where the client does the contacting.
+  // LinkedIn shows on both — it is public, and clients want to read the profile
+  // whoever is running the process.
   const showContact = isSourcing;
   const sourcingDone = rawStage === 'hired' || rawStage === 'not-selected';
   const canStartProcess = isSourcing && rawStage === 'submitted';
