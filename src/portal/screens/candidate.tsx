@@ -471,6 +471,19 @@ function DiscProfileCard({ title, note, values, primary, discDims }: {
   );
 }
 
+// The LinkedIn mark, inlined. Lucide carries no brand icons, so asking it for one
+// renders nothing — and a blank slot in a column where every other row has an
+// icon reads as a rendering bug rather than a missing glyph.
+function LinkedInMark({ size = 13 }: { size?: number }) {
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center' }} aria-hidden="true">
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="#0A66C2" role="presentation">
+        <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 1 1 0-4.125 2.062 2.062 0 0 1 0 4.125zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+      </svg>
+    </span>
+  );
+}
+
 // ── Right-column panels ──────────────────────────────────────────────────────
 function SnapshotPanel({ c, x, showContact }: { c: CandidateHeader; x: CandidateSnapshot; showContact?: boolean }) {
   const rows: { icon: string; l: string; v: string; href?: string }[] = [
@@ -491,7 +504,9 @@ function SnapshotPanel({ c, x, showContact }: { c: CandidateHeader; x: Candidate
       <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {rows.map((r, i) => (
           <div key={r.l} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderTop: i === 0 ? 'none' : `1px solid ${NW.gray100}` }}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 12.5, color: NW.gray500 }}><Icon name={r.icon} size={13} color={NW.gray400} /> {r.l}</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 12.5, color: NW.gray500 }}>
+              {r.icon === 'linkedin' ? <LinkedInMark /> : <Icon name={r.icon} size={13} color={NW.gray400} />} {r.l}
+            </span>
             {r.href ? (
               <a
                 href={r.href}
