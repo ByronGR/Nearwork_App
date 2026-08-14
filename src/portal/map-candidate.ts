@@ -54,6 +54,20 @@ const tsOf = (v: unknown): number => {
   const r = asRec(v);
   return typeof r.seconds === "number" ? r.seconds : 0;
 };
+// Two spellings reach us: `linkedIn` on records typed in through Admin, `linkedin`
+// on ones the X-ray sourced, plus a bare `/in/slug` match key. All three are real
+// profiles, and a client seeing no link because of a capital letter would look
+// exactly like a candidate who has no LinkedIn at all.
+function linkedinUrl(c: Rec): string | undefined {
+  const raw = strOr(c.linkedIn) || strOr(c.linkedin) || strOr(c.li);
+  if (!raw) return undefined;
+  const v = raw.trim().replace(/\/+$/, "");
+  if (/^https?:\/\//i.test(v)) return v;
+  if (/^(www\.)?linkedin\.com/i.test(v)) return "https://" + v;
+  const slug = v.replace(/^\/?(in\/)?/i, "");
+  return slug ? "https://www.linkedin.com/in/" + slug : undefined;
+}
+
 function fmtNoteDate(v: unknown): string {
   const secs = tsOf(v);
   if (!secs) return "Just now";
@@ -186,6 +200,8 @@ export function toCandidateData(
   if (availability) snap.availability = availability;
   const phone = strOr(c.phone);
   if (phone) snap.phone = phone;
+  const linkedin = linkedinUrl(c);
+  if (linkedin) snap.linkedin = linkedin;
   const timezone = strOr(c.timezone) || tzFromLocation(header.location);
   if (timezone) snap.timezone = timezone;
 

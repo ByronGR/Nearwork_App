@@ -54,6 +54,7 @@ export type CandidateHeader = {
 export type CandidateSnapshot = {
   experience?: number;
   phone?: string;
+  linkedin?: string; // full profile URL, shown alongside the phone
   salaryExp?: string;
   availability?: string;
   timezone?: string;
@@ -471,10 +472,15 @@ function DiscProfileCard({ title, note, values, primary, discDims }: {
 }
 
 // ── Right-column panels ──────────────────────────────────────────────────────
-function SnapshotPanel({ c, x, showPhone }: { c: CandidateHeader; x: CandidateSnapshot; showPhone?: boolean }) {
-  const rows = [
+function SnapshotPanel({ c, x, showContact }: { c: CandidateHeader; x: CandidateSnapshot; showContact?: boolean }) {
+  const rows: { icon: string; l: string; v: string; href?: string }[] = [
     { icon: 'briefcase', l: 'Experience', v: x.experience != null ? `${x.experience} yrs` : '—' },
-    ...(showPhone ? [{ icon: 'phone', l: 'Phone', v: x.phone || '—' }] : []),
+    ...(showContact ? [{ icon: 'phone', l: 'Phone', v: x.phone || '—' }] : []),
+    // Only when there is one. A "LinkedIn —" row says nothing except that we
+    // looked, and makes the panel longer without making it truer.
+    ...(showContact && x.linkedin
+      ? [{ icon: 'linkedin', l: 'LinkedIn', v: 'View profile', href: x.linkedin }]
+      : []),
     { icon: 'wallet', l: 'Salary expectation', v: x.salaryExp || '—' },
     { icon: 'calendar-clock', l: 'Availability', v: x.availability || '—' },
     { icon: 'clock', l: 'Timezone', v: x.timezone || '—' },
@@ -486,7 +492,19 @@ function SnapshotPanel({ c, x, showPhone }: { c: CandidateHeader; x: CandidateSn
         {rows.map((r, i) => (
           <div key={r.l} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderTop: i === 0 ? 'none' : `1px solid ${NW.gray100}` }}>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 12.5, color: NW.gray500 }}><Icon name={r.icon} size={13} color={NW.gray400} /> {r.l}</span>
-            <span style={{ fontSize: 13, fontWeight: 600, color: NW.black }}>{r.v}</span>
+            {r.href ? (
+              <a
+                href={r.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={r.href}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 13, fontWeight: 600, color: NW.teal600, textDecoration: 'none' }}
+              >
+                {r.v}<Icon name="arrow-up-right" size={12} color={NW.teal600} />
+              </a>
+            ) : (
+              <span style={{ fontSize: 13, fontWeight: 600, color: NW.black }}>{r.v}</span>
+            )}
           </div>
         ))}
       </div>
@@ -806,8 +824,11 @@ export function CandidateDetailScreen({ client, data, density = "regular", onNav
   // Normalize the raw Admin stage to a canonical sourcing key so the client can
   // only act from Submitted / In progress (Nearwork owns Sourced + Screening).
   const rawStage = isSourcing ? sourcingStageKey(data.rawStage) : (data.rawStage || '').toLowerCase();
-  // Phone shows on sourcing openings at every stage (the client sources directly).
-  const showPhone = isSourcing;
+  // On sourcing openings the client does the contacting, so contact details show
+  // at every stage. On full recruitment Nearwork runs the process and they stay
+  // hidden — LinkedIn is a way to reach someone just as a phone number is, so it
+  // follows the same rule rather than quietly opening a second channel.
+  const showContact = isSourcing;
   const sourcingDone = rawStage === 'hired' || rawStage === 'not-selected';
   const canStartProcess = isSourcing && rawStage === 'submitted';
   const canDecide = isSourcing && (rawStage === 'submitted' || rawStage === 'in-progress');
@@ -985,7 +1006,7 @@ export function CandidateDetailScreen({ client, data, density = "regular", onNav
                   {/* Right — resume (top) + snapshot + english */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                     <ResumePanel resumeUrl={resumeUrl} />
-                    <SnapshotPanel c={c} x={x} showPhone={showPhone} />
+                    <SnapshotPanel c={c} x={x} showContact={showContact} />
                     <ToolsPanel tools={data.tools} />
                     <EducationPanel education={data.education} />
                     {english && <EnglishPanel eng={english} />}
