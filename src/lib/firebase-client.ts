@@ -533,16 +533,26 @@ export async function sendOrgInvite(
 }
 
 // Revoke a teammate's access to a workspace (client admins). Goes through the
-// server (Admin SDK) since clients can't edit org membership directly. Reversible
-// — the person's account stays; re-inviting restores access.
+// server (Admin SDK) since clients can't edit org membership directly.
+//
+// This is a real revoke: their session is ended and, for someone whose only
+// reason to log in was this workspace, the account is disabled so signing back
+// in fails. Still reversible — nothing is deleted and re-inviting restores it.
 export async function removeOrgMember(
   orgId: string,
   member: { email?: string; uid?: string },
 ): Promise<{ ok: boolean; error?: string }> {
   try {
+    // The Admin endpoint can disable an account, so it verifies the caller is
+    // either Nearwork staff or an admin of this workspace. Without the token it
+    // refuses — and the proxy has always required the header anyway.
+    const idToken = await auth.currentUser?.getIdToken();
     const res = await fetch("/api/remove-member", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
+      },
       body: JSON.stringify({ orgId, email: (member.email || "").trim().toLowerCase(), uid: member.uid || "" }),
     });
     const data = await res.json().catch(() => ({}));
