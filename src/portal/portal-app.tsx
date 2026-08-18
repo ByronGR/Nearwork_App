@@ -363,7 +363,12 @@ export function PortalApp() {
 
   // Candidate detail — reached by clicking a candidate on the board.
   if (route === "candidate") {
-    const cdata = toCandidateData(pipelines, openings, assessments, navArg != null ? String(navArg) : null, pipelineCtx, notes, requests);
+    const activeMemberEmails = new Set(
+      ((org as unknown as { orgUsers?: { email?: string }[] } | null)?.orgUsers || [])
+        .map((u) => (u.email || "").trim().toLowerCase())
+        .filter(Boolean),
+    );
+    const cdata = toCandidateData(pipelines, openings, assessments, navArg != null ? String(navArg) : null, pipelineCtx, notes, requests, activeMemberEmails);
     if (cdata) {
       return (
         <div style={{ position: "fixed", inset: 0 }}>

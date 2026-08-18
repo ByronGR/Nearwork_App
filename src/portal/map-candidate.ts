@@ -83,7 +83,11 @@ function fmtNoteDate(v: unknown): string {
 // candidateNotes for this candidate → the screen's note shape, newest first.
 // The org-scoped subscription already excludes notes this client may not read
 // (Nearwork-internal), so we only translate + tag them here.
-function toCandidateNotes(notes: PortalNote[], c: Rec, realId: string): CandidateNote[] {
+// `activeEmails` is the workspace's current member list. A client-side note whose
+// author is no longer on it was written by someone since removed — their notes
+// stay (the decision still matters) but the name is marked, so nobody replies to
+// or chases a person who can no longer open the portal.
+function toCandidateNotes(notes: PortalNote[], c: Rec, realId: string, activeEmails?: Set<string>): CandidateNote[] {
   const code = (c.candidateCode || c.code || "") as string;
   return (notes || [])
     .filter((n) => (n.candidateCode && n.candidateCode === code) || (n.candidateId && n.candidateId === realId))
@@ -94,6 +98,14 @@ function toCandidateNotes(notes: PortalNote[], c: Rec, realId: string): Candidat
       text: n.text || n.body || "",
       recruiter: n.side === "nearwork" || isNearworkEmail(n.authorEmail),
       internal: n.scope === "client_internal" || n.visibility === "client_internal",
+      // Only when we can actually tell. An empty member list means the org
+      // hasn't loaded, and a note with no author email can't be matched —
+      // marking either would label the whole history "Deactivated".
+      formerMember: !!activeEmails?.size
+        && !!n.authorEmail
+        && !isNearworkEmail(n.authorEmail)
+        && n.side !== "nearwork"
+        && !activeEmails.has(n.authorEmail.trim().toLowerCase()),
     }));
 }
 
@@ -125,6 +137,7 @@ export function toCandidateData(
   pipelineCode?: string | null,
   notes: PortalNote[] = [],
   requests: PortalRequest[] = [],
+  activeMemberEmails?: Set<string>,
 ): CandidateData | null {
   if (!candidateId) return null;
 
@@ -258,7 +271,7 @@ export function toCandidateData(
     resumeUrl,
     fitForRole,
     completed: false,
-    notes: toCandidateNotes(notes, c, realId),
+    notes: toCandidateNotes(notes, c, realId, activeMemberEmails),
     request: toCandidateRequest(requests, c, realId),
   };
 

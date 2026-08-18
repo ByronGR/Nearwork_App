@@ -146,6 +146,7 @@ export type CandidateNote = {
   text: string;
   recruiter?: boolean; // authored by the Nearwork team
   internal?: boolean;  // your team only — not shared with Nearwork
+  formerMember?: boolean; // author has since been removed from the workspace
 };
 
 // A request the client has raised on this candidate (awaiting Nearwork).
@@ -743,6 +744,14 @@ function NotesPanel({ c, user, notes, onAddNote, readOnly }: {
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3, flexWrap: 'wrap' }}>
                 <span style={{ fontSize: 12.5, fontWeight: 600, color: NW.black }}>{n.author}</span>
+                {/* Their work stays; their access doesn't. Removing the note
+                    would erase a decision the team still needs to read, and
+                    leaving the name bare implies they can still be asked. */}
+                {n.formerMember && (
+                  <span style={{ fontSize: 10.5, fontWeight: 600, color: NW.gray500, background: NW.gray100, padding: '1px 6px', borderRadius: 999 }}>
+                    Deactivated
+                  </span>
+                )}
                 <span style={{ fontSize: 10.5, color: NW.gray400 }}>{n.date}</span>
                 {n.recruiter && <span style={{ fontSize: 9.5, fontWeight: 700, color: NW.teal700, background: NW.teal50, padding: '2px 7px', borderRadius: 999, letterSpacing: '0.04em', textTransform: 'uppercase' }}>From Nearwork</span>}
                 {n.internal && <span style={{ fontSize: 9.5, fontWeight: 700, color: NW.gray600, background: NW.gray100, padding: '2px 7px', borderRadius: 999, letterSpacing: '0.04em', textTransform: 'uppercase', display: 'inline-flex', alignItems: 'center', gap: 3 }}><Icon name="lock" size={9} color={NW.gray600} /> Team only</span>}
