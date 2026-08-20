@@ -406,66 +406,46 @@ export type ClientInvite = {
 // rejects the create and leaves a profile-less ("zombie") account. Safe to call
 // again at login time to repair such accounts.
 export async function writeClientProfile(user: User, invite: ClientInvite) {
-  if (!invite?.orgId) throw new Error("invite-missing-org");
-  const normalizedEmail = (invite.email || user.email || "").trim().toLowerCase();
-  // Force-refresh so the token used for the Firestore write definitely has the email claim.
-  await user.getIdToken(true);
-  const name = [invite.firstName, invite.lastName].filter(Boolean).join(" ") || user.displayName || normalizedEmail;
-  await setDoc(doc(db, "users", user.uid), {
-    uid: user.uid,
-    email: normalizedEmail,
-    name,
-    firstName: invite.firstName || "",
-    lastName: invite.lastName || "",
-    role: "client",
-    portalRole: invite.portalRole || "viewer_client",
-    orgId: invite.orgId,
-    organizationId: invite.orgId,
-    orgName: invite.orgName || "",
-    businessRole: invite.businessRole || "",
-    title: invite.businessRole || "",
-    // jobTitle/displayRole drive the title shown in the portal sidebar — keep them
-    // in sync with the business role chosen at invite time (e.g. "CEO", "Hiring Manager").
-    jobTitle: invite.businessRole || "",
-    displayRole: invite.businessRole || "",
-    source: "app.nearwork.co",
-    invitePending: false,
-    onboarded: true,
-    createdFromInvite: true,
-    acceptedInviteId: invite.token || "",
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  }, { merge: true });
-  const inviteDocId = ("invite_" + invite.orgId + "_" + normalizedEmail).replace(/[^a-z0-9_-]+/g, "_").slice(0, 150);
-  try {
-    await setDoc(doc(db, "orgInvites", inviteDocId), {
-      email: normalizedEmail,
-      uid: user.uid,
-      orgId: invite.orgId,
-      organizationId: invite.orgId,
-      orgName: invite.orgName || "",
-      businessRole: invite.businessRole || "",
-      title: invite.businessRole || "",
-      status: "active",
-      invitePending: false,
-      acceptedAt: serverTimestamp(),
-      acceptedInviteId: invite.token || "",
-      updatedAt: serverTimestamp(),
-    }, { merge: true });
-  } catch (error) {
-    console.warn("[ClientInvite] Could not mirror accepted invite status.", error);
+  // Org membership is assigned by the server from the invite record, not written
+  // here from the invite URL. The link's orgId is attacker-controlled — anyone
+  // could point it at another company — and membership is what grants read
+  // access to that company's pipelines, applications, notes, placements,
+  // payroll, reviews, billing and time off.
+  //
+  // The token is the only thing worth sending: the server looks up the invite,
+  // checks it was issued to the email now signed in, and writes the profile
+  // itself. Still safe to call again at login to repair a profile whose first
+  // write failed.
+  if (!invite?.token) throw new Error("invite-missing-token");
+  // Force-refresh so the ID token definitely carries the email claim the server
+  // matches against the invite.
+  const idToken = await user.getIdToken(true);
+  const res = await fetch("https://admin.nearwork.co/api/org-invites/accept", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
+    body: JSON.stringify({
+      token: invite.token,
+      firstName: invite.firstName || "",
+      lastName: invite.lastName || "",
+    }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || data?.ok === false) {
+    throw new Error((data as { error?: string })?.error || "Could not complete the invite");
   }
+  // The account now has org access, so the next Firestore read must use a token
+  // that reflects it.
+  await user.getIdToken(true);
 }
 
 export async function createClientAccount(email: string, password: string, invite?: ClientInvite) {
   const normalizedEmail = email.trim().toLowerCase();
-  // Guard: never create a login we can't attach to a company. Without orgId the
-  // Firestore users doc can't be written (and security rules would reject it),
-  // which previously left "zombie" accounts that exist in Auth but can never log
-  // in. Fail before creating the Auth account so the user can retry with a valid
-  // (most-recent) invite link instead of getting permanently stuck.
-  if (!invite?.orgId) {
-    throw new Error("invite-missing-org");
+  // Guard: never create a login we can't attach to a company, or we strand a
+  // "zombie" account that exists in Auth and can never sign in. The token is now
+  // what attaches it — the server resolves the company from the invite record —
+  // so that is what has to be present before the Auth account is created.
+  if (!invite?.token) {
+    throw new Error("invite-missing-token");
   }
   const credential = await createUserWithEmailAndPassword(auth, normalizedEmail, password);
   await writeClientProfile(credential.user, { ...invite, email: normalizedEmail });

@@ -394,7 +394,7 @@ function timestampMs(value: unknown) {
 }
 
 function friendlyAuthError(raw: string): string {
-  if (raw.includes("invite-missing-org")) return "This invitation link is missing its company details. Please open the most recent invite email from Nearwork and use that link, or ask Nearwork to resend your invitation.";
+  if (raw.includes("invite-missing-token") || raw.includes("invite-missing-org")) return "This invitation link is missing its company details. Please open the most recent invite email from Nearwork and use that link, or ask Nearwork to resend your invitation.";
   if (raw.includes("auth/invalid-credential") || raw.includes("auth/wrong-password") || raw.includes("auth/user-not-found")) return "Incorrect email or password.";
   if (raw.includes("auth/too-many-requests")) return "Too many failed attempts. Please wait a few minutes and try again.";
   if (raw.includes("auth/network-request-failed")) return "Network error. Check your connection and try again.";
@@ -1056,9 +1056,11 @@ export function ClientPortal() {
         try {
           const stashed = localStorage.getItem("nw_invite_payload");
           if (stashed) {
-            const payload = JSON.parse(stashed) as { email?: string; orgId?: string };
+            const payload = JSON.parse(stashed) as { email?: string; token?: string };
             const sameEmail = (payload.email || "").toLowerCase() === (nextUser.email || "").toLowerCase();
-            if (sameEmail && payload.orgId) {
+            // The token is what the server resolves the company from now, so a
+            // stash without one can't heal anything.
+            if (sameEmail && payload.token) {
               healAttempted = true;
               await writeClientProfile(nextUser, payload);
               localStorage.removeItem("nw_invite_payload");
