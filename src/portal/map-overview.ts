@@ -17,12 +17,30 @@ import type { PortalClient } from "./shell";
 import type { OverviewData, OverviewCandidate } from "./screens/overview";
 import { clientStageKey, stageIdxOf, STAGE_LABELS, avatarColor, initialsOf } from "./stage-map";
 
+// "byron.giraldo@nearwork.co" → "Byron Giraldo". A profile can reach the portal
+// with no name on it — accounts created before the invite flow captured one, or
+// through a provider that never returned it — and the fallback was the raw email
+// address. That put "Good afternoon, byron.giraldo@nearwork.co" at the top of
+// the page and the address again in the sidebar. The local part of a work email
+// is almost always the person's name, so it is a far better guess than showing
+// them their own login.
+function nameFromEmail(email?: string): string {
+  const local = String(email || "").split("@")[0];
+  if (!local) return "";
+  return local
+    .split(/[._+-]+/)
+    .filter(Boolean)
+    // Leave anything with a digit alone rather than title-casing "j2" into "J2".
+    .map((w) => (/\d/.test(w) ? w : w.charAt(0).toUpperCase() + w.slice(1)))
+    .join(" ");
+}
+
 function fullName(profile: ClientUser | null): string {
   if (!profile) return "there";
   return (
     profile.name ||
     [profile.firstName, profile.lastName].filter(Boolean).join(" ") ||
-    profile.email ||
+    nameFromEmail(profile.email) ||
     "there"
   );
 }

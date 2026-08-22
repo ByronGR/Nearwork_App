@@ -457,6 +457,7 @@ function LoginField({
           type={type} placeholder={placeholder} value={value} autoComplete={autoComplete} required={required}
           onChange={(e) => onChange(e.target.value)}
           onFocus={() => setFocus(true)} onBlur={() => setFocus(false)}
+          className="nw-login-input"
           style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontFamily: "inherit", fontSize: 15, color: "#111", padding: "13px 0", letterSpacing: "-0.01em" }}
         />
         {trailing}

@@ -73,3 +73,38 @@ button:disabled {
     display: block;
   }
 }
+
+
+/* ── Autofilled login fields ──────────────────────────────────────────────────
+   Chrome paints its own pale-blue background on any field it has autofilled and
+   ignores background-color entirely, so a saved email and password arrive
+   looking nothing like the rest of the form. A large inset shadow is the one
+   thing it does honour, so the field keeps its own colours — the resting sand,
+   and white while focused, matching the wrapper it sits in.
+
+   The radius matters: the shadow fills the input's own box, which reaches the
+   wrapper's rounded corners on the right, and a square fill inside a rounded
+   field is exactly the kind of small wrongness that reads as broken. */
+.nw-login-input {
+  border-radius: 10px;
+}
+.nw-login-input:-webkit-autofill,
+.nw-login-input:-webkit-autofill:hover,
+.nw-login-input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 100px #F5F4F0 inset;
+  box-shadow: 0 0 0 100px #F5F4F0 inset;
+  -webkit-text-fill-color: #111111;
+  caret-color: #111111;
+  /* Chrome re-applies its own background on a delay; outrunning the transition
+     is the standard way to stop the blue flashing back after a moment. */
+  transition: background-color 9999s ease-in-out 0s;
+}
+.nw-login-input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 100px #FFFFFF inset;
+  box-shadow: 0 0 0 100px #FFFFFF inset;
+  -webkit-text-fill-color: #111111;
+}
+/* Firefox uses its own flag and does respect background-color. */
+.nw-login-input:autofill {
+  background-color: transparent;
+}
