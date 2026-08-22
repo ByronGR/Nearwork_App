@@ -18,6 +18,7 @@ import { HireDetailScreen } from "./screens/hire";
 import { BillingScreen } from "./screens/billing";
 import { UsersScreen } from "./screens/users";
 import { SettingsScreen } from "./screens/settings";
+import { NamePrompt, shouldAskForName } from "./name-prompt";
 import { SppScreen } from "./screens/spp";
 import { NotificationsScreen } from "./screens/notifications";
 import { usePortalData } from "./use-portal-data";
@@ -93,6 +94,9 @@ export function PortalApp() {
   // Remember which role's board we came from, so the candidate detail shows that
   // role's assessment (a candidate can carry a different score per role).
   const [pipelineCtx, setPipelineCtx] = useState<string | undefined>(undefined);
+  // Set once the profile has loaded and turns out to have no usable name.
+  const [askName, setAskName] = useState(false);
+  const [nameOverride, setNameOverride] = useState<{ name: string; firstName: string; lastName: string } | null>(null);
   const go = (id: string, arg?: string | number) => {
     if (id === "logout") {
       logoutClient().finally(() => { if (typeof window !== "undefined") window.location.reload(); });
@@ -113,6 +117,10 @@ export function PortalApp() {
 
   // Deep linking: restore the view from the URL on first load, and follow the
   // browser Back/Forward buttons. Runs client-side only (no SSR hydration risk).
+  useEffect(() => {
+    if (profile && !nameOverride && shouldAskForName(profile as never)) setAskName(true);
+  }, [profile, nameOverride]);
+
   useEffect(() => {
     const restore = () => {
       const u = parsePortalUrl();
@@ -235,8 +243,21 @@ export function PortalApp() {
     );
   }
 
+  // Asked once, before anything is posted under a guessed name.
+  if (askName && profile) {
+    return (
+      <NamePrompt
+        profile={profile as never}
+        onDone={(saved) => {
+          setAskName(false);
+          if (saved) setNameOverride(saved);
+        }}
+      />
+    );
+  }
+
   const client = {
-    ...toPortalClient(profile, org),
+    ...toPortalClient(nameOverride ? { ...profile, ...nameOverride } as typeof profile : profile, org),
     // Staff can hop between client workspaces without logging out; clients can't.
     orgSwitcher: isStaff
       ? { orgs: orgs.map((o) => ({ id: o.id, name: o.name })), activeOrgId: org?.id, onSwitch: switchOrg }

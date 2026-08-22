@@ -55,6 +55,27 @@ export const googleProvider = new GoogleAuthProvider();
 
 setPersistence(auth, browserLocalPersistence).catch(() => null);
 
+
+// ─── Who to call someone ─────────────────────────────────────────────────────
+// Every author line in the product used to fall back to the raw email address,
+// and those are written into the note or request at the moment it is posted —
+// so an unnamed profile did not just look wrong once, it stamped the person's
+// login into the record permanently, where nobody could correct it afterwards.
+// The local part of a work email is almost always the person's name.
+export function displayNameOf(profile: { name?: string; firstName?: string; lastName?: string; email?: string } | null | undefined): string {
+  if (!profile) return "Company user";
+  const explicit = profile.name || [profile.firstName, profile.lastName].filter(Boolean).join(" ");
+  if (explicit && !explicit.includes("@")) return explicit;
+  const local = String(profile.email || "").split("@")[0];
+  const pretty = local
+    .split(/[._+-]+/)
+    .filter(Boolean)
+    // Anything with a digit is left alone — "j2sales" should not become "J2sales".
+    .map((w) => (/\d/.test(w) ? w : w.charAt(0).toUpperCase() + w.slice(1)))
+    .join(" ");
+  return pretty || "Company user";
+}
+
 export async function setClientRememberMe(remember: boolean) {
   await setPersistence(auth, remember ? browserLocalPersistence : browserSessionPersistence);
 }
@@ -931,7 +952,7 @@ export async function addClientNote(input: {
   // client_visible = shared with Nearwork · client_internal = this team only
   scope: "client_visible" | "client_internal";
 }) {
-  const author = input.profile.name || input.profile.email || "Client user";
+  const author = displayNameOf(input.profile);
   const note = {
     candidateId: input.candidate.id || "",
     candidateCode: input.candidate.code || "",
@@ -1019,7 +1040,7 @@ export async function createPipelineRequest(input: {
   toStage?: string;
   reason?: string;
 }) {
-  const by = input.profile.name || input.profile.email || "Client user";
+  const by = displayNameOf(input.profile);
   const req = {
     orgId: input.org.orgId || input.org.id,
     orgName: input.org.name,
@@ -1079,7 +1100,7 @@ export async function sendOpeningChatMessage(input: {
     openingCode: input.openingCode,
     pipelineCode: input.pipelineCode || "",
     text: input.text.trim(),
-    author: input.profile.name || input.profile.email || "Company user",
+    author: displayNameOf(input.profile),
     authorEmail: input.profile.email || "",
     authorUid: input.profile.id || input.profile.uid || "",
     authorType: "client",
@@ -1159,7 +1180,7 @@ export async function sendPipelineChatMessage(input: {
   orgName?: string;
   text: string;
 }) {
-  const name = input.profile.name || input.profile.email || "Company user";
+  const name = displayNameOf(input.profile);
   await addDoc(collection(db, "pipeline_messages"), {
     pipelineCode: input.pipelineCode,
     orgId: input.orgId || "",
