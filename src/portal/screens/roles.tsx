@@ -6,8 +6,9 @@
 // drops in later. Inline styles preserved verbatim for fidelity.
 
 import React, { useEffect, useState } from "react";
-import { NW, Icon, Avatar } from "../primitives";
+import { NW, Icon, Avatar, Tooltip, lockedControl } from "../primitives";
 import { PortalSidebar, PortalTopBar, EmptyBlock, type PortalClient } from "../shell";
+import { roleBadgeFor, isRoleLocked, LOCKED_MESSAGE } from "../role-lock";
 import { auth, followEntity, unfollowEntity, subscribeMyFollows } from "@/lib/firebase-client";
 
 // ── Typed data prop shapes ────────────────────────────────────────────────────
@@ -105,7 +106,10 @@ function RoleCard({ opening, candidates, dense, onOpen, following, onToggleFollo
   const offers = mine.filter((c) => c.stageIdx === 5).length;
   const counts = ROLE_STAGES.map((s) => mine.filter((c) => c.stageIdx === s.idx).length);
   const total = counts.reduce((a, b) => a + b, 0);
-  const active = opening.status === "active";
+  // The badge used to be a yes/no on "active", which printed "Sourcing" over
+  // paused, filled AND cancelled roles. It now reflects the real status.
+  const badge = roleBadgeFor(opening.status);
+  const locked = isRoleLocked(opening.status);
 
   const metrics = [
     { label: "Candidates", value: active_c.length, color: NW.black },
@@ -118,31 +122,46 @@ function RoleCard({ opening, candidates, dense, onOpen, following, onToggleFollo
       onClick={() => onOpen && onOpen(opening)}
       onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
       style={{
-        background: NW.white,
+        // A locked role still opens (the client reads the history), but it is
+        // tinted so it never reads as live work alongside the active cards.
+        background: locked ? NW.gray50 : NW.white,
         border: `1px solid ${hover ? NW.gray200 : NW.gray100}`,
         borderRadius: 20,
         padding: dense ? 22 : 28,
         cursor: "pointer",
-        boxShadow: hover ? "0 16px 40px rgba(0,0,0,0.08), 0 3px 8px rgba(0,0,0,0.04)" : "0 1px 2px rgba(0,0,0,0.03)",
+        boxShadow: hover && !locked ? "0 16px 40px rgba(0,0,0,0.08), 0 3px 8px rgba(0,0,0,0.04)" : "0 1px 2px rgba(0,0,0,0.03)",
         transition: "box-shadow 220ms, border-color 220ms, transform 220ms",
-        transform: hover ? "translateY(-3px)" : "none",
+        transform: hover && !locked ? "translateY(-3px)" : "none",
         display: "flex", flexDirection: "column", gap: dense ? 16 : 20,
       }}>
       {/* Top: status + days */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <span style={{
-          display: "inline-flex", alignItems: "center", gap: 7,
-          fontSize: 11, fontWeight: 600, letterSpacing: "0.04em",
-          padding: "5px 11px", borderRadius: 999,
-          background: active ? NW.teal50 : NW.gray50,
-          color: active ? NW.teal700 : NW.gray500,
-          border: `1px solid ${active ? "#16A08522" : NW.gray100}`,
-        }}>
-          <span style={{ width: 6, height: 6, borderRadius: "50%", background: active ? NW.teal500 : NW.gray400 }} />
-          {active ? "Active" : "Sourcing"}
-        </span>
+        <Tooltip text={locked ? LOCKED_MESSAGE : undefined}>
+          <span style={{
+            display: "inline-flex", alignItems: "center", gap: 7,
+            fontSize: 11, fontWeight: 600, letterSpacing: "0.04em",
+            padding: "5px 11px", borderRadius: 999,
+            background: badge.bg,
+            color: badge.fg,
+            border: `1px solid ${badge.border}`,
+            cursor: locked ? "help" : "inherit",
+          }}>
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: badge.dot }} />
+            {badge.label}
+          </span>
+        </Tooltip>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          {onToggleFollow && <FollowButton following={!!following} onToggle={() => onToggleFollow(opening.id)} />}
+          {onToggleFollow && (
+            locked ? (
+              <Tooltip text={LOCKED_MESSAGE}>
+                <span style={lockedControl}>
+                  <FollowButton following={!!following} onToggle={() => {}} />
+                </span>
+              </Tooltip>
+            ) : (
+              <FollowButton following={!!following} onToggle={() => onToggleFollow(opening.id)} />
+            )
+          )}
           <span style={{ fontSize: 12, color: NW.gray400, fontWeight: 500 }}>{opening.daysOpen}d open</span>
         </div>
       </div>
@@ -300,6 +319,9 @@ export function OpenRolesScreen({ client, data, orgId = "", density = "regular",
   const totalCands = candidates.length;
   const totalReview = candidates.filter((c) => c.awaitingDays >= 1).length;
   const activeRoles = openings.filter((o) => o.status === "active").length;
+  // Cancelled roles stay on the board so their history is still reachable, so the
+  // section subtitle has to admit they are there rather than say "in progress".
+  const lockedRoles = openings.filter((o) => isRoleLocked(o.status)).length;
 
   const [filterOpen, setFilterOpen] = useState(false);
   const [teamFilter, setTeamFilter] = useState("all");
@@ -407,7 +429,11 @@ export function OpenRolesScreen({ client, data, orgId = "", density = "regular",
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: dense ? 14 : 18 }}>
                 <span style={{ width: 7, height: 7, borderRadius: "50%", background: NW.teal500 }} />
                 <h2 style={{ fontSize: 13, fontWeight: 700, color: NW.black, letterSpacing: "0.02em", margin: 0 }}>Active roles</h2>
-                <span style={{ fontSize: 12, color: NW.gray500 }}>· {activeFilters ? `${filteredOpenings.length} of ${openings.length} shown` : "sourcing in progress"}</span>
+                <span style={{ fontSize: 12, color: NW.gray500 }}>· {activeFilters
+                  ? `${filteredOpenings.length} of ${openings.length} shown`
+                  : lockedRoles > 0
+                    ? `${activeRoles} sourcing in progress · ${lockedRoles} cancelled`
+                    : "sourcing in progress"}</span>
               </div>
               {filteredOpenings.length > 0 ? (
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: dense ? 16 : 22 }}>

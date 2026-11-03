@@ -6,6 +6,7 @@ import type { PortalOpening, PortalPipeline } from "@/lib/firebase-client";
 import type { PipelineData, PipelineCand, PipelineOpening } from "./screens/pipeline";
 import { clientStageKey, stageIdxOf, STAGE_LABELS, sourcingStageKey, sourcingStageIdx, SOURCING_STAGE_LABELS, avatarColor, initialsOf } from "./stage-map";
 import { yearsFromWorkHistory, tzFromLocation, engLevelScore } from "./candidate-derive";
+import { isRoleLocked } from "./role-lock";
 
 function isActive(o: PortalOpening): boolean {
   const s = String(o.status || "").toLowerCase();
@@ -73,6 +74,7 @@ export function toPipelineData(
         title: opening.title || "Role",
         team: opening.roleLibraryDepartment || "",
         location: "",
+        status: opening.status,
         // brief (kickoffBriefs content) not wired yet → the brief drawer stays hidden.
       }
     : undefined;
@@ -82,6 +84,7 @@ export function toPipelineData(
     openingTitle: opening?.title || "All roles",
     opening: pipelineOpening,
     totalOpenRoles: (openings || []).filter(isActive).length,
+    locked: isRoleLocked(opening?.status),
     pipelineType: relevant.length && relevant.every(isSourcing) ? "sourcing" : "full",
     candidates,
   };

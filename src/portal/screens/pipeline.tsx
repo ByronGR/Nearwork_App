@@ -12,8 +12,9 @@
 // so nothing here mutates a global.
 
 import React, { useState } from "react";
-import { NW, Icon, Avatar, Button } from "../primitives";
+import { NW, Icon, Avatar, Button, Tooltip } from "../primitives";
 import { PortalSidebar, PortalTopBar, EmptyBlock, type PortalClient } from "../shell";
+import { roleBadgeFor, LOCKED_MESSAGE } from "../role-lock";
 
 // ── Typed data prop shapes ────────────────────────────────────────────────────
 
@@ -68,6 +69,7 @@ export type PipelineOpening = {
   title: string;
   team: string;
   location: string;
+  status?: string; // raw opening status — drives the badge and the locked state
   brief?: PipelineBrief;
 };
 
@@ -76,6 +78,7 @@ export type PipelineData = {
   openingTitle: string; // display label for the active role
   opening?: PipelineOpening; // the active opening (carries the brief)
   totalOpenRoles: number; // how many open roles exist (for the "all" heading)
+  locked?: boolean; // the active role is cancelled — the board is read-only
   pipelineType?: "full" | "sourcing"; // sourcing → the sourcing stage set + no score
   candidates: PipelineCand[]; // candidates in this opening's pipeline
 };
@@ -544,6 +547,9 @@ export function PipelineScreen({ client, data, density = "regular", onNav }: {
   const activeCount = candidates.filter(c => c.stageIdx < 6).length;
   const opening = data.opening;
   const brief = opening && opening.brief;
+  // A cancelled role keeps its board readable but surrenders every control.
+  const locked = !!data.locked;
+  const lockedBadge = roleBadgeFor(opening?.status);
   const [showBrief, setShowBrief] = useState(false);
   const [compareMode, setCompareMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<(string | number)[]>([]);
@@ -568,6 +574,19 @@ export function PipelineScreen({ client, data, density = "regular", onNav }: {
               }}>
                 <Icon name="arrow-left" size={14} color={NW.gray500} /> Open roles
               </button>
+              {locked && (
+                <Tooltip text={LOCKED_MESSAGE} placement="bottom">
+                  <span style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 7, marginLeft: 12, marginBottom: 12,
+                    fontSize: 11, fontWeight: 600, letterSpacing: '0.04em',
+                    padding: '5px 11px', borderRadius: 999, cursor: 'help',
+                    background: lockedBadge.bg, color: lockedBadge.fg, border: `1px solid ${lockedBadge.border}`,
+                  }}>
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: lockedBadge.dot }} />
+                    {lockedBadge.label}
+                  </span>
+                </Tooltip>
+              )}
               <h1 style={{ fontSize: dense ? 30 : 36, fontWeight: 700, color: NW.black, letterSpacing: '-0.035em', lineHeight: 1.05, margin: 0, fontFamily: 'Poppins, sans-serif' }}>
                 {!populated ? <>No one in pipeline yet.</>
                   : activeRole === 'all'

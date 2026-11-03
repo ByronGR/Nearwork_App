@@ -257,6 +257,8 @@ export function toCandidateData(
   const base: CandidateData = {
     candidate: header,
     openingId: pipe.code,
+    // Raw opening status — the action bar locks itself when the role is cancelled.
+    roleStatus: opening?.status,
     pipelineType: pipe.pipelineType === "sourcing" ? "sourcing" : "full",
     pipelineCode: pipe.code,
     candidateRealId: realId,

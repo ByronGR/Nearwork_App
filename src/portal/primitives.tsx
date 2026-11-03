@@ -205,3 +205,72 @@ export function MatchScore({ value, size = 44, strokeWidth = 3.5, showLabel = tr
     </div>
   );
 }
+
+// ── Tooltip ───────────────────────────────────────────────────────────────────
+// A hover hint that also works over DISABLED controls. A disabled <button> fires
+// no mouse events, so the listeners live on the wrapper and the caller is
+// expected to kill pointer events on the control inside (see `lockedControl`).
+// Positioned absolutely against the wrapper rather than the viewport, so it
+// needs no portal and no scroll listener.
+export function Tooltip({
+  text,
+  children,
+  placement = "top",
+  maxWidth = 260,
+}: {
+  text?: string;
+  children: React.ReactNode;
+  placement?: "top" | "bottom";
+  maxWidth?: number;
+}) {
+  const [show, setShow] = useState(false);
+  if (!text) return <>{children}</>;
+  const vertical = placement === "top" ? { bottom: "calc(100% + 8px)" } : { top: "calc(100% + 8px)" };
+  return (
+    <span
+      style={{ position: "relative", display: "inline-flex", maxWidth: "100%" }}
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+      onFocus={() => setShow(true)}
+      onBlur={() => setShow(false)}
+    >
+      {children}
+      {show && (
+        <span
+          role="tooltip"
+          style={{
+            position: "absolute",
+            ...vertical,
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 80,
+            width: "max-content",
+            maxWidth,
+            background: NW.gray900,
+            color: NW.white,
+            fontSize: 12,
+            fontWeight: 500,
+            lineHeight: 1.45,
+            letterSpacing: "0.01em",
+            padding: "8px 11px",
+            borderRadius: 9,
+            boxShadow: "0 10px 28px rgba(0,0,0,0.22)",
+            pointerEvents: "none",
+            animation: "nwFade 120ms ease",
+          }}
+        >
+          {text}
+        </span>
+      )}
+    </span>
+  );
+}
+
+// Styles for a control that is visible but inert because the role is locked.
+// Pointer events are off so the Tooltip wrapper above it still sees the hover.
+export const lockedControl: CSS = {
+  opacity: 0.45,
+  filter: "grayscale(1)",
+  pointerEvents: "none",
+  userSelect: "none",
+};
