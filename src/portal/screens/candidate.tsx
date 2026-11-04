@@ -18,9 +18,10 @@ import { workPeriod } from "@/portal/candidate-derive";
 // Product rule: the report is attributed to the "Nearwork talent team" — never AI.
 
 import React, { useState } from "react";
-import { NW, Icon, Avatar, Button, MatchScore } from "../primitives";
+import { NW, Icon, Avatar, Button, MatchScore, Tooltip, lockedControl } from "../primitives";
 import { PortalSidebar, PortalTopBar, type PortalClient } from "../shell";
 import { sourcingStageKey } from "../stage-map";
+import { isRoleLocked, LOCKED_MESSAGE } from "../role-lock";
 
 // ── Typed data prop shapes ────────────────────────────────────────────────────
 
@@ -163,6 +164,7 @@ export type CandidateData = {
   // ── ALWAYS PRESENT (header) ──────────────────────────────────────────────
   candidate: CandidateHeader;
   openingId: string; // active opening id (drives the back link)
+  roleStatus?: string; // raw opening status — cancelled locks every action below
   discColors: Record<string, string>; // was window.NW_DISC_COLORS
   discDims: Record<string, CandidateDiscDim>; // was window.NW_DISC_DIM
   stageOrder: string[]; // was window.NW_STAGE_ORDER
@@ -686,12 +688,13 @@ function DiscSummaryPanel({ disc, discColor }: { disc: CandidateDisc; discColor:
 }
 
 // Client notes on a candidate (functional, persisted per candidate).
-function NotesPanel({ c, user, notes, onAddNote, readOnly }: {
+function NotesPanel({ c, user, notes, onAddNote, readOnly, lockHint }: {
   c: CandidateHeader;
   user: { name: string; initials: string };
   notes?: CandidateNote[];
   onAddNote?: (text: string, scope: 'client_visible' | 'client_internal') => Promise<void> | void;
   readOnly?: boolean;
+  lockHint?: string; // why posting is unavailable (cancelled role); omitted for a viewer seat
 }) {
   // Live notes come newest-first from Firestore; the recruiter seed (if any) sits
   // at the bottom as the oldest entry.
@@ -711,6 +714,14 @@ function NotesPanel({ c, user, notes, onAddNote, readOnly }: {
   const shared = scope === 'client_visible';
   return (
     <CardPanel title="Notes" icon="message-square-text" id="nw-cand-notes">
+      {/* Existing notes stay readable when locked; only the composer goes. Say
+          why, or the box just silently disappears. */}
+      {!canPost && lockHint && (
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: list.length ? 16 : 0, padding: '10px 12px', background: NW.gray50, border: `1px solid ${NW.gray100}`, borderRadius: 11, fontSize: 12, color: NW.gray600, lineHeight: 1.45 }}>
+          <Icon name="lock" size={13} color={NW.gray400} />
+          <span>{lockHint}</span>
+        </div>
+      )}
       {canPost && (
         <div style={{ display: 'flex', gap: 10, marginBottom: list.length ? 16 : 0 }}>
           <Avatar initials={user.initials} size={32} bg={NW.teal500} />
@@ -808,7 +819,12 @@ export function CandidateDetailScreen({ client, data, density = "regular", onNav
   const [rejectOpen, setRejectOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [flash, setFlash] = useState<string | null>(null);
-  const readOnly = client.access === 'viewer';
+  // Two separate reasons the client cannot act, with different explanations:
+  // a viewer-level seat ("View only"), or a role Nearwork has cancelled.
+  const roleLocked = isRoleLocked(data.roleStatus);
+  const readOnly = client.access === 'viewer' || roleLocked;
+  // Only the cancelled case gets the tooltip — a viewer seat is already labelled.
+  const lockHint = roleLocked ? LOCKED_MESSAGE : undefined;
 
   // The rich assessment renders only when every panel it depends on is present.
   // Any missing slice (or an explicit completed:false) falls back to pending.
@@ -923,7 +939,16 @@ export function CandidateDetailScreen({ client, data, density = "regular", onNav
               {/* Action bar — the client asks Nearwork to act; it never moves a
                   candidate itself. A pending request takes over the bar. */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 20, paddingTop: 18, borderTop: `1px solid ${NW.gray100}`, flexWrap: 'wrap' }}>
-                {isSourcing ? (
+                {roleLocked ? (
+                  // The role is cancelled. Nothing here may change it — in a
+                  // sourcing pipeline the client would otherwise still be able to
+                  // move the candidate directly, so this branch comes first.
+                  <Tooltip text={LOCKED_MESSAGE}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 12.5, fontWeight: 600, color: NW.rose600, background: NW.rose50, padding: '8px 14px', borderRadius: 999, cursor: 'help' }}>
+                      <Icon name="lock" size={14} color={NW.rose500} /> This role was cancelled — no actions available
+                    </span>
+                  </Tooltip>
+                ) : isSourcing ? (
                   // Sourcing: you run the process from here — move the candidate directly.
                   sourcingDone ? (
                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 12.5, fontWeight: 600, color: rawStage === 'hired' ? NW.teal700 : NW.gray500, background: rawStage === 'hired' ? NW.teal50 : NW.gray50, padding: '8px 14px', borderRadius: 999 }}>
@@ -963,7 +988,15 @@ export function CandidateDetailScreen({ client, data, density = "regular", onNav
                     View CV
                   </Button>
                 )}
-                <Button variant="secondary" size="sm" icon="message-square-text" onClick={scrollNotes}>Add note</Button>
+                {roleLocked ? (
+                  <Tooltip text={LOCKED_MESSAGE}>
+                    <span style={lockedControl}>
+                      <Button variant="secondary" size="sm" icon="message-square-text">Add note</Button>
+                    </span>
+                  </Tooltip>
+                ) : (
+                  <Button variant="secondary" size="sm" icon="message-square-text" onClick={scrollNotes}>Add note</Button>
+                )}
                 {!isSourcing && !readOnly && <Button variant="secondary" size="sm" icon="calendar-plus" disabled={busy} onClick={() => submitRequest('interview')}>Request interview</Button>}
                 <span style={{ flex: 1 }} />
                 <Button variant="ghost" size="sm" icon="columns-3" onClick={() => onNav && onNav('kanban', c.openingId)}>Compare</Button>
@@ -1024,7 +1057,7 @@ export function CandidateDetailScreen({ client, data, density = "regular", onNav
                         <p style={{ fontSize: 12.5, color: NW.gray400, margin: 0 }}>No work history on file yet.</p>
                       )}
                     </CardPanel>
-                    <NotesPanel c={c} user={{ name: client.user.name, initials: client.user.initials }} notes={data.notes} onAddNote={onAddNote} readOnly={client.access === 'viewer'} />
+                    <NotesPanel c={c} user={{ name: client.user.name, initials: client.user.initials }} notes={data.notes} onAddNote={onAddNote} readOnly={readOnly} lockHint={lockHint} />
                   </div>
                   {/* Right — resume (top) + snapshot + english */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -1114,7 +1147,7 @@ export function CandidateDetailScreen({ client, data, density = "regular", onNav
                     <EducationPanel education={data.education} />
                     <SkillsMatchPanel c={c} fit={data.fitForRole} />
                     {highlights && <HighlightsPanel h={highlights} />}
-                    <NotesPanel c={c} user={{ name: client.user.name, initials: client.user.initials }} notes={data.notes} onAddNote={onAddNote} readOnly={client.access === 'viewer'} />
+                    <NotesPanel c={c} user={{ name: client.user.name, initials: client.user.initials }} notes={data.notes} onAddNote={onAddNote} readOnly={readOnly} lockHint={lockHint} />
                   </div>
                 </div>
 
